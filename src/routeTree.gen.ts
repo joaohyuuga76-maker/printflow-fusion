@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FalhasRouteImport } from './routes/falhas'
 import { Route as FarmRouteImport } from './routes/farm'
 import { Route as FilaRouteImport } from './routes/fila'
 import { Route as OrcamentoRouteImport } from './routes/orcamento'
@@ -18,6 +19,11 @@ import { Route as VendasRouteImport } from './routes/vendas'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FalhasRoute = FalhasRouteImport.update({
+  id: '/falhas',
+  path: '/falhas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FarmRoute = FarmRouteImport.update({
@@ -43,6 +49,7 @@ const VendasRoute = VendasRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/falhas': typeof FalhasRoute
   '/farm': typeof FarmRoute
   '/fila': typeof FilaRoute
   '/orcamento': typeof OrcamentoRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/falhas': typeof FalhasRoute
   '/farm': typeof FarmRoute
   '/fila': typeof FilaRoute
   '/orcamento': typeof OrcamentoRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/falhas': typeof FalhasRoute
   '/farm': typeof FarmRoute
   '/fila': typeof FilaRoute
   '/orcamento': typeof OrcamentoRoute
@@ -65,14 +74,16 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/farm' | '/fila' | '/orcamento' | '/vendas'
+  fullPaths: '/' | '/falhas' | '/farm' | '/fila' | '/orcamento' | '/vendas'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/farm' | '/fila' | '/orcamento' | '/vendas'
-  id: '__root__' | '/' | '/farm' | '/fila' | '/orcamento' | '/vendas'
+  to: '/' | '/falhas' | '/farm' | '/fila' | '/orcamento' | '/vendas'
+  id:
+    '__root__' | '/' | '/falhas' | '/farm' | '/fila' | '/orcamento' | '/vendas'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  FalhasRoute: typeof FalhasRoute
   FarmRoute: typeof FarmRoute
   FilaRoute: typeof FilaRoute
   OrcamentoRoute: typeof OrcamentoRoute
@@ -86,6 +97,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/falhas': {
+      id: '/falhas'
+      path: '/falhas'
+      fullPath: '/falhas'
+      preLoaderRoute: typeof FalhasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/farm': {
@@ -121,6 +139,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  FalhasRoute: FalhasRoute,
   FarmRoute: FarmRoute,
   FilaRoute: FilaRoute,
   OrcamentoRoute: OrcamentoRoute,
