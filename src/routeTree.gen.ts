@@ -16,6 +16,7 @@ import { Route as FalhasRouteImport } from './routes/falhas'
 import { Route as FarmRouteImport } from './routes/farm'
 import { Route as FilaRouteImport } from './routes/fila'
 import { Route as FilamentosRouteImport } from './routes/filamentos'
+import { Route as FinanceiroRouteImport } from './routes/financeiro'
 import { Route as MaquinasRouteImport } from './routes/maquinas'
 import { Route as OrcamentoRouteImport } from './routes/orcamento'
 import { Route as VendasRouteImport } from './routes/vendas'
@@ -55,6 +56,11 @@ const FilamentosRoute = FilamentosRouteImport.update({
   path: '/filamentos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FinanceiroRoute = FinanceiroRouteImport.update({
+  id: '/financeiro',
+  path: '/financeiro',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MaquinasRoute = MaquinasRouteImport.update({
   id: '/maquinas',
   path: '/maquinas',
@@ -79,6 +85,7 @@ export interface FileRoutesByFullPath {
   '/farm': typeof FarmRoute
   '/fila': typeof FilaRoute
   '/filamentos': typeof FilamentosRoute
+  '/financeiro': typeof FinanceiroRoute
   '/maquinas': typeof MaquinasRoute
   '/orcamento': typeof OrcamentoRoute
   '/vendas': typeof VendasRoute
@@ -91,6 +98,7 @@ export interface FileRoutesByTo {
   '/farm': typeof FarmRoute
   '/fila': typeof FilaRoute
   '/filamentos': typeof FilamentosRoute
+  '/financeiro': typeof FinanceiroRoute
   '/maquinas': typeof MaquinasRoute
   '/orcamento': typeof OrcamentoRoute
   '/vendas': typeof VendasRoute
@@ -104,6 +112,7 @@ export interface FileRoutesById {
   '/farm': typeof FarmRoute
   '/fila': typeof FilaRoute
   '/filamentos': typeof FilamentosRoute
+  '/financeiro': typeof FinanceiroRoute
   '/maquinas': typeof MaquinasRoute
   '/orcamento': typeof OrcamentoRoute
   '/vendas': typeof VendasRoute
@@ -118,6 +127,7 @@ export interface FileRouteTypes {
     | '/farm'
     | '/fila'
     | '/filamentos'
+    | '/financeiro'
     | '/maquinas'
     | '/orcamento'
     | '/vendas'
@@ -130,6 +140,7 @@ export interface FileRouteTypes {
     | '/farm'
     | '/fila'
     | '/filamentos'
+    | '/financeiro'
     | '/maquinas'
     | '/orcamento'
     | '/vendas'
@@ -142,6 +153,7 @@ export interface FileRouteTypes {
     | '/farm'
     | '/fila'
     | '/filamentos'
+    | '/financeiro'
     | '/maquinas'
     | '/orcamento'
     | '/vendas'
@@ -155,6 +167,7 @@ export interface RootRouteChildren {
   FarmRoute: typeof FarmRoute
   FilaRoute: typeof FilaRoute
   FilamentosRoute: typeof FilamentosRoute
+  FinanceiroRoute: typeof FinanceiroRoute
   MaquinasRoute: typeof MaquinasRoute
   OrcamentoRoute: typeof OrcamentoRoute
   VendasRoute: typeof VendasRoute
@@ -211,6 +224,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FilamentosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/financeiro': {
+      id: '/financeiro'
+      path: '/financeiro'
+      fullPath: '/financeiro'
+      preLoaderRoute: typeof FinanceiroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/maquinas': {
       id: '/maquinas'
       path: '/maquinas'
@@ -243,6 +263,7 @@ const rootRouteChildren: RootRouteChildren = {
   FarmRoute: FarmRoute,
   FilaRoute: FilaRoute,
   FilamentosRoute: FilamentosRoute,
+  FinanceiroRoute: FinanceiroRoute,
   MaquinasRoute: MaquinasRoute,
   OrcamentoRoute: OrcamentoRoute,
   VendasRoute: VendasRoute,
