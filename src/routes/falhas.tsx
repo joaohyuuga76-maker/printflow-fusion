@@ -22,7 +22,7 @@ export const Route = createFileRoute("/falhas")({
       { property: "og:description", content: "Controle de perdas e falhas técnicas na impressão 3D." },
     ],
   }),
-  component: Falhas;
+  component: Falhas,
 });
 
 function Falhas() {
