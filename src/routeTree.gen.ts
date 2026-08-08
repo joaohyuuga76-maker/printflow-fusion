@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CatalogoRouteImport } from './routes/catalogo'
+import { Route as ClientesRouteImport } from './routes/clientes'
 import { Route as FalhasRouteImport } from './routes/falhas'
 import { Route as FarmRouteImport } from './routes/farm'
 import { Route as FilaRouteImport } from './routes/fila'
@@ -26,6 +27,11 @@ const IndexRoute = IndexRouteImport.update({
 const CatalogoRoute = CatalogoRouteImport.update({
   id: '/catalogo',
   path: '/catalogo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientesRoute = ClientesRouteImport.update({
+  id: '/clientes',
+  path: '/clientes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FalhasRoute = FalhasRouteImport.update({
@@ -62,6 +68,7 @@ const VendasRoute = VendasRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/catalogo': typeof CatalogoRoute
+  '/clientes': typeof ClientesRoute
   '/falhas': typeof FalhasRoute
   '/farm': typeof FarmRoute
   '/fila': typeof FilaRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/catalogo': typeof CatalogoRoute
+  '/clientes': typeof ClientesRoute
   '/falhas': typeof FalhasRoute
   '/farm': typeof FarmRoute
   '/fila': typeof FilaRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/catalogo': typeof CatalogoRoute
+  '/clientes': typeof ClientesRoute
   '/falhas': typeof FalhasRoute
   '/farm': typeof FarmRoute
   '/fila': typeof FilaRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/catalogo'
+    | '/clientes'
     | '/falhas'
     | '/farm'
     | '/fila'
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/catalogo'
+    | '/clientes'
     | '/falhas'
     | '/farm'
     | '/fila'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/catalogo'
+    | '/clientes'
     | '/falhas'
     | '/farm'
     | '/fila'
@@ -126,6 +138,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CatalogoRoute: typeof CatalogoRoute
+  ClientesRoute: typeof ClientesRoute
   FalhasRoute: typeof FalhasRoute
   FarmRoute: typeof FarmRoute
   FilaRoute: typeof FilaRoute
@@ -148,6 +161,13 @@ declare module '@tanstack/react-router' {
       path: '/catalogo'
       fullPath: '/catalogo'
       preLoaderRoute: typeof CatalogoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/clientes': {
+      id: '/clientes'
+      path: '/clientes'
+      fullPath: '/clientes'
+      preLoaderRoute: typeof ClientesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/falhas': {
@@ -198,6 +218,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CatalogoRoute: CatalogoRoute,
+  ClientesRoute: ClientesRoute,
   FalhasRoute: FalhasRoute,
   FarmRoute: FarmRoute,
   FilaRoute: FilaRoute,
