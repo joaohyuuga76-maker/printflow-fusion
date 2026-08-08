@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CatalogoRouteImport } from './routes/catalogo'
 import { Route as ClientesRouteImport } from './routes/clientes'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as FalhasRouteImport } from './routes/falhas'
 import { Route as FarmRouteImport } from './routes/farm'
 import { Route as FilaRouteImport } from './routes/fila'
@@ -34,6 +35,11 @@ const CatalogoRoute = CatalogoRouteImport.update({
 const ClientesRoute = ClientesRouteImport.update({
   id: '/clientes',
   path: '/clientes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FalhasRoute = FalhasRouteImport.update({
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/catalogo': typeof CatalogoRoute
   '/clientes': typeof ClientesRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/falhas': typeof FalhasRoute
   '/farm': typeof FarmRoute
   '/fila': typeof FilaRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/catalogo': typeof CatalogoRoute
   '/clientes': typeof ClientesRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/falhas': typeof FalhasRoute
   '/farm': typeof FarmRoute
   '/fila': typeof FilaRoute
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/catalogo': typeof CatalogoRoute
   '/clientes': typeof ClientesRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/falhas': typeof FalhasRoute
   '/farm': typeof FarmRoute
   '/fila': typeof FilaRoute
@@ -123,6 +132,7 @@ export interface FileRouteTypes {
     | '/'
     | '/catalogo'
     | '/clientes'
+    | '/configuracoes'
     | '/falhas'
     | '/farm'
     | '/fila'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/'
     | '/catalogo'
     | '/clientes'
+    | '/configuracoes'
     | '/falhas'
     | '/farm'
     | '/fila'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/'
     | '/catalogo'
     | '/clientes'
+    | '/configuracoes'
     | '/falhas'
     | '/farm'
     | '/fila'
@@ -163,6 +175,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CatalogoRoute: typeof CatalogoRoute
   ClientesRoute: typeof ClientesRoute
+  ConfiguracoesRoute: typeof ConfiguracoesRoute
   FalhasRoute: typeof FalhasRoute
   FarmRoute: typeof FarmRoute
   FilaRoute: typeof FilaRoute
@@ -194,6 +207,13 @@ declare module '@tanstack/react-router' {
       path: '/clientes'
       fullPath: '/clientes'
       preLoaderRoute: typeof ClientesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes': {
+      id: '/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ConfiguracoesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/falhas': {
@@ -259,6 +279,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CatalogoRoute: CatalogoRoute,
   ClientesRoute: ClientesRoute,
+  ConfiguracoesRoute: ConfiguracoesRoute,
   FalhasRoute: FalhasRoute,
   FarmRoute: FarmRoute,
   FilaRoute: FilaRoute,
