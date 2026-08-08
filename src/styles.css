@@ -4,6 +4,18 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  --font-sans:
+    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --color-profit: oklch(0.723 0.192 149.58);
+  --color-profit-foreground: oklch(0.145 0.02 260);
+  --color-info: oklch(0.623 0.214 259.815);
+  --color-production: oklch(0.627 0.265 303.9);
+  --color-danger: oklch(0.637 0.237 25.331);
+  --color-warn: oklch(0.769 0.188 70.08);
+  --color-surface: oklch(0.279 0.041 260.031);
+}
+
 /*
  * Design system definition.
  *
