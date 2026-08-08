@@ -7,9 +7,9 @@ export interface Printer {
   watts: number;
   depreciationPerHour: number;
   status: PrinterStatus;
-  currentFile?: string;
-  progress?: number;
-  remainingMin?: number;
+  currentFile?: string | undefined;
+  progress?: number | undefined;
+  remainingMin?: number | undefined;
   hoursRun: number;
   failures: number;
 }
