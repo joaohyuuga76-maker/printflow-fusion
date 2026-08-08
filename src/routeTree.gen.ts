@@ -16,6 +16,7 @@ import { Route as FalhasRouteImport } from './routes/falhas'
 import { Route as FarmRouteImport } from './routes/farm'
 import { Route as FilaRouteImport } from './routes/fila'
 import { Route as FilamentosRouteImport } from './routes/filamentos'
+import { Route as MaquinasRouteImport } from './routes/maquinas'
 import { Route as OrcamentoRouteImport } from './routes/orcamento'
 import { Route as VendasRouteImport } from './routes/vendas'
 
@@ -54,6 +55,11 @@ const FilamentosRoute = FilamentosRouteImport.update({
   path: '/filamentos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MaquinasRoute = MaquinasRouteImport.update({
+  id: '/maquinas',
+  path: '/maquinas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OrcamentoRoute = OrcamentoRouteImport.update({
   id: '/orcamento',
   path: '/orcamento',
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/farm': typeof FarmRoute
   '/fila': typeof FilaRoute
   '/filamentos': typeof FilamentosRoute
+  '/maquinas': typeof MaquinasRoute
   '/orcamento': typeof OrcamentoRoute
   '/vendas': typeof VendasRoute
 }
@@ -84,6 +91,7 @@ export interface FileRoutesByTo {
   '/farm': typeof FarmRoute
   '/fila': typeof FilaRoute
   '/filamentos': typeof FilamentosRoute
+  '/maquinas': typeof MaquinasRoute
   '/orcamento': typeof OrcamentoRoute
   '/vendas': typeof VendasRoute
 }
@@ -96,6 +104,7 @@ export interface FileRoutesById {
   '/farm': typeof FarmRoute
   '/fila': typeof FilaRoute
   '/filamentos': typeof FilamentosRoute
+  '/maquinas': typeof MaquinasRoute
   '/orcamento': typeof OrcamentoRoute
   '/vendas': typeof VendasRoute
 }
@@ -109,6 +118,7 @@ export interface FileRouteTypes {
     | '/farm'
     | '/fila'
     | '/filamentos'
+    | '/maquinas'
     | '/orcamento'
     | '/vendas'
   fileRoutesByTo: FileRoutesByTo
@@ -120,6 +130,7 @@ export interface FileRouteTypes {
     | '/farm'
     | '/fila'
     | '/filamentos'
+    | '/maquinas'
     | '/orcamento'
     | '/vendas'
   id:
@@ -131,6 +142,7 @@ export interface FileRouteTypes {
     | '/farm'
     | '/fila'
     | '/filamentos'
+    | '/maquinas'
     | '/orcamento'
     | '/vendas'
   fileRoutesById: FileRoutesById
@@ -143,6 +155,7 @@ export interface RootRouteChildren {
   FarmRoute: typeof FarmRoute
   FilaRoute: typeof FilaRoute
   FilamentosRoute: typeof FilamentosRoute
+  MaquinasRoute: typeof MaquinasRoute
   OrcamentoRoute: typeof OrcamentoRoute
   VendasRoute: typeof VendasRoute
 }
@@ -198,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FilamentosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/maquinas': {
+      id: '/maquinas'
+      path: '/maquinas'
+      fullPath: '/maquinas'
+      preLoaderRoute: typeof MaquinasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/orcamento': {
       id: '/orcamento'
       path: '/orcamento'
@@ -223,6 +243,7 @@ const rootRouteChildren: RootRouteChildren = {
   FarmRoute: FarmRoute,
   FilaRoute: FilaRoute,
   FilamentosRoute: FilamentosRoute,
+  MaquinasRoute: MaquinasRoute,
   OrcamentoRoute: OrcamentoRoute,
   VendasRoute: VendasRoute,
 }
