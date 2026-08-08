@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as FalhasRouteImport } from './routes/falhas'
 import { Route as FarmRouteImport } from './routes/farm'
 import { Route as FilaRouteImport } from './routes/fila'
+import { Route as FilamentosRouteImport } from './routes/filamentos'
 import { Route as OrcamentoRouteImport } from './routes/orcamento'
 import { Route as VendasRouteImport } from './routes/vendas'
 
@@ -36,6 +37,11 @@ const FilaRoute = FilaRouteImport.update({
   path: '/fila',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FilamentosRoute = FilamentosRouteImport.update({
+  id: '/filamentos',
+  path: '/filamentos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OrcamentoRoute = OrcamentoRouteImport.update({
   id: '/orcamento',
   path: '/orcamento',
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/falhas': typeof FalhasRoute
   '/farm': typeof FarmRoute
   '/fila': typeof FilaRoute
+  '/filamentos': typeof FilamentosRoute
   '/orcamento': typeof OrcamentoRoute
   '/vendas': typeof VendasRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/falhas': typeof FalhasRoute
   '/farm': typeof FarmRoute
   '/fila': typeof FilaRoute
+  '/filamentos': typeof FilamentosRoute
   '/orcamento': typeof OrcamentoRoute
   '/vendas': typeof VendasRoute
 }
@@ -69,16 +77,38 @@ export interface FileRoutesById {
   '/falhas': typeof FalhasRoute
   '/farm': typeof FarmRoute
   '/fila': typeof FilaRoute
+  '/filamentos': typeof FilamentosRoute
   '/orcamento': typeof OrcamentoRoute
   '/vendas': typeof VendasRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/falhas' | '/farm' | '/fila' | '/orcamento' | '/vendas'
+  fullPaths:
+    | '/'
+    | '/falhas'
+    | '/farm'
+    | '/fila'
+    | '/filamentos'
+    | '/orcamento'
+    | '/vendas'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/falhas' | '/farm' | '/fila' | '/orcamento' | '/vendas'
+  to:
+    | '/'
+    | '/falhas'
+    | '/farm'
+    | '/fila'
+    | '/filamentos'
+    | '/orcamento'
+    | '/vendas'
   id:
-    '__root__' | '/' | '/falhas' | '/farm' | '/fila' | '/orcamento' | '/vendas'
+    | '__root__'
+    | '/'
+    | '/falhas'
+    | '/farm'
+    | '/fila'
+    | '/filamentos'
+    | '/orcamento'
+    | '/vendas'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -86,6 +116,7 @@ export interface RootRouteChildren {
   FalhasRoute: typeof FalhasRoute
   FarmRoute: typeof FarmRoute
   FilaRoute: typeof FilaRoute
+  FilamentosRoute: typeof FilamentosRoute
   OrcamentoRoute: typeof OrcamentoRoute
   VendasRoute: typeof VendasRoute
 }
@@ -120,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FilaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/filamentos': {
+      id: '/filamentos'
+      path: '/filamentos'
+      fullPath: '/filamentos'
+      preLoaderRoute: typeof FilamentosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/orcamento': {
       id: '/orcamento'
       path: '/orcamento'
@@ -142,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   FalhasRoute: FalhasRoute,
   FarmRoute: FarmRoute,
   FilaRoute: FilaRoute,
+  FilamentosRoute: FilamentosRoute,
   OrcamentoRoute: OrcamentoRoute,
   VendasRoute: VendasRoute,
 }
