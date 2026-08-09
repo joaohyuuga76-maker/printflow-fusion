@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Phone, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/erp/ui-bits";
+import { EmptyState, QuickAdd } from "@/components/erp/QuickAdd";
 import { brl, useErp } from "@/lib/erp-store";
 
 export const Route = createFileRoute("/_authenticated/clientes")({
@@ -17,10 +18,29 @@ export const Route = createFileRoute("/_authenticated/clientes")({
 });
 
 function Clientes() {
-  const { clients, orders } = useErp();
+  const { clients, orders, addClient } = useErp();
   return (
     <div>
-      <PageHeader title="Clientes (CRM)" subtitle={`${clients.length} clientes cadastrados`} />
+      <PageHeader
+        title="Clientes (CRM)"
+        subtitle={`${clients.length} clientes cadastrados`}
+        action={
+          <QuickAdd
+            trigger="Novo cliente"
+            title="Cadastrar cliente"
+            successMessage="Cliente cadastrado!"
+            fields={[
+              { key: "name", label: "Nome", placeholder: "Studio Rocha" },
+              { key: "phone", label: "Telefone", placeholder: "(11) 99999-0000" },
+              { key: "city", label: "Cidade / UF", placeholder: "São Paulo / SP" },
+            ]}
+            onSubmit={(v) =>
+              addClient({ name: v['name'] || "Sem nome", phone: v['phone'] || "", city: v['city'] || "" })
+            }
+          />
+        }
+      />
+      {clients.length === 0 && <EmptyState text="Nenhum cliente cadastrado ainda." />}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {clients.map((c) => {
           const open = orders.filter((o) => o.client === c.name && o.stage !== "concluido").length;
