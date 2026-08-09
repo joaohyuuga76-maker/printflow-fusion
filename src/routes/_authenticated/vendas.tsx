@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/erp/ui-bits";
 import { brl, useErp } from "@/lib/erp-store";
 import type { OrderStage } from "@/lib/erp-types";
 
-export const Route = createFileRoute("/vendas")({
+export const Route = createFileRoute("/_authenticated/vendas")({
   head: () => ({
     meta: [
       { title: "Kanban de Vendas | PrintFlow 2K Lab" },

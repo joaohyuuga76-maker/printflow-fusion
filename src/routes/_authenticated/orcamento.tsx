@@ -15,7 +15,7 @@ import {
 import { PageHeader } from "@/components/erp/ui-bits";
 import { brl, useErp } from "@/lib/erp-store";
 
-export const Route = createFileRoute("/orcamento")({
+export const Route = createFileRoute("/_authenticated/orcamento")({
   head: () => ({
     meta: [
       { title: "Calculadora de Orçamentos | PrintFlow 2K Lab" },

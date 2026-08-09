@@ -26,7 +26,7 @@ import { PageHeader } from "@/components/erp/ui-bits";
 import { brl, useErp } from "@/lib/erp-store";
 import type { Filament } from "@/lib/erp-types";
 
-export const Route = createFileRoute("/filamentos")({
+export const Route = createFileRoute("/_authenticated/filamentos")({
   head: () => ({
     meta: [
       { title: "Filamentos & Estoque | PrintFlow 2K Lab" },

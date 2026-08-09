@@ -10,9 +10,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PageHeader } from "@/components/erp/ui-bits";
+import { EmptyState, QuickAdd } from "@/components/erp/QuickAdd";
 import { brl, useErp } from "@/lib/erp-store";
 
-export const Route = createFileRoute("/catalogo")({
+export const Route = createFileRoute("/_authenticated/catalogo")({
   head: () => ({
     meta: [
       { title: "Catálogo de Produtos | PrintFlow 2K Lab" },
@@ -25,10 +26,37 @@ export const Route = createFileRoute("/catalogo")({
 });
 
 function Catalogo() {
-  const { products } = useErp();
+  const { products, addProduct } = useErp();
   return (
     <div>
-      <PageHeader title="Catálogo de Produtos" subtitle="Peças recorrentes com tempos e pesos pré-salvos" />
+      <PageHeader
+        title="Catálogo de Produtos"
+        subtitle="Peças recorrentes com tempos e pesos pré-salvos"
+        action={
+          <QuickAdd
+            trigger="Novo produto"
+            title="Cadastrar produto"
+            successMessage="Produto cadastrado!"
+            fields={[
+              { key: "name", label: "Nome", placeholder: "Luminária Moon 15cm" },
+              { key: "category", label: "Categoria", placeholder: "Decoração" },
+              { key: "weightG", label: "Peso (g)", numeric: true, defaultValue: "100" },
+              { key: "hours", label: "Tempo (h)", numeric: true, defaultValue: "4" },
+              { key: "price", label: "Preço (R$)", numeric: true, defaultValue: "99.9" },
+            ]}
+            onSubmit={(v) =>
+              addProduct({
+                name: v['name'] || "Novo produto",
+                category: v['category'] || "Geral",
+                weightG: Number(v['weightG']) || 0,
+                hours: Number(v['hours']) || 0,
+                price: Number(v['price']) || 0,
+              })
+            }
+          />
+        }
+      />
+      {products.length === 0 && <EmptyState text="Catálogo vazio. Cadastre seus produtos recorrentes." />}
       <div className="overflow-x-auto rounded-xl border border-border bg-card">
         <Table>
           <TableHeader>

@@ -1,0 +1,24 @@
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
+import { ErpProvider } from "@/lib/erp-store";
+import { AppShell } from "@/components/erp/AppShell";
+
+export const Route = createFileRoute("/_authenticated")({
+  ssr: false,
+  beforeLoad: async () => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) throw redirect({ to: "/auth" });
+    return { user: data.user };
+  },
+  component: AuthenticatedLayout,
+});
+
+function AuthenticatedLayout() {
+  return (
+    <ErpProvider>
+      <AppShell>
+        <Outlet />
+      </AppShell>
+    </ErpProvider>
+  );
+}

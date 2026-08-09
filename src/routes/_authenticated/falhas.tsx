@@ -13,7 +13,7 @@ import {
 import { PageHeader, StatCard } from "@/components/erp/ui-bits";
 import { brl, useErp } from "@/lib/erp-store";
 
-export const Route = createFileRoute("/falhas")({
+export const Route = createFileRoute("/_authenticated/falhas")({
   head: () => ({
     meta: [
       { title: "Registro de Falhas | PrintFlow 2K Lab" },
