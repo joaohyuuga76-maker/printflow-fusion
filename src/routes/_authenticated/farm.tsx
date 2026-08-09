@@ -29,11 +29,36 @@ const statusMap: Record<PrinterStatus, { label: string; cls: string; dot: string
 };
 
 function Farm() {
-  const { printers, setPrinterStatus } = useErp();
+  const { printers, setPrinterStatus, addPrinter } = useErp();
 
   return (
     <div>
-      <PageHeader title="Minha Farm" subtitle={`${printers.length} impressoras cadastradas · status em tempo real`} />
+      <PageHeader
+        title="Minha Farm"
+        subtitle={`${printers.length} impressoras cadastradas · status em tempo real`}
+        action={
+          <QuickAdd
+            trigger="Nova impressora"
+            title="Cadastrar impressora"
+            successMessage="Impressora cadastrada!"
+            fields={[
+              { key: "name", label: "Nome", placeholder: "Bambu Lab P1S" },
+              { key: "model", label: "Modelo", placeholder: "P1S CoreXY" },
+              { key: "watts", label: "Potência (W)", numeric: true, defaultValue: "300" },
+              { key: "dep", label: "Depreciação por hora (R$)", numeric: true, defaultValue: "1.00" },
+            ]}
+            onSubmit={(v) =>
+              addPrinter({
+                name: v['name'] || "Nova impressora",
+                model: v['model'] || "",
+                watts: Number(v['watts']) || 0,
+                depreciationPerHour: Number(v['dep']) || 0,
+              })
+            }
+          />
+        }
+      />
+      {printers.length === 0 && <EmptyState text="Nenhuma impressora cadastrada ainda. Adicione a primeira máquina da sua farm." />}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {printers.map((p) => {
           const s = statusMap[p.status];
