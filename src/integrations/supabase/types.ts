@@ -14,7 +14,354 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      clients: {
+        Row: {
+          city: string
+          created_at: string
+          id: string
+          name: string
+          phone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          city?: string
+          created_at?: string
+          id?: string
+          name: string
+          phone?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          id?: string
+          name?: string
+          phone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      extra_costs: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          unit: string
+          unit_price: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          unit?: string
+          unit_price?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          unit?: string
+          unit_price?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      failures: {
+        Row: {
+          cost: number
+          created_at: string
+          filament_id: string | null
+          id: string
+          lost_g: number
+          notes: string
+          printer_id: string | null
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          cost?: number
+          created_at?: string
+          filament_id?: string | null
+          id?: string
+          lost_g?: number
+          notes?: string
+          printer_id?: string | null
+          reason?: string
+          user_id: string
+        }
+        Update: {
+          cost?: number
+          created_at?: string
+          filament_id?: string | null
+          id?: string
+          lost_g?: number
+          notes?: string
+          printer_id?: string | null
+          reason?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "failures_filament_id_fkey"
+            columns: ["filament_id"]
+            isOneToOne: false
+            referencedRelation: "filaments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "failures_printer_id_fkey"
+            columns: ["printer_id"]
+            isOneToOne: false
+            referencedRelation: "printers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      filaments: {
+        Row: {
+          brand: string
+          color: string
+          created_at: string
+          hex: string
+          id: string
+          price_per_kg: number
+          remaining_g: number
+          total_g: number
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brand: string
+          color?: string
+          created_at?: string
+          hex?: string
+          id?: string
+          price_per_kg?: number
+          remaining_g?: number
+          total_g?: number
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brand?: string
+          color?: string
+          created_at?: string
+          hex?: string
+          id?: string
+          price_per_kg?: number
+          remaining_g?: number
+          total_g?: number
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          channel: string
+          client: string
+          cost: number
+          created_at: string
+          date: string
+          hours: number
+          id: string
+          priority: string
+          ref: string
+          stage: string
+          title: string
+          updated_at: string
+          user_id: string
+          value: number
+          weight_g: number
+        }
+        Insert: {
+          channel?: string
+          client?: string
+          cost?: number
+          created_at?: string
+          date?: string
+          hours?: number
+          id?: string
+          priority?: string
+          ref: string
+          stage?: string
+          title: string
+          updated_at?: string
+          user_id: string
+          value?: number
+          weight_g?: number
+        }
+        Update: {
+          channel?: string
+          client?: string
+          cost?: number
+          created_at?: string
+          date?: string
+          hours?: number
+          id?: string
+          priority?: string
+          ref?: string
+          stage?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          value?: number
+          weight_g?: number
+        }
+        Relationships: []
+      }
+      printers: {
+        Row: {
+          created_at: string
+          current_file: string | null
+          depreciation_per_hour: number
+          failures: number
+          hours_run: number
+          id: string
+          model: string
+          name: string
+          progress: number | null
+          remaining_min: number | null
+          status: string
+          updated_at: string
+          user_id: string
+          watts: number
+        }
+        Insert: {
+          created_at?: string
+          current_file?: string | null
+          depreciation_per_hour?: number
+          failures?: number
+          hours_run?: number
+          id?: string
+          model?: string
+          name: string
+          progress?: number | null
+          remaining_min?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          watts?: number
+        }
+        Update: {
+          created_at?: string
+          current_file?: string | null
+          depreciation_per_hour?: number
+          failures?: number
+          hours_run?: number
+          id?: string
+          model?: string
+          name?: string
+          progress?: number | null
+          remaining_min?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          watts?: number
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          category: string
+          created_at: string
+          hours: number
+          id: string
+          name: string
+          price: number
+          sold: number
+          updated_at: string
+          user_id: string
+          weight_g: number
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          hours?: number
+          id?: string
+          name: string
+          price?: number
+          sold?: number
+          updated_at?: string
+          user_id: string
+          weight_g?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          hours?: number
+          id?: string
+          name?: string
+          price?: number
+          sold?: number
+          updated_at?: string
+          user_id?: string
+          weight_g?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      settings: {
+        Row: {
+          cnpj: string
+          company: string
+          default_margin: number
+          energy_rate: number
+          failure_rate: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cnpj?: string
+          company?: string
+          default_margin?: number
+          energy_rate?: number
+          failure_rate?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cnpj?: string
+          company?: string
+          default_margin?: number
+          energy_rate?: number
+          failure_rate?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
