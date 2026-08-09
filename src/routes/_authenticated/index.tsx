@@ -36,7 +36,7 @@ import {
 import { PageHeader, StatCard } from "@/components/erp/ui-bits";
 import { brl, useErp } from "@/lib/erp-store";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
       { title: "Dashboard | PrintFlow — ERP de Impressão 3D 2K Lab" },

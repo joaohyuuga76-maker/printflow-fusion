@@ -4,7 +4,7 @@ import { DollarSign, TrendingUp, Activity, Wallet } from "lucide-react";
 import { PageHeader, StatCard } from "@/components/erp/ui-bits";
 import { brl, useErp } from "@/lib/erp-store";
 
-export const Route = createFileRoute("/financeiro")({
+export const Route = createFileRoute("/_authenticated/financeiro")({
   head: () => ({
     meta: [
       { title: "Financeiro & DRE | PrintFlow 2K Lab" },

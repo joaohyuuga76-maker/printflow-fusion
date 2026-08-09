@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/erp/ui-bits";
 import { brl, useErp } from "@/lib/erp-store";
 
-export const Route = createFileRoute("/fila")({
+export const Route = createFileRoute("/_authenticated/fila")({
   head: () => ({
     meta: [
       { title: "Fila de Impressão | PrintFlow 2K Lab" },

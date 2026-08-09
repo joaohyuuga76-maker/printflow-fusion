@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/erp/ui-bits";
 import { useErp } from "@/lib/erp-store";
 import type { PrinterStatus } from "@/lib/erp-types";
 
-export const Route = createFileRoute("/farm")({
+export const Route = createFileRoute("/_authenticated/farm")({
   head: () => ({
     meta: [
       { title: "Minha Farm | PrintFlow 2K Lab" },

@@ -12,7 +12,7 @@ import {
 import { PageHeader } from "@/components/erp/ui-bits";
 import { brl, useErp } from "@/lib/erp-store";
 
-export const Route = createFileRoute("/catalogo")({
+export const Route = createFileRoute("/_authenticated/catalogo")({
   head: () => ({
     meta: [
       { title: "Catálogo de Produtos | PrintFlow 2K Lab" },

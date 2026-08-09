@@ -11,7 +11,7 @@ import {
 import { PageHeader, StatCard } from "@/components/erp/ui-bits";
 import { brl, useErp } from "@/lib/erp-store";
 
-export const Route = createFileRoute("/maquinas")({
+export const Route = createFileRoute("/_authenticated/maquinas")({
   head: () => ({
     meta: [
       { title: "Máquinas & Custos Extras | PrintFlow 2K Lab" },

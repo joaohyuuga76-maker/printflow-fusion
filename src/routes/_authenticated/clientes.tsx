@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/erp/ui-bits";
 import { brl, useErp } from "@/lib/erp-store";
 
-export const Route = createFileRoute("/clientes")({
+export const Route = createFileRoute("/_authenticated/clientes")({
   head: () => ({
     meta: [
       { title: "Clientes (CRM) | PrintFlow 2K Lab" },
