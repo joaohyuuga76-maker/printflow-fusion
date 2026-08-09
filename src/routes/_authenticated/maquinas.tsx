@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PageHeader, StatCard } from "@/components/erp/ui-bits";
+import { QuickAdd } from "@/components/erp/QuickAdd";
 import { brl, useErp } from "@/lib/erp-store";
 
 export const Route = createFileRoute("/_authenticated/maquinas")({
@@ -24,12 +25,34 @@ export const Route = createFileRoute("/_authenticated/maquinas")({
 });
 
 function Maquinas() {
-  const { printers, extras, settings } = useErp();
+  const { printers, extras, settings, addExtra } = useErp();
   const totalW = printers.reduce((s, p) => s + p.watts, 0);
 
   return (
     <div>
-      <PageHeader title="Máquinas & Custos Extras" subtitle="Parâmetros usados na precificação automática" />
+      <PageHeader
+        title="Máquinas & Custos Extras"
+        subtitle="Parâmetros usados na precificação automática"
+        action={
+          <QuickAdd
+            trigger="Novo insumo"
+            title="Cadastrar insumo extra"
+            successMessage="Insumo cadastrado!"
+            fields={[
+              { key: "name", label: "Item", placeholder: "Caixa de papelão" },
+              { key: "unit", label: "Unidade", placeholder: "un" },
+              { key: "unitPrice", label: "Custo (R$)", numeric: true, defaultValue: "1.00" },
+            ]}
+            onSubmit={(v) =>
+              addExtra({
+                name: v['name'] || "Insumo",
+                unit: v['unit'] || "un",
+                unitPrice: Number(v['unitPrice']) || 0,
+              })
+            }
+          />
+        }
+      />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard label="Tarifa de energia" value={`${brl(settings.energyRate)}/kWh`} icon={Zap} tone="warn" />
         <StatCard label="Potência instalada" value={`${totalW} W`} icon={Zap} tone="info" />
