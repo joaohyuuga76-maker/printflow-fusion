@@ -1,12 +1,14 @@
-import { useState, type ReactNode } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
-import { AlertTriangle, Boxes, Menu, PanelLeftClose, PanelLeftOpen, Zap } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { AlertTriangle, Boxes, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { mobileNav, navSections } from "./nav";
 import { useErp } from "@/lib/erp-store";
 import { FailureModal } from "./FailureModal";
+import { supabase } from "@/integrations/supabase/client";
 
 function Brand({ compact }: { compact?: boolean }) {
   return (
@@ -67,9 +69,23 @@ function NavList({ compact, onNavigate }: { compact?: boolean; onNavigate?: () =
 export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { setFailureOpen, filaments } = useErp();
   const lowStock = filaments.filter((f) => f.remainingG < 150).length;
+
+  useEffect(() => {
+    void supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
+  }, []);
+
+  const signOut = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  };
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
@@ -128,6 +144,15 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Button variant="destructive" size="sm" onClick={() => setFailureOpen(true)}>
             <AlertTriangle className="h-4 w-4" />
             <span className="hidden sm:inline">Registrar Falha</span>
+          </Button>
+
+          {email && (
+            <span className="hidden max-w-[180px] truncate text-xs text-muted-foreground xl:inline">
+              {email}
+            </span>
+          )}
+          <Button variant="ghost" size="icon" title="Sair" onClick={signOut}>
+            <LogOut className="h-4 w-4" />
           </Button>
         </header>
 
