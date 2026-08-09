@@ -9,127 +9,127 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as CatalogoRouteImport } from './routes/catalogo'
-import { Route as ClientesRouteImport } from './routes/clientes'
-import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
-import { Route as FalhasRouteImport } from './routes/falhas'
-import { Route as FarmRouteImport } from './routes/farm'
-import { Route as FilaRouteImport } from './routes/fila'
-import { Route as FilamentosRouteImport } from './routes/filamentos'
-import { Route as FinanceiroRouteImport } from './routes/financeiro'
-import { Route as MaquinasRouteImport } from './routes/maquinas'
-import { Route as OrcamentoRouteImport } from './routes/orcamento'
-import { Route as VendasRouteImport } from './routes/vendas'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedCatalogoRouteImport } from './routes/_authenticated/catalogo'
+import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
+import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
+import { Route as AuthenticatedFalhasRouteImport } from './routes/_authenticated/falhas'
+import { Route as AuthenticatedFarmRouteImport } from './routes/_authenticated/farm'
+import { Route as AuthenticatedFilaRouteImport } from './routes/_authenticated/fila'
+import { Route as AuthenticatedFilamentosRouteImport } from './routes/_authenticated/filamentos'
+import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
+import { Route as AuthenticatedMaquinasRouteImport } from './routes/_authenticated/maquinas'
+import { Route as AuthenticatedOrcamentoRouteImport } from './routes/_authenticated/orcamento'
+import { Route as AuthenticatedVendasRouteImport } from './routes/_authenticated/vendas'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+  id: '/_authenticated/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CatalogoRoute = CatalogoRouteImport.update({
-  id: '/catalogo',
+const AuthenticatedCatalogoRoute = AuthenticatedCatalogoRouteImport.update({
+  id: '/_authenticated/catalogo',
   path: '/catalogo',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ClientesRoute = ClientesRouteImport.update({
-  id: '/clientes',
+const AuthenticatedClientesRoute = AuthenticatedClientesRouteImport.update({
+  id: '/_authenticated/clientes',
   path: '/clientes',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
-  id: '/configuracoes',
-  path: '/configuracoes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FalhasRoute = FalhasRouteImport.update({
-  id: '/falhas',
+const AuthenticatedConfiguracoesRoute =
+  AuthenticatedConfiguracoesRouteImport.update({
+    id: '/_authenticated/configuracoes',
+    path: '/configuracoes',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedFalhasRoute = AuthenticatedFalhasRouteImport.update({
+  id: '/_authenticated/falhas',
   path: '/falhas',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FarmRoute = FarmRouteImport.update({
-  id: '/farm',
+const AuthenticatedFarmRoute = AuthenticatedFarmRouteImport.update({
+  id: '/_authenticated/farm',
   path: '/farm',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FilaRoute = FilaRouteImport.update({
-  id: '/fila',
+const AuthenticatedFilaRoute = AuthenticatedFilaRouteImport.update({
+  id: '/_authenticated/fila',
   path: '/fila',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FilamentosRoute = FilamentosRouteImport.update({
-  id: '/filamentos',
+const AuthenticatedFilamentosRoute = AuthenticatedFilamentosRouteImport.update({
+  id: '/_authenticated/filamentos',
   path: '/filamentos',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FinanceiroRoute = FinanceiroRouteImport.update({
-  id: '/financeiro',
+const AuthenticatedFinanceiroRoute = AuthenticatedFinanceiroRouteImport.update({
+  id: '/_authenticated/financeiro',
   path: '/financeiro',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MaquinasRoute = MaquinasRouteImport.update({
-  id: '/maquinas',
+const AuthenticatedMaquinasRoute = AuthenticatedMaquinasRouteImport.update({
+  id: '/_authenticated/maquinas',
   path: '/maquinas',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OrcamentoRoute = OrcamentoRouteImport.update({
-  id: '/orcamento',
+const AuthenticatedOrcamentoRoute = AuthenticatedOrcamentoRouteImport.update({
+  id: '/_authenticated/orcamento',
   path: '/orcamento',
   getParentRoute: () => rootRouteImport,
 } as any)
-const VendasRoute = VendasRouteImport.update({
-  id: '/vendas',
+const AuthenticatedVendasRoute = AuthenticatedVendasRouteImport.update({
+  id: '/_authenticated/vendas',
   path: '/vendas',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/catalogo': typeof CatalogoRoute
-  '/clientes': typeof ClientesRoute
-  '/configuracoes': typeof ConfiguracoesRoute
-  '/falhas': typeof FalhasRoute
-  '/farm': typeof FarmRoute
-  '/fila': typeof FilaRoute
-  '/filamentos': typeof FilamentosRoute
-  '/financeiro': typeof FinanceiroRoute
-  '/maquinas': typeof MaquinasRoute
-  '/orcamento': typeof OrcamentoRoute
-  '/vendas': typeof VendasRoute
+  '/catalogo': typeof AuthenticatedCatalogoRoute
+  '/clientes': typeof AuthenticatedClientesRoute
+  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/falhas': typeof AuthenticatedFalhasRoute
+  '/farm': typeof AuthenticatedFarmRoute
+  '/fila': typeof AuthenticatedFilaRoute
+  '/filamentos': typeof AuthenticatedFilamentosRoute
+  '/financeiro': typeof AuthenticatedFinanceiroRoute
+  '/maquinas': typeof AuthenticatedMaquinasRoute
+  '/orcamento': typeof AuthenticatedOrcamentoRoute
+  '/vendas': typeof AuthenticatedVendasRoute
+  '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/catalogo': typeof CatalogoRoute
-  '/clientes': typeof ClientesRoute
-  '/configuracoes': typeof ConfiguracoesRoute
-  '/falhas': typeof FalhasRoute
-  '/farm': typeof FarmRoute
-  '/fila': typeof FilaRoute
-  '/filamentos': typeof FilamentosRoute
-  '/financeiro': typeof FinanceiroRoute
-  '/maquinas': typeof MaquinasRoute
-  '/orcamento': typeof OrcamentoRoute
-  '/vendas': typeof VendasRoute
+  '/catalogo': typeof AuthenticatedCatalogoRoute
+  '/clientes': typeof AuthenticatedClientesRoute
+  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/falhas': typeof AuthenticatedFalhasRoute
+  '/farm': typeof AuthenticatedFarmRoute
+  '/fila': typeof AuthenticatedFilaRoute
+  '/filamentos': typeof AuthenticatedFilamentosRoute
+  '/financeiro': typeof AuthenticatedFinanceiroRoute
+  '/maquinas': typeof AuthenticatedMaquinasRoute
+  '/orcamento': typeof AuthenticatedOrcamentoRoute
+  '/vendas': typeof AuthenticatedVendasRoute
+  '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/catalogo': typeof CatalogoRoute
-  '/clientes': typeof ClientesRoute
-  '/configuracoes': typeof ConfiguracoesRoute
-  '/falhas': typeof FalhasRoute
-  '/farm': typeof FarmRoute
-  '/fila': typeof FilaRoute
-  '/filamentos': typeof FilamentosRoute
-  '/financeiro': typeof FinanceiroRoute
-  '/maquinas': typeof MaquinasRoute
-  '/orcamento': typeof OrcamentoRoute
-  '/vendas': typeof VendasRoute
+  '/_authenticated/catalogo': typeof AuthenticatedCatalogoRoute
+  '/_authenticated/clientes': typeof AuthenticatedClientesRoute
+  '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/_authenticated/falhas': typeof AuthenticatedFalhasRoute
+  '/_authenticated/farm': typeof AuthenticatedFarmRoute
+  '/_authenticated/fila': typeof AuthenticatedFilaRoute
+  '/_authenticated/filamentos': typeof AuthenticatedFilamentosRoute
+  '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
+  '/_authenticated/maquinas': typeof AuthenticatedMaquinasRoute
+  '/_authenticated/orcamento': typeof AuthenticatedOrcamentoRoute
+  '/_authenticated/vendas': typeof AuthenticatedVendasRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/catalogo'
     | '/clientes'
     | '/configuracoes'
@@ -141,9 +141,9 @@ export interface FileRouteTypes {
     | '/maquinas'
     | '/orcamento'
     | '/vendas'
+    | '/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/catalogo'
     | '/clientes'
     | '/configuracoes'
@@ -155,150 +155,141 @@ export interface FileRouteTypes {
     | '/maquinas'
     | '/orcamento'
     | '/vendas'
+    | '/'
   id:
     | '__root__'
-    | '/'
-    | '/catalogo'
-    | '/clientes'
-    | '/configuracoes'
-    | '/falhas'
-    | '/farm'
-    | '/fila'
-    | '/filamentos'
-    | '/financeiro'
-    | '/maquinas'
-    | '/orcamento'
-    | '/vendas'
+    | '/_authenticated/catalogo'
+    | '/_authenticated/clientes'
+    | '/_authenticated/configuracoes'
+    | '/_authenticated/falhas'
+    | '/_authenticated/farm'
+    | '/_authenticated/fila'
+    | '/_authenticated/filamentos'
+    | '/_authenticated/financeiro'
+    | '/_authenticated/maquinas'
+    | '/_authenticated/orcamento'
+    | '/_authenticated/vendas'
+    | '/_authenticated/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  CatalogoRoute: typeof CatalogoRoute
-  ClientesRoute: typeof ClientesRoute
-  ConfiguracoesRoute: typeof ConfiguracoesRoute
-  FalhasRoute: typeof FalhasRoute
-  FarmRoute: typeof FarmRoute
-  FilaRoute: typeof FilaRoute
-  FilamentosRoute: typeof FilamentosRoute
-  FinanceiroRoute: typeof FinanceiroRoute
-  MaquinasRoute: typeof MaquinasRoute
-  OrcamentoRoute: typeof OrcamentoRoute
-  VendasRoute: typeof VendasRoute
+  AuthenticatedCatalogoRoute: typeof AuthenticatedCatalogoRoute
+  AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
+  AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
+  AuthenticatedFalhasRoute: typeof AuthenticatedFalhasRoute
+  AuthenticatedFarmRoute: typeof AuthenticatedFarmRoute
+  AuthenticatedFilaRoute: typeof AuthenticatedFilaRoute
+  AuthenticatedFilamentosRoute: typeof AuthenticatedFilamentosRoute
+  AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
+  AuthenticatedMaquinasRoute: typeof AuthenticatedMaquinasRoute
+  AuthenticatedOrcamentoRoute: typeof AuthenticatedOrcamentoRoute
+  AuthenticatedVendasRoute: typeof AuthenticatedVendasRoute
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_authenticated/': {
+      id: '/_authenticated/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/catalogo': {
-      id: '/catalogo'
+    '/_authenticated/catalogo': {
+      id: '/_authenticated/catalogo'
       path: '/catalogo'
       fullPath: '/catalogo'
-      preLoaderRoute: typeof CatalogoRouteImport
+      preLoaderRoute: typeof AuthenticatedCatalogoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/clientes': {
-      id: '/clientes'
+    '/_authenticated/clientes': {
+      id: '/_authenticated/clientes'
       path: '/clientes'
       fullPath: '/clientes'
-      preLoaderRoute: typeof ClientesRouteImport
+      preLoaderRoute: typeof AuthenticatedClientesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/configuracoes': {
-      id: '/configuracoes'
+    '/_authenticated/configuracoes': {
+      id: '/_authenticated/configuracoes'
       path: '/configuracoes'
       fullPath: '/configuracoes'
-      preLoaderRoute: typeof ConfiguracoesRouteImport
+      preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/falhas': {
-      id: '/falhas'
+    '/_authenticated/falhas': {
+      id: '/_authenticated/falhas'
       path: '/falhas'
       fullPath: '/falhas'
-      preLoaderRoute: typeof FalhasRouteImport
+      preLoaderRoute: typeof AuthenticatedFalhasRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/farm': {
-      id: '/farm'
+    '/_authenticated/farm': {
+      id: '/_authenticated/farm'
       path: '/farm'
       fullPath: '/farm'
-      preLoaderRoute: typeof FarmRouteImport
+      preLoaderRoute: typeof AuthenticatedFarmRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/fila': {
-      id: '/fila'
+    '/_authenticated/fila': {
+      id: '/_authenticated/fila'
       path: '/fila'
       fullPath: '/fila'
-      preLoaderRoute: typeof FilaRouteImport
+      preLoaderRoute: typeof AuthenticatedFilaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/filamentos': {
-      id: '/filamentos'
+    '/_authenticated/filamentos': {
+      id: '/_authenticated/filamentos'
       path: '/filamentos'
       fullPath: '/filamentos'
-      preLoaderRoute: typeof FilamentosRouteImport
+      preLoaderRoute: typeof AuthenticatedFilamentosRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/financeiro': {
-      id: '/financeiro'
+    '/_authenticated/financeiro': {
+      id: '/_authenticated/financeiro'
       path: '/financeiro'
       fullPath: '/financeiro'
-      preLoaderRoute: typeof FinanceiroRouteImport
+      preLoaderRoute: typeof AuthenticatedFinanceiroRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/maquinas': {
-      id: '/maquinas'
+    '/_authenticated/maquinas': {
+      id: '/_authenticated/maquinas'
       path: '/maquinas'
       fullPath: '/maquinas'
-      preLoaderRoute: typeof MaquinasRouteImport
+      preLoaderRoute: typeof AuthenticatedMaquinasRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/orcamento': {
-      id: '/orcamento'
+    '/_authenticated/orcamento': {
+      id: '/_authenticated/orcamento'
       path: '/orcamento'
       fullPath: '/orcamento'
-      preLoaderRoute: typeof OrcamentoRouteImport
+      preLoaderRoute: typeof AuthenticatedOrcamentoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/vendas': {
-      id: '/vendas'
+    '/_authenticated/vendas': {
+      id: '/_authenticated/vendas'
       path: '/vendas'
       fullPath: '/vendas'
-      preLoaderRoute: typeof VendasRouteImport
+      preLoaderRoute: typeof AuthenticatedVendasRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  CatalogoRoute: CatalogoRoute,
-  ClientesRoute: ClientesRoute,
-  ConfiguracoesRoute: ConfiguracoesRoute,
-  FalhasRoute: FalhasRoute,
-  FarmRoute: FarmRoute,
-  FilaRoute: FilaRoute,
-  FilamentosRoute: FilamentosRoute,
-  FinanceiroRoute: FinanceiroRoute,
-  MaquinasRoute: MaquinasRoute,
-  OrcamentoRoute: OrcamentoRoute,
-  VendasRoute: VendasRoute,
+  AuthenticatedCatalogoRoute: AuthenticatedCatalogoRoute,
+  AuthenticatedClientesRoute: AuthenticatedClientesRoute,
+  AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
+  AuthenticatedFalhasRoute: AuthenticatedFalhasRoute,
+  AuthenticatedFarmRoute: AuthenticatedFarmRoute,
+  AuthenticatedFilaRoute: AuthenticatedFilaRoute,
+  AuthenticatedFilamentosRoute: AuthenticatedFilamentosRoute,
+  AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
+  AuthenticatedMaquinasRoute: AuthenticatedMaquinasRoute,
+  AuthenticatedOrcamentoRoute: AuthenticatedOrcamentoRoute,
+  AuthenticatedVendasRoute: AuthenticatedVendasRoute,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
