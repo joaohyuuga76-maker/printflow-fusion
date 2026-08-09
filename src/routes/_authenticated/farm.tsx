@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { PageHeader } from "@/components/erp/ui-bits";
+import { EmptyState, QuickAdd } from "@/components/erp/QuickAdd";
 import { useErp } from "@/lib/erp-store";
 import type { PrinterStatus } from "@/lib/erp-types";
 
