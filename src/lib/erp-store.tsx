@@ -50,6 +50,16 @@ interface Store {
   addProduct: (p: Omit<Product, "id" | "sold">) => void;
   addClient: (c: Omit<Client, "id" | "orders" | "total">) => void;
   addExtra: (e: Omit<ExtraCost, "id">) => void;
+  updatePrinter: (id: string, patch: Partial<Printer>) => void;
+  deletePrinter: (id: string) => void;
+  updateFilament: (id: string, patch: Partial<Filament>) => void;
+  deleteFilament: (id: string) => void;
+  updateOrder: (id: string, patch: Partial<Order>) => void;
+  deleteOrder: (id: string) => void;
+  updateClient: (id: string, patch: Partial<Client>) => void;
+  deleteClient: (id: string) => void;
+  updateProduct: (id: string, patch: Partial<Product>) => void;
+  deleteProduct: (id: string) => void;
   consumeFilament: (id: string, grams: number) => void;
   addFailure: (f: Omit<Failure, "id" | "cost" | "date">) => void;
   updateSettings: (s: Partial<Settings>) => void;
@@ -436,6 +446,98 @@ export function ErpProvider({ children }: { children: ReactNode }) {
     [userId],
   );
 
+  const updatePrinter = useCallback<Store["updatePrinter"]>((id, patch) => {
+    setPrinters((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+    const row = {
+      ...(patch.name !== undefined ? { name: patch.name } : {}),
+      ...(patch.model !== undefined ? { model: patch.model } : {}),
+      ...(patch.watts !== undefined ? { watts: patch.watts } : {}),
+      ...(patch.depreciationPerHour !== undefined ? { depreciation_per_hour: patch.depreciationPerHour } : {}),
+      ...(patch.status !== undefined ? { status: patch.status } : {}),
+      ...(patch.hoursRun !== undefined ? { hours_run: patch.hoursRun } : {}),
+    };
+    void supabase.from("printers").update(row).eq("id", id);
+  }, []);
+
+  const deletePrinter = useCallback<Store["deletePrinter"]>((id) => {
+    setPrinters((prev) => prev.filter((p) => p.id !== id));
+    void supabase.from("printers").delete().eq("id", id);
+  }, []);
+
+  const updateFilament = useCallback<Store["updateFilament"]>((id, patch) => {
+    setFilaments((prev) => prev.map((f) => (f.id === id ? { ...f, ...patch } : f)));
+    const row = {
+      ...(patch.brand !== undefined ? { brand: patch.brand } : {}),
+      ...(patch.type !== undefined ? { type: patch.type } : {}),
+      ...(patch.color !== undefined ? { color: patch.color } : {}),
+      ...(patch.hex !== undefined ? { hex: patch.hex } : {}),
+      ...(patch.totalG !== undefined ? { total_g: patch.totalG } : {}),
+      ...(patch.remainingG !== undefined ? { remaining_g: patch.remainingG } : {}),
+      ...(patch.pricePerKg !== undefined ? { price_per_kg: patch.pricePerKg } : {}),
+    };
+    void supabase.from("filaments").update(row).eq("id", id);
+  }, []);
+
+  const deleteFilament = useCallback<Store["deleteFilament"]>((id) => {
+    setFilaments((prev) => prev.filter((f) => f.id !== id));
+    void supabase.from("filaments").delete().eq("id", id);
+  }, []);
+
+  const updateOrder = useCallback<Store["updateOrder"]>((id, patch) => {
+    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, ...patch } : o)));
+    const row = {
+      ...(patch.ref !== undefined ? { ref: patch.ref } : {}),
+      ...(patch.client !== undefined ? { client: patch.client } : {}),
+      ...(patch.title !== undefined ? { title: patch.title } : {}),
+      ...(patch.value !== undefined ? { value: patch.value } : {}),
+      ...(patch.cost !== undefined ? { cost: patch.cost } : {}),
+      ...(patch.stage !== undefined ? { stage: patch.stage } : {}),
+      ...(patch.channel !== undefined ? { channel: patch.channel } : {}),
+      ...(patch.priority !== undefined ? { priority: patch.priority } : {}),
+      ...(patch.weightG !== undefined ? { weight_g: patch.weightG } : {}),
+      ...(patch.hours !== undefined ? { hours: patch.hours } : {}),
+    };
+    void supabase.from("orders").update(row).eq("id", id);
+  }, []);
+
+  const deleteOrder = useCallback<Store["deleteOrder"]>((id) => {
+    setOrders((prev) => prev.filter((o) => o.id !== id));
+    void supabase.from("orders").delete().eq("id", id);
+  }, []);
+
+  const updateClient = useCallback<Store["updateClient"]>((id, patch) => {
+    setClients((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+    const row = {
+      ...(patch.name !== undefined ? { name: patch.name } : {}),
+      ...(patch.phone !== undefined ? { phone: patch.phone } : {}),
+      ...(patch.city !== undefined ? { city: patch.city } : {}),
+    };
+    void supabase.from("clients").update(row).eq("id", id);
+  }, []);
+
+  const deleteClient = useCallback<Store["deleteClient"]>((id) => {
+    setClients((prev) => prev.filter((c) => c.id !== id));
+    void supabase.from("clients").delete().eq("id", id);
+  }, []);
+
+  const updateProduct = useCallback<Store["updateProduct"]>((id, patch) => {
+    setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+    const row = {
+      ...(patch.name !== undefined ? { name: patch.name } : {}),
+      ...(patch.category !== undefined ? { category: patch.category } : {}),
+      ...(patch.weightG !== undefined ? { weight_g: patch.weightG } : {}),
+      ...(patch.hours !== undefined ? { hours: patch.hours } : {}),
+      ...(patch.price !== undefined ? { price: patch.price } : {}),
+      ...(patch.sold !== undefined ? { sold: patch.sold } : {}),
+    };
+    void supabase.from("products").update(row).eq("id", id);
+  }, []);
+
+  const deleteProduct = useCallback<Store["deleteProduct"]>((id) => {
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+    void supabase.from("products").delete().eq("id", id);
+  }, []);
+
   const value = useMemo(
     () => ({
       loading,
@@ -456,6 +558,16 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       addProduct,
       addClient,
       addExtra,
+      updatePrinter,
+      deletePrinter,
+      updateFilament,
+      deleteFilament,
+      updateOrder,
+      deleteOrder,
+      updateClient,
+      deleteClient,
+      updateProduct,
+      deleteProduct,
       consumeFilament,
       addFailure,
       updateSettings,
@@ -481,6 +593,16 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       addProduct,
       addClient,
       addExtra,
+      updatePrinter,
+      deletePrinter,
+      updateFilament,
+      deleteFilament,
+      updateOrder,
+      deleteOrder,
+      updateClient,
+      deleteClient,
+      updateProduct,
+      deleteProduct,
       consumeFilament,
       addFailure,
       updateSettings,

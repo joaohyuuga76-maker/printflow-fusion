@@ -3,8 +3,9 @@ import { ArrowRight, GripVertical } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/erp/ui-bits";
+import { RowActions } from "@/components/erp/RowActions";
 import { brl, useErp } from "@/lib/erp-store";
-import type { OrderStage } from "@/lib/erp-types";
+import type { Order, OrderStage } from "@/lib/erp-types";
 
 export const Route = createFileRoute("/_authenticated/vendas")({
   head: () => ({
@@ -29,7 +30,7 @@ const stages: { id: OrderStage; label: string; color: string }[] = [
 ];
 
 function Vendas() {
-  const { orders, moveOrder } = useErp();
+  const { orders, moveOrder, updateOrder, deleteOrder } = useErp();
 
   return (
     <div>
@@ -54,7 +55,58 @@ function Vendas() {
                           <p className="truncate text-xs text-muted-foreground">{o.ref} · {o.date}</p>
                           <p className="truncate text-sm font-medium">{o.title}</p>
                         </div>
-                        <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <div className="flex shrink-0 items-center">
+                          <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground" />
+                          <RowActions
+                            compact
+                            title="pedido"
+                            deleteLabel={`${o.ref} — ${o.title}`}
+                            fields={[
+                              { key: "title", label: "Título" },
+                              { key: "client", label: "Cliente" },
+                              { key: "value", label: "Valor (R$)", numeric: true },
+                              { key: "cost", label: "Custo (R$)", numeric: true },
+                              { key: "stage", label: "Etapa", options: stages.map((s) => ({ value: s.id, label: s.label })) },
+                              {
+                                key: "priority",
+                                label: "Prioridade",
+                                options: [
+                                  { value: "alta", label: "Alta" },
+                                  { value: "media", label: "Média" },
+                                  { value: "baixa", label: "Baixa" },
+                                ],
+                              },
+                              { key: "channel", label: "Canal" },
+                              { key: "weightG", label: "Peso (g)", numeric: true },
+                              { key: "hours", label: "Horas", numeric: true },
+                            ]}
+                            values={{
+                              title: o.title,
+                              client: o.client,
+                              value: String(o.value),
+                              cost: String(o.cost),
+                              stage: o.stage,
+                              priority: o.priority,
+                              channel: o.channel,
+                              weightG: String(o.weightG),
+                              hours: String(o.hours),
+                            }}
+                            onSave={(v) =>
+                              updateOrder(o.id, {
+                                title: v['title'] ?? o.title,
+                                client: v['client'] ?? o.client,
+                                value: Number(v['value']) || 0,
+                                cost: Number(v['cost']) || 0,
+                                stage: (v['stage'] as OrderStage) ?? o.stage,
+                                priority: (v['priority'] as Order["priority"]) ?? o.priority,
+                                channel: v['channel'] ?? o.channel,
+                                weightG: Number(v['weightG']) || 0,
+                                hours: Number(v['hours']) || 0,
+                              })
+                            }
+                            onDelete={() => deleteOrder(o.id)}
+                          />
+                        </div>
                       </div>
                       <p className="mt-1 truncate text-xs text-muted-foreground">{o.client} · {o.channel}</p>
                       <div className="mt-2 flex items-center justify-between gap-2">

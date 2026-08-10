@@ -3,6 +3,7 @@ import { Phone, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/erp/ui-bits";
 import { EmptyState, QuickAdd } from "@/components/erp/QuickAdd";
+import { RowActions } from "@/components/erp/RowActions";
 import { brl, useErp } from "@/lib/erp-store";
 
 export const Route = createFileRoute("/_authenticated/clientes")({
@@ -18,7 +19,7 @@ export const Route = createFileRoute("/_authenticated/clientes")({
 });
 
 function Clientes() {
-  const { clients, orders, addClient } = useErp();
+  const { clients, orders, addClient, updateClient, deleteClient } = useErp();
   return (
     <div>
       <PageHeader
@@ -56,7 +57,28 @@ function Clientes() {
                     <p className="truncate text-xs text-muted-foreground">{c.orders} pedidos</p>
                   </div>
                 </div>
-                {open > 0 && <Badge variant="outline" className="shrink-0 border-warn/40 text-warn">{open} em aberto</Badge>}
+                <div className="flex shrink-0 items-center gap-1">
+                  {open > 0 && <Badge variant="outline" className="shrink-0 border-warn/40 text-warn">{open} em aberto</Badge>}
+                  <RowActions
+                    compact
+                    title="cliente"
+                    deleteLabel={c.name}
+                    fields={[
+                      { key: "name", label: "Nome" },
+                      { key: "phone", label: "Telefone" },
+                      { key: "city", label: "Cidade / UF" },
+                    ]}
+                    values={{ name: c.name, phone: c.phone, city: c.city }}
+                    onSave={(v) =>
+                      updateClient(c.id, {
+                        name: v['name'] ?? c.name,
+                        phone: v['phone'] ?? c.phone,
+                        city: v['city'] ?? c.city,
+                      })
+                    }
+                    onDelete={() => deleteClient(c.id)}
+                  />
+                </div>
               </div>
               <div className="mt-4 space-y-1.5 text-xs text-muted-foreground">
                 <p className="flex items-center gap-2"><Phone className="h-3.5 w-3.5" /> {c.phone}</p>

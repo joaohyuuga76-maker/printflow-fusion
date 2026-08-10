@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PageHeader } from "@/components/erp/ui-bits";
+import { RowActions } from "@/components/erp/RowActions";
 import { brl, useErp } from "@/lib/erp-store";
 import type { Filament } from "@/lib/erp-types";
 
@@ -41,7 +42,7 @@ export const Route = createFileRoute("/_authenticated/filamentos")({
 const types: Filament["type"][] = ["PLA", "PETG", "ABS", "TPU", "Silk", "ASA"];
 
 function Filamentos() {
-  const { filaments, addFilament, consumeFilament } = useErp();
+  const { filaments, addFilament, consumeFilament, updateFilament, deleteFilament } = useErp();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     brand: "",
@@ -134,11 +135,48 @@ function Filamentos() {
                     <p className="truncate text-xs text-muted-foreground">{f.color} · {brl(f.pricePerKg)}/kg</p>
                   </div>
                 </div>
-                {low ? (
-                  <Badge variant="destructive" className="shrink-0 gap-1"><AlertTriangle className="h-3 w-3" /> Crítico</Badge>
-                ) : (
-                  <Badge variant="outline" className="shrink-0 border-profit/40 text-profit">OK</Badge>
-                )}
+                <div className="flex shrink-0 items-center gap-1">
+                  {low ? (
+                    <Badge variant="destructive" className="shrink-0 gap-1"><AlertTriangle className="h-3 w-3" /> Crítico</Badge>
+                  ) : (
+                    <Badge variant="outline" className="shrink-0 border-profit/40 text-profit">OK</Badge>
+                  )}
+                  <RowActions
+                    compact
+                    title="carretel"
+                    deleteLabel={`${f.brand} ${f.type} ${f.color}`}
+                    fields={[
+                      { key: "brand", label: "Marca" },
+                      { key: "type", label: "Tipo", options: types.map((t) => ({ value: t, label: t })) },
+                      { key: "color", label: "Cor" },
+                      { key: "hex", label: "Amostra da cor", color: true },
+                      { key: "remainingG", label: "Restante (g)", numeric: true },
+                      { key: "totalG", label: "Peso total (g)", numeric: true },
+                      { key: "pricePerKg", label: "Preço por kg (R$)", numeric: true },
+                    ]}
+                    values={{
+                      brand: f.brand,
+                      type: f.type,
+                      color: f.color,
+                      hex: f.hex,
+                      remainingG: String(f.remainingG),
+                      totalG: String(f.totalG),
+                      pricePerKg: String(f.pricePerKg),
+                    }}
+                    onSave={(v) =>
+                      updateFilament(f.id, {
+                        brand: v['brand'] ?? f.brand,
+                        type: (v['type'] as Filament["type"]) ?? f.type,
+                        color: v['color'] ?? f.color,
+                        hex: v['hex'] ?? f.hex,
+                        remainingG: Number(v['remainingG']) || 0,
+                        totalG: Number(v['totalG']) || f.totalG,
+                        pricePerKg: Number(v['pricePerKg']) || 0,
+                      })
+                    }
+                    onDelete={() => deleteFilament(f.id)}
+                  />
+                </div>
               </div>
 
               <Progress value={pct} className="mt-4 h-2" />

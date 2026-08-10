@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
+import { ThemeToggle } from "@/components/erp/ThemeToggle";
 import { AlertTriangle, Boxes, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -102,6 +103,12 @@ export function AppShell({ children }: { children: ReactNode }) {
           <NavList compact={collapsed} />
         </div>
         <div className="border-t border-border p-2">
+          {!collapsed && <ThemeToggle full />}
+          {collapsed && (
+            <div className="flex justify-center">
+              <ThemeToggle />
+            </div>
+          )}
           <Button
             variant="ghost"
             size="sm"
@@ -125,6 +132,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               <SheetTitle className="sr-only">Menu</SheetTitle>
               <Brand />
               <NavList onNavigate={() => setOpen(false)} />
+              <div className="mt-2 border-t border-border pt-2">
+                <ThemeToggle full />
+              </div>
             </SheetContent>
           </Sheet>
 
@@ -151,6 +161,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               {email}
             </span>
           )}
+          <ThemeToggle />
           <Button variant="ghost" size="icon" title="Sair" onClick={signOut}>
             <LogOut className="h-4 w-4" />
           </Button>
