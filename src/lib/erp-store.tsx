@@ -448,13 +448,14 @@ export function ErpProvider({ children }: { children: ReactNode }) {
 
   const updatePrinter = useCallback<Store["updatePrinter"]>((id, patch) => {
     setPrinters((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
-    const row: Record<string, unknown> = {};
-    if (patch.name !== undefined) row['name'] = patch.name;
-    if (patch.model !== undefined) row['model'] = patch.model;
-    if (patch.watts !== undefined) row['watts'] = patch.watts;
-    if (patch.depreciationPerHour !== undefined) row['depreciation_per_hour'] = patch.depreciationPerHour;
-    if (patch.status !== undefined) row['status'] = patch.status;
-    if (patch.hoursRun !== undefined) row['hours_run'] = patch.hoursRun;
+    const row = {
+      ...(patch.name !== undefined ? { name: patch.name } : {}),
+      ...(patch.model !== undefined ? { model: patch.model } : {}),
+      ...(patch.watts !== undefined ? { watts: patch.watts } : {}),
+      ...(patch.depreciationPerHour !== undefined ? { depreciation_per_hour: patch.depreciationPerHour } : {}),
+      ...(patch.status !== undefined ? { status: patch.status } : {}),
+      ...(patch.hoursRun !== undefined ? { hours_run: patch.hoursRun } : {}),
+    };
     void supabase.from("printers").update(row).eq("id", id);
   }, []);
 
@@ -465,14 +466,15 @@ export function ErpProvider({ children }: { children: ReactNode }) {
 
   const updateFilament = useCallback<Store["updateFilament"]>((id, patch) => {
     setFilaments((prev) => prev.map((f) => (f.id === id ? { ...f, ...patch } : f)));
-    const row: Record<string, unknown> = {};
-    if (patch.brand !== undefined) row['brand'] = patch.brand;
-    if (patch.type !== undefined) row['type'] = patch.type;
-    if (patch.color !== undefined) row['color'] = patch.color;
-    if (patch.hex !== undefined) row['hex'] = patch.hex;
-    if (patch.totalG !== undefined) row['total_g'] = patch.totalG;
-    if (patch.remainingG !== undefined) row['remaining_g'] = patch.remainingG;
-    if (patch.pricePerKg !== undefined) row['price_per_kg'] = patch.pricePerKg;
+    const row = {
+      ...(patch.brand !== undefined ? { brand: patch.brand } : {}),
+      ...(patch.type !== undefined ? { type: patch.type } : {}),
+      ...(patch.color !== undefined ? { color: patch.color } : {}),
+      ...(patch.hex !== undefined ? { hex: patch.hex } : {}),
+      ...(patch.totalG !== undefined ? { total_g: patch.totalG } : {}),
+      ...(patch.remainingG !== undefined ? { remaining_g: patch.remainingG } : {}),
+      ...(patch.pricePerKg !== undefined ? { price_per_kg: patch.pricePerKg } : {}),
+    };
     void supabase.from("filaments").update(row).eq("id", id);
   }, []);
 
@@ -483,17 +485,18 @@ export function ErpProvider({ children }: { children: ReactNode }) {
 
   const updateOrder = useCallback<Store["updateOrder"]>((id, patch) => {
     setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, ...patch } : o)));
-    const row: Record<string, unknown> = {};
-    if (patch.ref !== undefined) row['ref'] = patch.ref;
-    if (patch.client !== undefined) row['client'] = patch.client;
-    if (patch.title !== undefined) row['title'] = patch.title;
-    if (patch.value !== undefined) row['value'] = patch.value;
-    if (patch.cost !== undefined) row['cost'] = patch.cost;
-    if (patch.stage !== undefined) row['stage'] = patch.stage;
-    if (patch.channel !== undefined) row['channel'] = patch.channel;
-    if (patch.priority !== undefined) row['priority'] = patch.priority;
-    if (patch.weightG !== undefined) row['weight_g'] = patch.weightG;
-    if (patch.hours !== undefined) row['hours'] = patch.hours;
+    const row = {
+      ...(patch.ref !== undefined ? { ref: patch.ref } : {}),
+      ...(patch.client !== undefined ? { client: patch.client } : {}),
+      ...(patch.title !== undefined ? { title: patch.title } : {}),
+      ...(patch.value !== undefined ? { value: patch.value } : {}),
+      ...(patch.cost !== undefined ? { cost: patch.cost } : {}),
+      ...(patch.stage !== undefined ? { stage: patch.stage } : {}),
+      ...(patch.channel !== undefined ? { channel: patch.channel } : {}),
+      ...(patch.priority !== undefined ? { priority: patch.priority } : {}),
+      ...(patch.weightG !== undefined ? { weight_g: patch.weightG } : {}),
+      ...(patch.hours !== undefined ? { hours: patch.hours } : {}),
+    };
     void supabase.from("orders").update(row).eq("id", id);
   }, []);
 
@@ -504,10 +507,11 @@ export function ErpProvider({ children }: { children: ReactNode }) {
 
   const updateClient = useCallback<Store["updateClient"]>((id, patch) => {
     setClients((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
-    const row: Record<string, unknown> = {};
-    if (patch.name !== undefined) row['name'] = patch.name;
-    if (patch.phone !== undefined) row['phone'] = patch.phone;
-    if (patch.city !== undefined) row['city'] = patch.city;
+    const row = {
+      ...(patch.name !== undefined ? { name: patch.name } : {}),
+      ...(patch.phone !== undefined ? { phone: patch.phone } : {}),
+      ...(patch.city !== undefined ? { city: patch.city } : {}),
+    };
     void supabase.from("clients").update(row).eq("id", id);
   }, []);
 
@@ -518,13 +522,14 @@ export function ErpProvider({ children }: { children: ReactNode }) {
 
   const updateProduct = useCallback<Store["updateProduct"]>((id, patch) => {
     setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
-    const row: Record<string, unknown> = {};
-    if (patch.name !== undefined) row['name'] = patch.name;
-    if (patch.category !== undefined) row['category'] = patch.category;
-    if (patch.weightG !== undefined) row['weight_g'] = patch.weightG;
-    if (patch.hours !== undefined) row['hours'] = patch.hours;
-    if (patch.price !== undefined) row['price'] = patch.price;
-    if (patch.sold !== undefined) row['sold'] = patch.sold;
+    const row = {
+      ...(patch.name !== undefined ? { name: patch.name } : {}),
+      ...(patch.category !== undefined ? { category: patch.category } : {}),
+      ...(patch.weightG !== undefined ? { weight_g: patch.weightG } : {}),
+      ...(patch.hours !== undefined ? { hours: patch.hours } : {}),
+      ...(patch.price !== undefined ? { price: patch.price } : {}),
+      ...(patch.sold !== undefined ? { sold: patch.sold } : {}),
+    };
     void supabase.from("products").update(row).eq("id", id);
   }, []);
 
