@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { PageHeader } from "@/components/erp/ui-bits";
 import { EmptyState, QuickAdd } from "@/components/erp/QuickAdd";
+import { RowActions } from "@/components/erp/RowActions";
 import { useErp } from "@/lib/erp-store";
 import type { PrinterStatus } from "@/lib/erp-types";
 
@@ -29,7 +30,7 @@ const statusMap: Record<PrinterStatus, { label: string; cls: string; dot: string
 };
 
 function Farm() {
-  const { printers, setPrinterStatus, addPrinter } = useErp();
+  const { printers, setPrinterStatus, addPrinter, updatePrinter, deletePrinter } = useErp();
 
   return (
     <div>
@@ -69,10 +70,51 @@ function Farm() {
                   <p className="truncate font-semibold">{p.name}</p>
                   <p className="truncate text-xs text-muted-foreground">{p.model}</p>
                 </div>
-                <Badge variant="outline" className={`shrink-0 gap-1.5 ${s.cls}`}>
-                  <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
-                  {s.label}
-                </Badge>
+                <div className="flex shrink-0 items-center gap-1">
+                  <Badge variant="outline" className={`shrink-0 gap-1.5 ${s.cls}`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
+                    {s.label}
+                  </Badge>
+                  <RowActions
+                    compact
+                    title="impressora"
+                    deleteLabel={p.name}
+                    fields={[
+                      { key: "name", label: "Nome" },
+                      { key: "model", label: "Modelo" },
+                      {
+                        key: "status",
+                        label: "Status",
+                        options: (Object.keys(statusMap) as PrinterStatus[]).map((k) => ({
+                          value: k,
+                          label: statusMap[k].label,
+                        })),
+                      },
+                      { key: "watts", label: "Potência (W)", numeric: true },
+                      { key: "dep", label: "Depreciação por hora (R$)", numeric: true },
+                      { key: "hoursRun", label: "Horas rodadas", numeric: true },
+                    ]}
+                    values={{
+                      name: p.name,
+                      model: p.model,
+                      status: p.status,
+                      watts: String(p.watts),
+                      dep: String(p.depreciationPerHour),
+                      hoursRun: String(p.hoursRun),
+                    }}
+                    onSave={(v) =>
+                      updatePrinter(p.id, {
+                        name: v['name'] ?? p.name,
+                        model: v['model'] ?? p.model,
+                        status: (v['status'] as PrinterStatus) ?? p.status,
+                        watts: Number(v['watts']) || 0,
+                        depreciationPerHour: Number(v['dep']) || 0,
+                        hoursRun: Number(v['hoursRun']) || 0,
+                      })
+                    }
+                    onDelete={() => deletePrinter(p.id)}
+                  />
+                </div>
               </div>
 
               <div className="mt-4 min-h-[64px]">
