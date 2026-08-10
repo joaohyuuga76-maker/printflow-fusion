@@ -50,6 +50,16 @@ interface Store {
   addProduct: (p: Omit<Product, "id" | "sold">) => void;
   addClient: (c: Omit<Client, "id" | "orders" | "total">) => void;
   addExtra: (e: Omit<ExtraCost, "id">) => void;
+  updatePrinter: (id: string, patch: Partial<Printer>) => void;
+  deletePrinter: (id: string) => void;
+  updateFilament: (id: string, patch: Partial<Filament>) => void;
+  deleteFilament: (id: string) => void;
+  updateOrder: (id: string, patch: Partial<Order>) => void;
+  deleteOrder: (id: string) => void;
+  updateClient: (id: string, patch: Partial<Client>) => void;
+  deleteClient: (id: string) => void;
+  updateProduct: (id: string, patch: Partial<Product>) => void;
+  deleteProduct: (id: string) => void;
   consumeFilament: (id: string, grams: number) => void;
   addFailure: (f: Omit<Failure, "id" | "cost" | "date">) => void;
   updateSettings: (s: Partial<Settings>) => void;
@@ -436,6 +446,93 @@ export function ErpProvider({ children }: { children: ReactNode }) {
     [userId],
   );
 
+  const updatePrinter = useCallback<Store["updatePrinter"]>((id, patch) => {
+    setPrinters((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+    const row: Record<string, unknown> = {};
+    if (patch.name !== undefined) row['name'] = patch.name;
+    if (patch.model !== undefined) row['model'] = patch.model;
+    if (patch.watts !== undefined) row['watts'] = patch.watts;
+    if (patch.depreciationPerHour !== undefined) row['depreciation_per_hour'] = patch.depreciationPerHour;
+    if (patch.status !== undefined) row['status'] = patch.status;
+    if (patch.hoursRun !== undefined) row['hours_run'] = patch.hoursRun;
+    void supabase.from("printers").update(row).eq("id", id);
+  }, []);
+
+  const deletePrinter = useCallback<Store["deletePrinter"]>((id) => {
+    setPrinters((prev) => prev.filter((p) => p.id !== id));
+    void supabase.from("printers").delete().eq("id", id);
+  }, []);
+
+  const updateFilament = useCallback<Store["updateFilament"]>((id, patch) => {
+    setFilaments((prev) => prev.map((f) => (f.id === id ? { ...f, ...patch } : f)));
+    const row: Record<string, unknown> = {};
+    if (patch.brand !== undefined) row['brand'] = patch.brand;
+    if (patch.type !== undefined) row['type'] = patch.type;
+    if (patch.color !== undefined) row['color'] = patch.color;
+    if (patch.hex !== undefined) row['hex'] = patch.hex;
+    if (patch.totalG !== undefined) row['total_g'] = patch.totalG;
+    if (patch.remainingG !== undefined) row['remaining_g'] = patch.remainingG;
+    if (patch.pricePerKg !== undefined) row['price_per_kg'] = patch.pricePerKg;
+    void supabase.from("filaments").update(row).eq("id", id);
+  }, []);
+
+  const deleteFilament = useCallback<Store["deleteFilament"]>((id) => {
+    setFilaments((prev) => prev.filter((f) => f.id !== id));
+    void supabase.from("filaments").delete().eq("id", id);
+  }, []);
+
+  const updateOrder = useCallback<Store["updateOrder"]>((id, patch) => {
+    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, ...patch } : o)));
+    const row: Record<string, unknown> = {};
+    if (patch.ref !== undefined) row['ref'] = patch.ref;
+    if (patch.client !== undefined) row['client'] = patch.client;
+    if (patch.title !== undefined) row['title'] = patch.title;
+    if (patch.value !== undefined) row['value'] = patch.value;
+    if (patch.cost !== undefined) row['cost'] = patch.cost;
+    if (patch.stage !== undefined) row['stage'] = patch.stage;
+    if (patch.channel !== undefined) row['channel'] = patch.channel;
+    if (patch.priority !== undefined) row['priority'] = patch.priority;
+    if (patch.weightG !== undefined) row['weight_g'] = patch.weightG;
+    if (patch.hours !== undefined) row['hours'] = patch.hours;
+    void supabase.from("orders").update(row).eq("id", id);
+  }, []);
+
+  const deleteOrder = useCallback<Store["deleteOrder"]>((id) => {
+    setOrders((prev) => prev.filter((o) => o.id !== id));
+    void supabase.from("orders").delete().eq("id", id);
+  }, []);
+
+  const updateClient = useCallback<Store["updateClient"]>((id, patch) => {
+    setClients((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+    const row: Record<string, unknown> = {};
+    if (patch.name !== undefined) row['name'] = patch.name;
+    if (patch.phone !== undefined) row['phone'] = patch.phone;
+    if (patch.city !== undefined) row['city'] = patch.city;
+    void supabase.from("clients").update(row).eq("id", id);
+  }, []);
+
+  const deleteClient = useCallback<Store["deleteClient"]>((id) => {
+    setClients((prev) => prev.filter((c) => c.id !== id));
+    void supabase.from("clients").delete().eq("id", id);
+  }, []);
+
+  const updateProduct = useCallback<Store["updateProduct"]>((id, patch) => {
+    setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+    const row: Record<string, unknown> = {};
+    if (patch.name !== undefined) row['name'] = patch.name;
+    if (patch.category !== undefined) row['category'] = patch.category;
+    if (patch.weightG !== undefined) row['weight_g'] = patch.weightG;
+    if (patch.hours !== undefined) row['hours'] = patch.hours;
+    if (patch.price !== undefined) row['price'] = patch.price;
+    if (patch.sold !== undefined) row['sold'] = patch.sold;
+    void supabase.from("products").update(row).eq("id", id);
+  }, []);
+
+  const deleteProduct = useCallback<Store["deleteProduct"]>((id) => {
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+    void supabase.from("products").delete().eq("id", id);
+  }, []);
+
   const value = useMemo(
     () => ({
       loading,
@@ -456,6 +553,16 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       addProduct,
       addClient,
       addExtra,
+      updatePrinter,
+      deletePrinter,
+      updateFilament,
+      deleteFilament,
+      updateOrder,
+      deleteOrder,
+      updateClient,
+      deleteClient,
+      updateProduct,
+      deleteProduct,
       consumeFilament,
       addFailure,
       updateSettings,
@@ -481,6 +588,16 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       addProduct,
       addClient,
       addExtra,
+      updatePrinter,
+      deletePrinter,
+      updateFilament,
+      deleteFilament,
+      updateOrder,
+      deleteOrder,
+      updateClient,
+      deleteClient,
+      updateProduct,
+      deleteProduct,
       consumeFilament,
       addFailure,
       updateSettings,
