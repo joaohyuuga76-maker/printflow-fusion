@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { PageHeader } from "@/components/erp/ui-bits";
 import { EmptyState, QuickAdd } from "@/components/erp/QuickAdd";
+import { RowActions } from "@/components/erp/RowActions";
 import { brl, useErp } from "@/lib/erp-store";
 
 export const Route = createFileRoute("/_authenticated/catalogo")({
@@ -26,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/catalogo")({
 });
 
 function Catalogo() {
-  const { products, addProduct } = useErp();
+  const { products, addProduct, updateProduct, deleteProduct } = useErp();
   return (
     <div>
       <PageHeader
@@ -67,6 +68,7 @@ function Catalogo() {
               <TableHead>Tempo</TableHead>
               <TableHead>Preço</TableHead>
               <TableHead className="text-right">Receita gerada</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -82,6 +84,42 @@ function Catalogo() {
                 <TableCell className="whitespace-nowrap">{p.hours}h</TableCell>
                 <TableCell className="whitespace-nowrap">{brl(p.price)}</TableCell>
                 <TableCell className="whitespace-nowrap text-right font-semibold text-profit">{brl(p.price * p.sold)}</TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end">
+                    <RowActions
+                      compact
+                      title="produto"
+                      deleteLabel={p.name}
+                      fields={[
+                        { key: "name", label: "Nome" },
+                        { key: "category", label: "Categoria" },
+                        { key: "weightG", label: "Peso (g)", numeric: true },
+                        { key: "hours", label: "Tempo (h)", numeric: true },
+                        { key: "price", label: "Preço (R$)", numeric: true },
+                        { key: "sold", label: "Unidades vendidas", numeric: true },
+                      ]}
+                      values={{
+                        name: p.name,
+                        category: p.category,
+                        weightG: String(p.weightG),
+                        hours: String(p.hours),
+                        price: String(p.price),
+                        sold: String(p.sold),
+                      }}
+                      onSave={(v) =>
+                        updateProduct(p.id, {
+                          name: v['name'] ?? p.name,
+                          category: v['category'] ?? p.category,
+                          weightG: Number(v['weightG']) || 0,
+                          hours: Number(v['hours']) || 0,
+                          price: Number(v['price']) || 0,
+                          sold: Number(v['sold']) || 0,
+                        })
+                      }
+                      onDelete={() => deleteProduct(p.id)}
+                    />
+                  </div>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
