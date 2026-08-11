@@ -23,6 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PageHeader } from "@/components/erp/ui-bits";
+import { FilterBar, useFilters } from "@/components/erp/FilterBar";
+import { EmptyState } from "@/components/erp/QuickAdd";
 import { RowActions } from "@/components/erp/RowActions";
 import { brl, useErp } from "@/lib/erp-store";
 import type { Filament } from "@/lib/erp-types";
@@ -43,6 +45,8 @@ const types: Filament["type"][] = ["PLA", "PETG", "ABS", "TPU", "Silk", "ASA"];
 
 function Filamentos() {
   const { filaments, addFilament, consumeFilament, updateFilament, deleteFilament } = useErp();
+  const { filters, setFilters, matches } = useFilters();
+  const visible = filaments.filter((f) => matches(f.brand, f.type, f.color));
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     brand: "",
@@ -121,8 +125,19 @@ function Filamentos() {
         }
       />
 
+      <FilterBar
+        filters={filters}
+        onChange={setFilters}
+        showPeriod={false}
+        placeholder="Buscar por marca, tipo ou cor do filamento"
+      />
+      {visible.length === 0 && (
+        <EmptyState
+          text={filaments.length ? "Nenhum carretel encontrado para a busca." : "Nenhum carretel cadastrado ainda."}
+        />
+      )}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {filaments.map((f) => {
+        {visible.map((f) => {
           const pct = (f.remainingG / f.totalG) * 100;
           const low = f.remainingG < 150;
           return (
