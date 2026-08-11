@@ -13,6 +13,7 @@ import type {
   ExtraCost,
   Failure,
   Filament,
+  FinanceEntry,
   Order,
   OrderStage,
   Printer,
@@ -41,6 +42,7 @@ interface Store {
   clients: Client[];
   failures: Failure[];
   extras: ExtraCost[];
+  finance: FinanceEntry[];
   settings: Settings;
   setPrinterStatus: (id: string, status: Printer["status"]) => void;
   moveOrder: (id: string, stage: OrderStage) => void;
@@ -60,6 +62,9 @@ interface Store {
   deleteClient: (id: string) => void;
   updateProduct: (id: string, patch: Partial<Product>) => void;
   deleteProduct: (id: string) => void;
+  addFinance: (e: Omit<FinanceEntry, "id">) => void;
+  updateFinance: (id: string, patch: Partial<FinanceEntry>) => void;
+  deleteFinance: (id: string) => void;
   consumeFilament: (id: string, grams: number) => void;
   addFailure: (f: Omit<Failure, "id" | "cost" | "date">) => void;
   updateSettings: (s: Partial<Settings>) => void;
@@ -79,6 +84,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
   const [clients, setClients] = useState<Client[]>([]);
   const [failures, setFailures] = useState<Failure[]>([]);
   const [extras, setExtras] = useState<ExtraCost[]>([]);
+  const [finance, setFinance] = useState<FinanceEntry[]>([]);
   const [settings, setSettings] = useState<Settings>(defaultSettings);
   const [failureOpen, setFailureOpen] = useState(false);
 
@@ -94,7 +100,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const [pr, fi, or_, pd, cl, fa, ex, st] = await Promise.all([
+      const [pr, fi, or_, pd, cl, fa, ex, st, fn] = await Promise.all([
         supabase.from("printers").select("*").order("created_at"),
         supabase.from("filaments").select("*").order("created_at"),
         supabase.from("orders").select("*").order("created_at", { ascending: false }),
@@ -103,8 +109,22 @@ export function ErpProvider({ children }: { children: ReactNode }) {
         supabase.from("failures").select("*").order("created_at", { ascending: false }),
         supabase.from("extra_costs").select("*").order("created_at"),
         supabase.from("settings").select("*").maybeSingle(),
+        supabase.from("finance_entries").select("*").order("due_date"),
       ]);
       if (!active) return;
+
+      setFinance(
+        (fn.data ?? []).map((e) => ({
+          id: e.id,
+          kind: e.kind as FinanceEntry["kind"],
+          description: e.description,
+          party: e.party,
+          amount: Number(e.amount),
+          dueDate: e.due_date,
+          status: e.status as FinanceEntry["status"],
+          category: e.category,
+        })),
+      );
 
       setPrinters(
         (pr.data ?? []).map((p) => ({
@@ -538,6 +558,51 @@ export function ErpProvider({ children }: { children: ReactNode }) {
     void supabase.from("products").delete().eq("id", id);
   }, []);
 
+  const addFinance = useCallback<Store["addFinance"]>(
+    (e) => {
+      if (!userId) return;
+      void (async () => {
+        const { data } = await supabase
+          .from("finance_entries")
+          .insert({
+            user_id: userId,
+            kind: e.kind,
+            description: e.description,
+            party: e.party,
+            amount: e.amount,
+            due_date: e.dueDate,
+            status: e.status,
+            category: e.category,
+          })
+          .select()
+          .single();
+        if (data) setFinance((prev) => [...prev, { ...e, id: data.id }]);
+      })();
+    },
+    [userId],
+  );
+
+  const updateFinance = useCallback<Store["updateFinance"]>((id, patch) => {
+    setFinance((prev) => prev.map((e) => (e.id === id ? { ...e, ...patch } : e)));
+    const row = {
+      ...(patch.kind !== undefined ? { kind: patch.kind } : {}),
+      ...(patch.description !== undefined ? { description: patch.description } : {}),
+      ...(patch.party !== undefined ? { party: patch.party } : {}),
+      ...(patch.amount !== undefined ? { amount: patch.amount } : {}),
+      ...(patch.dueDate !== undefined ? { due_date: patch.dueDate } : {}),
+      ...(patch.status !== undefined
+        ? { status: patch.status, paid_at: patch.status === "pago" ? new Date().toISOString() : null }
+        : {}),
+      ...(patch.category !== undefined ? { category: patch.category } : {}),
+    };
+    void supabase.from("finance_entries").update(row).eq("id", id);
+  }, []);
+
+  const deleteFinance = useCallback<Store["deleteFinance"]>((id) => {
+    setFinance((prev) => prev.filter((e) => e.id !== id));
+    void supabase.from("finance_entries").delete().eq("id", id);
+  }, []);
+
   const value = useMemo(
     () => ({
       loading,
@@ -549,6 +614,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       clients,
       failures,
       extras,
+      finance,
       settings,
       setPrinterStatus,
       moveOrder,
@@ -568,6 +634,9 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       deleteClient,
       updateProduct,
       deleteProduct,
+      addFinance,
+      updateFinance,
+      deleteFinance,
       consumeFilament,
       addFailure,
       updateSettings,
@@ -584,6 +653,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       clients,
       failures,
       extras,
+      finance,
       settings,
       setPrinterStatus,
       moveOrder,
@@ -603,6 +673,9 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       deleteClient,
       updateProduct,
       deleteProduct,
+      addFinance,
+      updateFinance,
+      deleteFinance,
       consumeFilament,
       addFailure,
       updateSettings,

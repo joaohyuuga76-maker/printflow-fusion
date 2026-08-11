@@ -93,3 +93,16 @@ export interface Settings {
   defaultMargin: number;
   failureRate: number;
 }
+
+export type FinanceKind = "receivable" | "payable";
+
+export interface FinanceEntry {
+  id: string;
+  kind: FinanceKind;
+  description: string;
+  party: string;
+  amount: number;
+  dueDate: string;
+  status: "pendente" | "pago";
+  category: string;
+}
