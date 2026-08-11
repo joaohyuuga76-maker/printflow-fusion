@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Calculator, Copy, FilePlus2 } from "lucide-react";
+import { Calculator, Copy, FileDown, FilePlus2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { PageHeader } from "@/components/erp/ui-bits";
 import { brl, useErp } from "@/lib/erp-store";
+import { buildQuotePdf } from "@/lib/quote-pdf";
 
 export const Route = createFileRoute("/_authenticated/orcamento")({
   head: () => ({
@@ -39,6 +40,8 @@ function Row({ label, value, tone }: { label: string; value: string; tone?: stri
 function Orcamento() {
   const { filaments, printers, settings, addOrder } = useErp();
   const [client, setClient] = useState("");
+  const [contact, setContact] = useState("");
+  const [qty, setQty] = useState("1");
   const [project, setProject] = useState("");
   const [filamentId, setFilamentId] = useState(filaments[0]!.id);
   const [printerId, setPrinterId] = useState(printers[0]!.id);
@@ -85,6 +88,14 @@ Obrigado pela preferência! 🖨️`;
             <div className="grid gap-2">
               <Label>Cliente</Label>
               <Input value={client} onChange={(e) => setClient(e.target.value)} placeholder="Studio Rocha" />
+            </div>
+            <div className="grid gap-2">
+              <Label>Contato do cliente</Label>
+              <Input value={contact} onChange={(e) => setContact(e.target.value)} placeholder="(11) 99999-0000" />
+            </div>
+            <div className="grid gap-2">
+              <Label>Quantidade de peças</Label>
+              <Input inputMode="numeric" value={qty} onChange={(e) => setQty(e.target.value)} />
             </div>
             <div className="grid gap-2">
               <Label>Projeto / Peça</Label>
@@ -186,6 +197,35 @@ Obrigado pela preferência! 🖨️`;
                 }}
               >
                 <FilePlus2 className="h-4 w-4" /> Gerar Pedido
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const units = Math.max(1, Number(qty) || 1);
+                  const doc = buildQuotePdf({
+                    company: settings.company,
+                    cnpj: settings.cnpj,
+                    client: client || "Cliente novo",
+                    contact,
+                    items: [
+                      {
+                        name: project || "Peça sob demanda",
+                        qty: units,
+                        hours: `${hours}h${String(minutes).padStart(2, "0")}`,
+                        material: `${calc.fil.type} ${calc.fil.color}`,
+                        price: calc.price * units,
+                      },
+                    ],
+                    total: calc.price * units,
+                    payment: "50% na aprovação e 50% na entrega (Pix, cartão ou boleto)",
+                    deadline: `${Math.max(2, Math.ceil((calc.h * units) / 8) + 1)} dias úteis`,
+                    validity: "7 dias corridos a partir da emissão",
+                  });
+                  doc.save(`orcamento-${(client || "cliente").toLowerCase().replace(/\s+/g, "-")}.pdf`);
+                  toast.success("PDF do orçamento gerado!");
+                }}
+              >
+                <FileDown className="h-4 w-4" /> Exportar PDF / Enviar ao cliente
               </Button>
               <Button
                 variant="outline"

@@ -5,6 +5,8 @@ import {
   ArrowUpCircle,
   Check,
   Clock,
+  FileCheck2,
+  FileX2,
   Pencil,
   Plus,
   Trash2,
@@ -33,6 +35,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { PageHeader, StatCard } from "@/components/erp/ui-bits";
+import { FilterBar, useFilters } from "@/components/erp/FilterBar";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
 import { EmptyState } from "@/components/erp/QuickAdd";
 import { FinanceDialog, type FinanceForm } from "@/components/erp/FinanceDialog";
 import { brl, useErp } from "@/lib/erp-store";
@@ -58,6 +64,17 @@ export const Route = createFileRoute("/_authenticated/financeiro")({
   }),
   component: Financeiro,
 });
+
+async function openInvoice(path: string) {
+  const { data, error } = await supabase.storage
+    .from("notas-fiscais")
+    .createSignedUrl(path, 60 * 10);
+  if (error || !data) {
+    toast.error("Não foi possível abrir a nota fiscal.");
+    return;
+  }
+  window.open(data.signedUrl, "_blank", "noopener");
+}
 
 const fmtDate = (d: string) => {
   const [y, m, day] = d.split("-");
@@ -99,6 +116,7 @@ function EntriesTable({
             <TableHead className="whitespace-nowrap">Vencimento</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Categoria</TableHead>
+            <TableHead>Nota fiscal</TableHead>
             <TableHead className="text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>
@@ -123,6 +141,31 @@ function EntriesTable({
                 </Badge>
               </TableCell>
               <TableCell className="text-muted-foreground">{e.category}</TableCell>
+              <TableCell>
+                {e.invoiceNumber || e.invoicePath ? (
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="border-profit/40 text-profit">
+                      <FileCheck2 className="mr-1 h-3 w-3" />
+                      {e.invoiceNumber ? `NF ${e.invoiceNumber}` : "Anexo"}
+                      {e.invoiceSeries ? ` / ${e.invoiceSeries}` : ""}
+                    </Badge>
+                    {e.invoicePath && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => void openInvoice(e.invoicePath!)}
+                      >
+                        Ver
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <FileX2 className="h-3.5 w-3.5" /> Sem NF
+                  </span>
+                )}
+              </TableCell>
               <TableCell>
                 <div className="flex items-center justify-end gap-1">
                   <Button
@@ -176,9 +219,18 @@ function Financeiro() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<FinanceEntry | null>(null);
   const [toDelete, setToDelete] = useState<FinanceEntry | null>(null);
+  const [onlyInvoiced, setOnlyInvoiced] = useState(false);
+  const { filters, setFilters, matches, inPeriod } = useFilters();
 
-  const receivables = finance.filter((e) => e.kind === "receivable");
-  const payables = finance.filter((e) => e.kind === "payable");
+  const visible = finance.filter(
+    (e) =>
+      matches(e.description, e.party, e.category, e.invoiceNumber) &&
+      inPeriod(e.dueDate) &&
+      (!onlyInvoiced || !!e.invoiceNumber || !!e.invoicePath),
+  );
+
+  const receivables = visible.filter((e) => e.kind === "receivable");
+  const payables = visible.filter((e) => e.kind === "payable");
   const sum = (list: FinanceEntry[]) => list.reduce((s, e) => s + e.amount, 0);
 
   const recebido = sum(receivables.filter((e) => e.status === "pago"));
@@ -219,6 +271,20 @@ function Financeiro() {
               {tab === "receber" ? "Novo Recebimento" : "Nova Despesa"}
             </Button>
           )
+        }
+      />
+
+      <FilterBar
+        filters={filters}
+        onChange={setFilters}
+        placeholder="Buscar por descrição, cliente, fornecedor, categoria ou nº da NF"
+        extra={
+          <div className="flex items-center gap-2 pb-2 sm:pb-2.5">
+            <Switch id="only-nf" checked={onlyInvoiced} onCheckedChange={setOnlyInvoiced} />
+            <Label htmlFor="only-nf" className="text-xs text-muted-foreground">
+              Somente com NF
+            </Label>
+          </div>
         }
       />
 
@@ -270,7 +336,7 @@ function Financeiro() {
 
             <div className="rounded-xl border border-border bg-card p-4 xl:col-span-2">
               <p className="text-sm font-semibold">DRE simplificado</p>
-              {finance.length === 0 ? (
+              {visible.length === 0 ? (
                 <p className="mt-4 text-sm text-muted-foreground">Nenhum lançamento registrado</p>
               ) : (
                 <ul className="mt-3 text-sm">

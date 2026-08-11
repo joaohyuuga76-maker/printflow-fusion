@@ -172,6 +172,10 @@ export type Database = {
           description: string
           due_date: string
           id: string
+          invoice_name: string | null
+          invoice_number: string
+          invoice_path: string | null
+          invoice_series: string
           kind: string
           paid_at: string | null
           party: string
@@ -186,6 +190,10 @@ export type Database = {
           description: string
           due_date?: string
           id?: string
+          invoice_name?: string | null
+          invoice_number?: string
+          invoice_path?: string | null
+          invoice_series?: string
           kind?: string
           paid_at?: string | null
           party?: string
@@ -200,6 +208,10 @@ export type Database = {
           description?: string
           due_date?: string
           id?: string
+          invoice_name?: string | null
+          invoice_number?: string
+          invoice_path?: string | null
+          invoice_series?: string
           kind?: string
           paid_at?: string | null
           party?: string

@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/select";
 import { PageHeader, StatCard } from "@/components/erp/ui-bits";
 import { brl, useErp } from "@/lib/erp-store";
+import type { FinanceEntry } from "@/lib/erp-types";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
@@ -55,22 +56,49 @@ export const Route = createFileRoute("/_authenticated/")({
   component: Dashboard,
 });
 
-const profitSeries = [
-  { m: "Fev", fat: 6100, lucro: 2380 },
-  { m: "Mar", fat: 7450, lucro: 3010 },
-  { m: "Abr", fat: 6890, lucro: 2640 },
-  { m: "Mai", fat: 9120, lucro: 4025 },
-  { m: "Jun", fat: 10480, lucro: 4790 },
-  { m: "Jul", fat: 11920, lucro: 5410 },
-  { m: "Ago", fat: 13260, lucro: 6180 },
-];
+const MONTHS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
-const costSlices = [
-  { name: "Filamento", value: 3120, color: "#3b82f6" },
-  { name: "Energia", value: 940, color: "#f59e0b" },
-  { name: "Depreciação", value: 1480, color: "#a855f7" },
-  { name: "Extras", value: 620, color: "#ef4444" },
-];
+function buildProfitSeries(finance: FinanceEntry[]) {
+  const now = new Date();
+  const buckets: { key: string; m: string; fat: number; lucro: number }[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    buckets.push({
+      key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
+      m: MONTHS[d.getMonth()]!,
+      fat: 0,
+      lucro: 0,
+    });
+  }
+  for (const e of finance) {
+    if (e.status !== "pago") continue;
+    const bucket = buckets.find((b) => e.dueDate.startsWith(b.key));
+    if (!bucket) continue;
+    if (e.kind === "receivable") {
+      bucket.fat += e.amount;
+      bucket.lucro += e.amount;
+    } else {
+      bucket.lucro -= e.amount;
+    }
+  }
+  return buckets;
+}
+
+function buildCostSlices(finance: FinanceEntry[]) {
+  const payables = finance.filter((e) => e.kind === "payable");
+  const sumOf = (test: (c: string) => boolean) =>
+    payables.filter((e) => test(e.category)).reduce((s, e) => s + e.amount, 0);
+  return [
+    { name: "Filamento", value: sumOf((c) => c === "Filamento/Insumo"), color: "#3b82f6" },
+    { name: "Energia", value: sumOf((c) => c === "Energia"), color: "#f59e0b" },
+    { name: "Depreciação", value: sumOf((c) => c === "Manutenção"), color: "#a855f7" },
+    {
+      name: "Extras",
+      value: sumOf((c) => !["Filamento/Insumo", "Energia", "Manutenção"].includes(c)),
+      color: "#ef4444",
+    },
+  ];
+}
 
 function StageList({
   title,
@@ -109,7 +137,12 @@ function StageList({
 }
 
 function Dashboard() {
-  const { orders, products, printers, failures, setFailureOpen } = useErp();
+  const { orders, products, printers, failures, finance, setFailureOpen } = useErp();
+
+  const profitSeries = buildProfitSeries(finance);
+  const costSlices = buildCostSlices(finance);
+  const costTotal = costSlices.reduce((s, c) => s + c.value, 0);
+  const hasProfitData = profitSeries.some((p) => p.fat !== 0 || p.lucro !== 0);
 
   const faturamento = orders.filter((o) => o.stage !== "orcamento").reduce((s, o) => s + o.value, 0);
   const custo = orders.filter((o) => o.stage !== "orcamento").reduce((s, o) => s + o.cost, 0);
@@ -144,8 +177,8 @@ function Dashboard() {
       />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Faturamento Total" value={brl(faturamento)} hint="+18% vs. mês anterior" icon={DollarSign} tone="profit" />
-        <StatCard label="Lucro Líquido" value={brl(lucro)} hint={`Margem ${((lucro / faturamento) * 100).toFixed(1)}%`} icon={TrendingUp} tone="profit" />
+        <StatCard label="Faturamento Total" value={brl(faturamento)} hint={`${orders.length} pedidos registrados`} icon={DollarSign} tone="profit" />
+        <StatCard label="Lucro Líquido" value={brl(lucro)} hint={faturamento > 0 ? `Margem ${((lucro / faturamento) * 100).toFixed(1)}%` : "Sem faturamento no período"} icon={TrendingUp} tone="profit" />
         <StatCard label="Custo de Produção" value={brl(custo + perdas)} hint={`${brl(perdas)} em falhas`} icon={Activity} tone="danger" />
         <StatCard label="Lotes Produzidos" value={String(lotes)} hint={`${orders.length} pedidos no total`} icon={Package} tone="production" />
       </div>
@@ -162,6 +195,11 @@ function Dashboard() {
           <p className="text-sm font-semibold">Evolução do Lucro</p>
           <p className="text-xs text-muted-foreground">Faturamento x lucro líquido nos últimos 7 meses</p>
           <div className="mt-4 h-[260px]">
+            {!hasProfitData ? (
+              <div className="grid h-full place-items-center text-sm text-muted-foreground">
+                Nenhum lançamento liquidado ainda
+              </div>
+            ) : (
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={profitSeries}>
                 <defs>
@@ -185,12 +223,19 @@ function Dashboard() {
                 <Area type="monotone" dataKey="lucro" name="Lucro" stroke="#22c55e" fill="url(#gLuc)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
+            )}
           </div>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-4">
           <p className="text-sm font-semibold">Custos de Produção</p>
           <p className="text-xs text-muted-foreground">Distribuição do mês</p>
+          {costTotal === 0 ? (
+            <p className="mt-6 pb-6 text-center text-sm text-muted-foreground">
+              Nenhuma despesa registrada
+            </p>
+          ) : (
+            <>
           <div className="mt-2 h-[190px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -213,10 +258,14 @@ function Dashboard() {
                   <span className="h-2.5 w-2.5 rounded-full" style={{ background: s.color }} />
                   {s.name}
                 </span>
-                <span className="font-medium">{brl(s.value)}</span>
+                <span className="font-medium">
+                  {brl(s.value)} · {((s.value / costTotal) * 100).toFixed(0)}%
+                </span>
               </li>
             ))}
           </ul>
+            </>
+          )}
         </div>
       </div>
 

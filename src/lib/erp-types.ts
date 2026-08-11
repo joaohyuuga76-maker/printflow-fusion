@@ -105,4 +105,8 @@ export interface FinanceEntry {
   dueDate: string;
   status: "pendente" | "pago";
   category: string;
+  invoiceNumber: string;
+  invoiceSeries: string;
+  invoicePath: string | null;
+  invoiceName: string | null;
 }

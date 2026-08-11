@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { PageHeader } from "@/components/erp/ui-bits";
+import { FilterBar, useFilters } from "@/components/erp/FilterBar";
 import { EmptyState, QuickAdd } from "@/components/erp/QuickAdd";
 import { RowActions } from "@/components/erp/RowActions";
 import { useErp } from "@/lib/erp-store";
@@ -31,6 +32,8 @@ const statusMap: Record<PrinterStatus, { label: string; cls: string; dot: string
 
 function Farm() {
   const { printers, setPrinterStatus, addPrinter, updatePrinter, deletePrinter } = useErp();
+  const { filters, setFilters, matches } = useFilters();
+  const visible = printers.filter((p) => matches(p.name, p.model, p.currentFile, statusMap[p.status].label));
 
   return (
     <div>
@@ -59,9 +62,18 @@ function Farm() {
           />
         }
       />
+      <FilterBar
+        filters={filters}
+        onChange={setFilters}
+        showPeriod={false}
+        placeholder="Buscar por nome da impressora, modelo, arquivo ou status"
+      />
+      {visible.length === 0 && printers.length > 0 && (
+        <EmptyState text="Nenhuma impressora encontrada para a busca." />
+      )}
       {printers.length === 0 && <EmptyState text="Nenhuma impressora cadastrada ainda. Adicione a primeira máquina da sua farm." />}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {printers.map((p) => {
+        {visible.map((p) => {
           const s = statusMap[p.status];
           return (
             <div key={p.id} className="flex flex-col rounded-xl border border-border bg-card p-4">

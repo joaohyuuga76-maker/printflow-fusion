@@ -123,6 +123,10 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           dueDate: e.due_date,
           status: e.status as FinanceEntry["status"],
           category: e.category,
+          invoiceNumber: e.invoice_number ?? "",
+          invoiceSeries: e.invoice_series ?? "",
+          invoicePath: e.invoice_path ?? null,
+          invoiceName: e.invoice_name ?? null,
         })),
       );
 
@@ -573,6 +577,10 @@ export function ErpProvider({ children }: { children: ReactNode }) {
             due_date: e.dueDate,
             status: e.status,
             category: e.category,
+            invoice_number: e.invoiceNumber,
+            invoice_series: e.invoiceSeries,
+            invoice_path: e.invoicePath,
+            invoice_name: e.invoiceName,
           })
           .select()
           .single();
@@ -594,6 +602,10 @@ export function ErpProvider({ children }: { children: ReactNode }) {
         ? { status: patch.status, paid_at: patch.status === "pago" ? new Date().toISOString() : null }
         : {}),
       ...(patch.category !== undefined ? { category: patch.category } : {}),
+      ...(patch.invoiceNumber !== undefined ? { invoice_number: patch.invoiceNumber } : {}),
+      ...(patch.invoiceSeries !== undefined ? { invoice_series: patch.invoiceSeries } : {}),
+      ...(patch.invoicePath !== undefined ? { invoice_path: patch.invoicePath } : {}),
+      ...(patch.invoiceName !== undefined ? { invoice_name: patch.invoiceName } : {}),
     };
     void supabase.from("finance_entries").update(row).eq("id", id);
   }, []);

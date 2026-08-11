@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Phone, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/erp/ui-bits";
+import { FilterBar, useFilters } from "@/components/erp/FilterBar";
 import { EmptyState, QuickAdd } from "@/components/erp/QuickAdd";
 import { RowActions } from "@/components/erp/RowActions";
 import { brl, useErp } from "@/lib/erp-store";
@@ -20,6 +21,8 @@ export const Route = createFileRoute("/_authenticated/clientes")({
 
 function Clientes() {
   const { clients, orders, addClient, updateClient, deleteClient } = useErp();
+  const { filters, setFilters, matches } = useFilters();
+  const visible = clients.filter((c) => matches(c.name, c.phone, c.city));
   return (
     <div>
       <PageHeader
@@ -41,9 +44,19 @@ function Clientes() {
           />
         }
       />
-      {clients.length === 0 && <EmptyState text="Nenhum cliente cadastrado ainda." />}
+      <FilterBar
+        filters={filters}
+        onChange={setFilters}
+        showPeriod={false}
+        placeholder="Buscar por nome, telefone ou cidade"
+      />
+      {visible.length === 0 && (
+        <EmptyState
+          text={clients.length ? "Nenhum cliente encontrado para a busca." : "Nenhum cliente cadastrado ainda."}
+        />
+      )}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {clients.map((c) => {
+        {visible.map((c) => {
           const open = orders.filter((o) => o.client === c.name && o.stage !== "concluido").length;
           return (
             <div key={c.id} className="rounded-xl border border-border bg-card p-4">
