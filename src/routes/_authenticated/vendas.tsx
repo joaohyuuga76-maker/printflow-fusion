@@ -3,6 +3,7 @@ import { ArrowRight, GripVertical } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/erp/ui-bits";
+import { FilterBar, useFilters } from "@/components/erp/FilterBar";
 import { RowActions } from "@/components/erp/RowActions";
 import { brl, useErp } from "@/lib/erp-store";
 import type { Order, OrderStage } from "@/lib/erp-types";
@@ -31,14 +32,23 @@ const stages: { id: OrderStage; label: string; color: string }[] = [
 
 function Vendas() {
   const { orders, moveOrder, updateOrder, deleteOrder } = useErp();
+  const { filters, setFilters, matches, inPeriod } = useFilters();
+  const visible = orders.filter(
+    (o) => matches(o.ref, o.client, o.title, o.channel) && inPeriod(o.date),
+  );
 
   return (
     <div>
       <PageHeader title="Kanban de Vendas" subtitle="Arraste o pedido pelas etapas usando o botão de avanço" />
+      <FilterBar
+        filters={filters}
+        onChange={setFilters}
+        placeholder="Buscar por código do pedido, cliente, peça ou canal"
+      />
       <div className="-mx-4 overflow-x-auto px-4 pb-2">
         <div className="flex min-w-max gap-3">
           {stages.map((stage, si) => {
-            const list = orders.filter((o) => o.stage === stage.id);
+            const list = visible.filter((o) => o.stage === stage.id);
             const total = list.reduce((s, o) => s + o.value, 0);
             return (
               <div key={stage.id} className={`w-[270px] shrink-0 rounded-xl border border-t-2 border-border bg-card/60 p-3 ${stage.color}`}>
