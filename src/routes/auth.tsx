@@ -109,7 +109,7 @@ function AuthPage() {
             <TabsContent value="login">
               <form onSubmit={signIn} className="mt-4 grid gap-3">
                 <div className="grid gap-2">
-                  <Label htmlFor="login-email">E-mail</Label>
+                  <Label htmlFor="login-email">Usuário (e-mail)</Label>
                   <Input id="login-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
                 </div>
                 <div className="grid gap-2">
