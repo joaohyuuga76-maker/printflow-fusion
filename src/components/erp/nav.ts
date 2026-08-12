@@ -11,6 +11,9 @@ import {
   Settings2,
   Wallet,
   Cog,
+  ShoppingCart,
+  FileInput,
+  ShieldCheck,
 } from "lucide-react";
 
 export const navSections = [
@@ -21,6 +24,7 @@ export const navSections = [
   {
     label: "Vendas & Pedidos",
     items: [
+      { to: "/pdv", label: "Frente de Caixa (PDV)", icon: ShoppingCart },
       { to: "/vendas", label: "Kanban de Vendas", icon: KanbanSquare },
       { to: "/orcamento", label: "Calculadora", icon: Calculator },
     ],
@@ -37,6 +41,7 @@ export const navSections = [
     label: "Insumos & Cadastros",
     items: [
       { to: "/filamentos", label: "Filamentos", icon: Boxes },
+      { to: "/nfe", label: "Entrada de NF-e", icon: FileInput },
       { to: "/catalogo", label: "Catálogo", icon: Package },
       { to: "/clientes", label: "Clientes (CRM)", icon: Users },
       { to: "/maquinas", label: "Máquinas & Custos", icon: Settings2 },
@@ -46,6 +51,7 @@ export const navSections = [
     label: "Financeiro & Sistema",
     items: [
       { to: "/financeiro", label: "Financeiro", icon: Wallet },
+      { to: "/usuarios", label: "Usuários & Permissões", icon: ShieldCheck },
       { to: "/configuracoes", label: "Configurações", icon: Cog },
     ],
   },
@@ -53,8 +59,8 @@ export const navSections = [
 
 export const mobileNav = [
   { to: "/", label: "Home", icon: LayoutDashboard },
+  { to: "/pdv", label: "Caixa", icon: ShoppingCart },
   { to: "/vendas", label: "Vendas", icon: KanbanSquare },
-  { to: "/orcamento", label: "Orçar", icon: Calculator },
   { to: "/farm", label: "Farm", icon: Printer },
   { to: "/filamentos", label: "Estoque", icon: Boxes },
 ] as const;
