@@ -21,7 +21,10 @@ import { Route as AuthenticatedFilaRouteImport } from './routes/_authenticated/f
 import { Route as AuthenticatedFilamentosRouteImport } from './routes/_authenticated/filamentos'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
 import { Route as AuthenticatedMaquinasRouteImport } from './routes/_authenticated/maquinas'
+import { Route as AuthenticatedNfeRouteImport } from './routes/_authenticated/nfe'
 import { Route as AuthenticatedOrcamentoRouteImport } from './routes/_authenticated/orcamento'
+import { Route as AuthenticatedPdvRouteImport } from './routes/_authenticated/pdv'
+import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
 import { Route as AuthenticatedVendasRouteImport } from './routes/_authenticated/vendas'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -84,9 +87,24 @@ const AuthenticatedMaquinasRoute = AuthenticatedMaquinasRouteImport.update({
   path: '/maquinas',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedNfeRoute = AuthenticatedNfeRouteImport.update({
+  id: '/nfe',
+  path: '/nfe',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedOrcamentoRoute = AuthenticatedOrcamentoRouteImport.update({
   id: '/orcamento',
   path: '/orcamento',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPdvRoute = AuthenticatedPdvRouteImport.update({
+  id: '/pdv',
+  path: '/pdv',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedUsuariosRoute = AuthenticatedUsuariosRouteImport.update({
+  id: '/usuarios',
+  path: '/usuarios',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedVendasRoute = AuthenticatedVendasRouteImport.update({
@@ -107,7 +125,10 @@ export interface FileRoutesByFullPath {
   '/filamentos': typeof AuthenticatedFilamentosRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/maquinas': typeof AuthenticatedMaquinasRoute
+  '/nfe': typeof AuthenticatedNfeRoute
   '/orcamento': typeof AuthenticatedOrcamentoRoute
+  '/pdv': typeof AuthenticatedPdvRoute
+  '/usuarios': typeof AuthenticatedUsuariosRoute
   '/vendas': typeof AuthenticatedVendasRoute
 }
 export interface FileRoutesByTo {
@@ -121,7 +142,10 @@ export interface FileRoutesByTo {
   '/filamentos': typeof AuthenticatedFilamentosRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/maquinas': typeof AuthenticatedMaquinasRoute
+  '/nfe': typeof AuthenticatedNfeRoute
   '/orcamento': typeof AuthenticatedOrcamentoRoute
+  '/pdv': typeof AuthenticatedPdvRoute
+  '/usuarios': typeof AuthenticatedUsuariosRoute
   '/vendas': typeof AuthenticatedVendasRoute
   '/': typeof AuthenticatedIndexRoute
 }
@@ -138,7 +162,10 @@ export interface FileRoutesById {
   '/_authenticated/filamentos': typeof AuthenticatedFilamentosRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/maquinas': typeof AuthenticatedMaquinasRoute
+  '/_authenticated/nfe': typeof AuthenticatedNfeRoute
   '/_authenticated/orcamento': typeof AuthenticatedOrcamentoRoute
+  '/_authenticated/pdv': typeof AuthenticatedPdvRoute
+  '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/_authenticated/vendas': typeof AuthenticatedVendasRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
 }
@@ -156,7 +183,10 @@ export interface FileRouteTypes {
     | '/filamentos'
     | '/financeiro'
     | '/maquinas'
+    | '/nfe'
     | '/orcamento'
+    | '/pdv'
+    | '/usuarios'
     | '/vendas'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -170,7 +200,10 @@ export interface FileRouteTypes {
     | '/filamentos'
     | '/financeiro'
     | '/maquinas'
+    | '/nfe'
     | '/orcamento'
+    | '/pdv'
+    | '/usuarios'
     | '/vendas'
     | '/'
   id:
@@ -186,7 +219,10 @@ export interface FileRouteTypes {
     | '/_authenticated/filamentos'
     | '/_authenticated/financeiro'
     | '/_authenticated/maquinas'
+    | '/_authenticated/nfe'
     | '/_authenticated/orcamento'
+    | '/_authenticated/pdv'
+    | '/_authenticated/usuarios'
     | '/_authenticated/vendas'
     | '/_authenticated/'
   fileRoutesById: FileRoutesById
@@ -282,11 +318,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMaquinasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/nfe': {
+      id: '/_authenticated/nfe'
+      path: '/nfe'
+      fullPath: '/nfe'
+      preLoaderRoute: typeof AuthenticatedNfeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/orcamento': {
       id: '/_authenticated/orcamento'
       path: '/orcamento'
       fullPath: '/orcamento'
       preLoaderRoute: typeof AuthenticatedOrcamentoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pdv': {
+      id: '/_authenticated/pdv'
+      path: '/pdv'
+      fullPath: '/pdv'
+      preLoaderRoute: typeof AuthenticatedPdvRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/usuarios': {
+      id: '/_authenticated/usuarios'
+      path: '/usuarios'
+      fullPath: '/usuarios'
+      preLoaderRoute: typeof AuthenticatedUsuariosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/vendas': {
@@ -309,7 +366,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFilamentosRoute: typeof AuthenticatedFilamentosRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedMaquinasRoute: typeof AuthenticatedMaquinasRoute
+  AuthenticatedNfeRoute: typeof AuthenticatedNfeRoute
   AuthenticatedOrcamentoRoute: typeof AuthenticatedOrcamentoRoute
+  AuthenticatedPdvRoute: typeof AuthenticatedPdvRoute
+  AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
   AuthenticatedVendasRoute: typeof AuthenticatedVendasRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
@@ -324,7 +384,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFilamentosRoute: AuthenticatedFilamentosRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedMaquinasRoute: AuthenticatedMaquinasRoute,
+  AuthenticatedNfeRoute: AuthenticatedNfeRoute,
   AuthenticatedOrcamentoRoute: AuthenticatedOrcamentoRoute,
+  AuthenticatedPdvRoute: AuthenticatedPdvRoute,
+  AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
   AuthenticatedVendasRoute: AuthenticatedVendasRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
@@ -339,3 +402,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

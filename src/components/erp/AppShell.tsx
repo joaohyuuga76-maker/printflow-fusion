@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { ThemeToggle } from "@/components/erp/ThemeToggle";
-import { AlertTriangle, Boxes, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Zap } from "lucide-react";
+import { AlertTriangle, Boxes, LogOut, Menu, PanelLeftClose, PanelLeftOpen, ShoppingCart, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ import { mobileNav, navSections } from "./nav";
 import { useErp } from "@/lib/erp-store";
 import { FailureModal } from "./FailureModal";
 import { supabase } from "@/integrations/supabase/client";
+import { OPERATOR_ROUTES, useRole } from "@/lib/acl";
 
 function Brand({ compact }: { compact?: boolean }) {
   return (
@@ -29,9 +30,14 @@ function Brand({ compact }: { compact?: boolean }) {
 
 function NavList({ compact, onNavigate }: { compact?: boolean; onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { isAdmin, loading } = useRole();
+  const allowed = (to: string) => isAdmin || loading || OPERATOR_ROUTES.includes(to);
   return (
     <nav className="flex flex-col gap-5 py-4">
-      {navSections.map((section) => (
+      {navSections
+        .map((section) => ({ ...section, items: section.items.filter((i) => allowed(i.to)) }))
+        .filter((section) => section.items.length > 0)
+        .map((section) => (
         <div key={section.label}>
           {!compact && (
             <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
@@ -75,6 +81,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { setFailureOpen, filaments } = useErp();
+  const { isAdmin, loading: roleLoading } = useRole();
   const lowStock = filaments.filter((f) => f.remainingG < 150).length;
 
   useEffect(() => {
@@ -151,10 +158,17 @@ export function AppShell({ children }: { children: ReactNode }) {
             )}
           </div>
 
-          <Button variant="destructive" size="sm" onClick={() => setFailureOpen(true)}>
-            <AlertTriangle className="h-4 w-4" />
-            <span className="hidden sm:inline">Registrar Falha</span>
+          <Button size="sm" onClick={() => navigate({ to: "/pdv" })}>
+            <ShoppingCart className="h-4 w-4" />
+            <span className="hidden sm:inline">Iniciar Venda</span>
           </Button>
+
+          {(isAdmin || roleLoading) && (
+            <Button variant="destructive" size="sm" onClick={() => setFailureOpen(true)}>
+              <AlertTriangle className="h-4 w-4" />
+              <span className="hidden sm:inline">Registrar Falha</span>
+            </Button>
+          )}
 
           {email && (
             <span className="hidden max-w-[180px] truncate text-xs text-muted-foreground xl:inline">
@@ -170,15 +184,17 @@ export function AppShell({ children }: { children: ReactNode }) {
         <main className="px-4 pb-28 pt-5 lg:px-8 lg:pb-10">{children}</main>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border bg-sidebar/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
-        {mobileNav.map((item) => {
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-border bg-sidebar/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
+        {mobileNav
+          .filter((item) => isAdmin || roleLoading || OPERATOR_ROUTES.includes(item.to))
+          .map((item) => {
           const active = pathname === item.to;
           return (
             <Link
               key={item.to}
               to={item.to}
               className={cn(
-                "flex flex-col items-center gap-1 py-2.5 text-[10px] transition-colors",
+                "flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] transition-colors",
                 active ? "text-primary" : "text-muted-foreground",
               )}
             >

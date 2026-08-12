@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      cash_sessions: {
+        Row: {
+          closed_at: string | null
+          closing_amount: number | null
+          created_at: string
+          id: string
+          notes: string
+          opened_at: string
+          opening_amount: number
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          closed_at?: string | null
+          closing_amount?: number | null
+          created_at?: string
+          id?: string
+          notes?: string
+          opened_at?: string
+          opening_amount?: number
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          closed_at?: string | null
+          closing_amount?: number | null
+          created_at?: string
+          id?: string
+          notes?: string
+          opened_at?: string
+          opening_amount?: number
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       clients: {
         Row: {
           city: string
@@ -221,6 +260,86 @@ export type Database = {
         }
         Relationships: []
       }
+      nfe_import_items: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          import_id: string
+          qty: number
+          target_id: string | null
+          target_type: string
+          unit_price: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          import_id: string
+          qty?: number
+          target_id?: string | null
+          target_type?: string
+          unit_price?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          import_id?: string
+          qty?: number
+          target_id?: string | null
+          target_type?: string
+          unit_price?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nfe_import_items_import_id_fkey"
+            columns: ["import_id"]
+            isOneToOne: false
+            referencedRelation: "nfe_imports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nfe_imports: {
+        Row: {
+          access_key: string
+          created_at: string
+          file_name: string | null
+          id: string
+          issue_date: string | null
+          status: string
+          supplier: string
+          total: number
+          user_id: string
+        }
+        Insert: {
+          access_key?: string
+          created_at?: string
+          file_name?: string | null
+          id?: string
+          issue_date?: string | null
+          status?: string
+          supplier?: string
+          total?: number
+          user_id: string
+        }
+        Update: {
+          access_key?: string
+          created_at?: string
+          file_name?: string | null
+          id?: string
+          issue_date?: string | null
+          status?: string
+          supplier?: string
+          total?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           channel: string
@@ -389,6 +508,95 @@ export type Database = {
         }
         Relationships: []
       }
+      sale_items: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          product_id: string | null
+          qty: number
+          sale_id: string
+          unit_price: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          product_id?: string | null
+          qty?: number
+          sale_id: string
+          unit_price?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          product_id?: string | null
+          qty?: number
+          sale_id?: string
+          unit_price?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sale_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sale_items_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales: {
+        Row: {
+          cash_session_id: string | null
+          client: string
+          created_at: string
+          discount: number
+          id: string
+          payment_method: string
+          total: number
+          user_id: string
+        }
+        Insert: {
+          cash_session_id?: string | null
+          client?: string
+          created_at?: string
+          discount?: number
+          id?: string
+          payment_method?: string
+          total?: number
+          user_id: string
+        }
+        Update: {
+          cash_session_id?: string | null
+          client?: string
+          created_at?: string
+          discount?: number
+          id?: string
+          payment_method?: string
+          total?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_cash_session_id_fkey"
+            columns: ["cash_session_id"]
+            isOneToOne: false
+            referencedRelation: "cash_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       settings: {
         Row: {
           cnpj: string
@@ -419,15 +627,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "operador"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -554,6 +789,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "operador"],
+    },
   },
 } as const
