@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { ErpProvider } from "@/lib/erp-store";
 import { AppShell } from "@/components/erp/AppShell";
+import { RoleProvider } from "@/lib/acl";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -16,9 +17,11 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthenticatedLayout() {
   return (
     <ErpProvider>
-      <AppShell>
-        <Outlet />
-      </AppShell>
+      <RoleProvider>
+        <AppShell>
+          <Outlet />
+        </AppShell>
+      </RoleProvider>
     </ErpProvider>
   );
 }
