@@ -12,12 +12,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ImageField } from "@/components/erp/ImageField";
 
 export interface QuickField {
   key: string;
   label: string;
   placeholder?: string;
   numeric?: boolean;
+  image?: boolean;
   defaultValue?: string;
 }
 
@@ -57,6 +59,15 @@ export function QuickAdd({
         </DialogHeader>
         <div className="grid gap-4 sm:grid-cols-2">
           {fields.map((f) => (
+            f.image ? (
+              <div key={f.key} className="sm:col-span-2">
+                <ImageField
+                  label={f.label}
+                  value={values[f.key] ?? ""}
+                  onChange={(v) => setValues({ ...values, [f.key]: v })}
+                />
+              </div>
+            ) : (
             <div key={f.key} className="grid gap-2">
               <Label>{f.label}</Label>
               <Input
@@ -66,6 +77,7 @@ export function QuickAdd({
                 onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
               />
             </div>
+            )
           ))}
         </div>
         <DialogFooter>

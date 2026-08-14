@@ -168,6 +168,7 @@ export type Database = {
           created_at: string
           hex: string
           id: string
+          image_url: string | null
           price_per_kg: number
           remaining_g: number
           total_g: number
@@ -181,6 +182,7 @@ export type Database = {
           created_at?: string
           hex?: string
           id?: string
+          image_url?: string | null
           price_per_kg?: number
           remaining_g?: number
           total_g?: number
@@ -194,6 +196,7 @@ export type Database = {
           created_at?: string
           hex?: string
           id?: string
+          image_url?: string | null
           price_per_kg?: number
           remaining_g?: number
           total_g?: number
@@ -451,6 +454,7 @@ export type Database = {
           created_at: string
           hours: number
           id: string
+          image_url: string | null
           name: string
           price: number
           sold: number
@@ -463,6 +467,7 @@ export type Database = {
           created_at?: string
           hours?: number
           id?: string
+          image_url?: string | null
           name: string
           price?: number
           sold?: number
@@ -475,6 +480,7 @@ export type Database = {
           created_at?: string
           hours?: number
           id?: string
+          image_url?: string | null
           name?: string
           price?: number
           sold?: number
@@ -604,6 +610,9 @@ export type Database = {
           default_margin: number
           energy_rate: number
           failure_rate: number
+          logo_url: string | null
+          phone: string
+          pix_key: string
           updated_at: string
           user_id: string
         }
@@ -613,6 +622,9 @@ export type Database = {
           default_margin?: number
           energy_rate?: number
           failure_rate?: number
+          logo_url?: string | null
+          phone?: string
+          pix_key?: string
           updated_at?: string
           user_id: string
         }
@@ -622,6 +634,9 @@ export type Database = {
           default_margin?: number
           energy_rate?: number
           failure_rate?: number
+          logo_url?: string | null
+          phone?: string
+          pix_key?: string
           updated_at?: string
           user_id?: string
         }

@@ -3,6 +3,9 @@ import { jsPDF } from "jspdf";
 export interface QuotePdfData {
   company: string;
   cnpj: string;
+  phone?: string;
+  pixKey?: string;
+  logoUrl?: string | null;
   client: string;
   contact: string;
   items: {
@@ -29,20 +32,29 @@ export function buildQuotePdf(data: QuotePdfData) {
   // Cabeçalho
   doc.setFillColor(15, 23, 42);
   doc.rect(0, 0, W, 92, "F");
-  doc.setFillColor(34, 197, 94);
-  doc.roundedRect(M, 26, 40, 40, 10, 10, "F");
-  doc.setTextColor(15, 23, 42);
-  doc.setFont("helvetica", "bold").setFontSize(16);
-  doc.text("2K", M + 20, 52, { align: "center" });
+  if (data.logoUrl) {
+    try {
+      doc.addImage(data.logoUrl, M, 24, 44, 44, undefined, "FAST");
+    } catch {
+      // logo inválida — segue sem imagem
+    }
+  } else {
+    doc.setFillColor(34, 197, 94);
+    doc.roundedRect(M, 26, 40, 40, 10, 10, "F");
+    doc.setTextColor(15, 23, 42);
+    doc.setFont("helvetica", "bold").setFontSize(16);
+    doc.text("2K", M + 20, 52, { align: "center" });
+  }
 
   doc.setTextColor(241, 245, 249);
   doc.setFontSize(18);
-  doc.text(data.company || "PrintFlow — 2K Lab", M + 54, 45);
+  doc.setFont("helvetica", "bold");
+  doc.text(data.company || "PrintFlow — 2K Lab", M + 58, 45);
   doc.setFont("helvetica", "normal").setFontSize(10);
   doc.setTextColor(148, 163, 184);
   doc.text(
-    `Impressão 3D sob demanda${data.cnpj ? ` · CNPJ ${data.cnpj}` : ""}`,
-    M + 54,
+    `Impressão 3D sob demanda${data.cnpj ? ` · CNPJ ${data.cnpj}` : ""}${data.phone ? ` · ${data.phone}` : ""}`,
+    M + 58,
     62,
   );
   doc.text(
@@ -102,6 +114,7 @@ export function buildQuotePdf(data: QuotePdfData) {
   doc.setFont("helvetica", "normal").setFontSize(10);
   for (const line of [
     `Pagamento: ${data.payment}`,
+    ...(data.pixKey ? [`Chave Pix: ${data.pixKey}`] : []),
     `Prazo de entrega: ${data.deadline}`,
     `Validade da proposta: ${data.validity}`,
   ]) {
