@@ -26,6 +26,7 @@ import { PageHeader } from "@/components/erp/ui-bits";
 import { FilterBar, useFilters } from "@/components/erp/FilterBar";
 import { EmptyState } from "@/components/erp/QuickAdd";
 import { RowActions } from "@/components/erp/RowActions";
+import { ImageField } from "@/components/erp/ImageField";
 import { brl, useErp } from "@/lib/erp-store";
 import type { Filament } from "@/lib/erp-types";
 
@@ -55,6 +56,7 @@ function Filamentos() {
     hex: "#22c55e",
     totalG: "1000",
     pricePerKg: "119.9",
+    imageUrl: "",
   });
 
   return (
@@ -99,6 +101,13 @@ function Filamentos() {
                   <Label>Preço por kg (R$)</Label>
                   <Input inputMode="decimal" value={form.pricePerKg} onChange={(e) => setForm({ ...form, pricePerKg: e.target.value })} />
                 </div>
+                <div className="sm:col-span-2">
+                  <ImageField
+                    label="Foto do carretel"
+                    value={form.imageUrl}
+                    onChange={(v) => setForm({ ...form, imageUrl: v })}
+                  />
+                </div>
               </div>
               <DialogFooter>
                 <Button
@@ -112,6 +121,7 @@ function Filamentos() {
                       totalG: total,
                       remainingG: total,
                       pricePerKg: Number(form.pricePerKg) || 0,
+                      imageUrl: form.imageUrl || null,
                     });
                     toast.success("Carretel adicionado ao estoque!");
                     setOpen(false);
@@ -144,7 +154,15 @@ function Filamentos() {
             <div key={f.id} className={`rounded-xl border bg-card p-4 ${low ? "border-danger/50" : "border-border"}`}>
               <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
                 <div className="flex min-w-0 items-center gap-3">
-                  <span className="h-8 w-8 shrink-0 rounded-full border-2 border-border" style={{ background: f.hex }} />
+                  {f.imageUrl ? (
+                    <img
+                      src={f.imageUrl}
+                      alt={`${f.brand} ${f.type} ${f.color}`}
+                      className="h-10 w-10 shrink-0 rounded-lg border border-border object-cover"
+                    />
+                  ) : (
+                    <span className="h-8 w-8 shrink-0 rounded-full border-2 border-border" style={{ background: f.hex }} />
+                  )}
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold">{f.brand} {f.type}</p>
                     <p className="truncate text-xs text-muted-foreground">{f.color} · {brl(f.pricePerKg)}/kg</p>
@@ -168,6 +186,7 @@ function Filamentos() {
                       { key: "remainingG", label: "Restante (g)", numeric: true },
                       { key: "totalG", label: "Peso total (g)", numeric: true },
                       { key: "pricePerKg", label: "Preço por kg (R$)", numeric: true },
+                      { key: "imageUrl", label: "Foto do carretel", image: true },
                     ]}
                     values={{
                       brand: f.brand,
@@ -177,6 +196,7 @@ function Filamentos() {
                       remainingG: String(f.remainingG),
                       totalG: String(f.totalG),
                       pricePerKg: String(f.pricePerKg),
+                      imageUrl: f.imageUrl ?? "",
                     }}
                     onSave={(v) =>
                       updateFilament(f.id, {
@@ -187,6 +207,7 @@ function Filamentos() {
                         remainingG: Number(v['remainingG']) || 0,
                         totalG: Number(v['totalG']) || f.totalG,
                         pricePerKg: Number(v['pricePerKg']) || 0,
+                        imageUrl: v['imageUrl'] || null,
                       })
                     }
                     onDelete={() => deleteFilament(f.id)}

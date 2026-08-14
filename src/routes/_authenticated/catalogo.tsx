@@ -44,6 +44,7 @@ function Catalogo() {
               { key: "weightG", label: "Peso (g)", numeric: true, defaultValue: "100" },
               { key: "hours", label: "Tempo (h)", numeric: true, defaultValue: "4" },
               { key: "price", label: "Preço (R$)", numeric: true, defaultValue: "99.9" },
+              { key: "imageUrl", label: "Foto do produto", image: true },
             ]}
             onSubmit={(v) =>
               addProduct({
@@ -52,6 +53,7 @@ function Catalogo() {
                 weightG: Number(v['weightG']) || 0,
                 hours: Number(v['hours']) || 0,
                 price: Number(v['price']) || 0,
+                imageUrl: v['imageUrl'] || null,
               })
             }
           />
@@ -76,7 +78,18 @@ function Catalogo() {
               <TableRow key={p.id}>
                 <TableCell className="whitespace-nowrap font-medium">
                   <span className="inline-flex items-center gap-2">
-                    <Package className="h-4 w-4 text-production" /> {p.name}
+                    {p.imageUrl ? (
+                      <img
+                        src={p.imageUrl}
+                        alt={p.name}
+                        className="h-9 w-9 rounded-lg border border-border object-cover"
+                      />
+                    ) : (
+                      <span className="grid h-9 w-9 place-items-center rounded-lg border border-border bg-background/60">
+                        <Package className="h-4 w-4 text-production" />
+                      </span>
+                    )}
+                    {p.name}
                   </span>
                 </TableCell>
                 <TableCell><Badge variant="secondary">{p.category}</Badge></TableCell>
@@ -97,6 +110,7 @@ function Catalogo() {
                         { key: "hours", label: "Tempo (h)", numeric: true },
                         { key: "price", label: "Preço (R$)", numeric: true },
                         { key: "sold", label: "Unidades vendidas", numeric: true },
+                        { key: "imageUrl", label: "Foto do produto", image: true },
                       ]}
                       values={{
                         name: p.name,
@@ -105,6 +119,7 @@ function Catalogo() {
                         hours: String(p.hours),
                         price: String(p.price),
                         sold: String(p.sold),
+                        imageUrl: p.imageUrl ?? "",
                       }}
                       onSave={(v) =>
                         updateProduct(p.id, {
@@ -114,6 +129,7 @@ function Catalogo() {
                           hours: Number(v['hours']) || 0,
                           price: Number(v['price']) || 0,
                           sold: Number(v['sold']) || 0,
+                          imageUrl: v['imageUrl'] || null,
                         })
                       }
                       onDelete={() => deleteProduct(p.id)}
