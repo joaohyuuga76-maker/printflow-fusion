@@ -28,12 +28,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ImageField } from "@/components/erp/ImageField";
 
 export interface EditField {
   key: string;
   label: string;
   numeric?: boolean;
   color?: boolean;
+  image?: boolean;
   options?: { value: string; label: string }[];
 }
 
@@ -93,6 +95,15 @@ export function RowActions({
           </DialogHeader>
           <div className="grid gap-4 sm:grid-cols-2">
             {fields.map((f) => (
+              f.image ? (
+                <div key={f.key} className="sm:col-span-2">
+                  <ImageField
+                    label={f.label}
+                    value={form[f.key] ?? ""}
+                    onChange={(v) => setForm({ ...form, [f.key]: v })}
+                  />
+                </div>
+              ) : (
               <div key={f.key} className="grid gap-2">
                 <Label>{f.label}</Label>
                 {f.options ? (
@@ -120,6 +131,7 @@ export function RowActions({
                   />
                 )}
               </div>
+              )
             ))}
           </div>
           <DialogFooter>
