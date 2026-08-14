@@ -27,6 +27,9 @@ const defaultSettings: Settings = {
   energyRate: 0.92,
   defaultMargin: 120,
   failureRate: 5,
+  phone: "",
+  pixKey: "",
+  logoUrl: null,
 };
 
 const shortDate = (iso: string) =>
@@ -155,6 +158,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           totalG: Number(f.total_g),
           remainingG: Number(f.remaining_g),
           pricePerKg: Number(f.price_per_kg),
+          imageUrl: (f as { image_url?: string | null }).image_url ?? null,
         })),
       );
       setOrders(
@@ -182,6 +186,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           hours: Number(p.hours),
           price: Number(p.price),
           sold: p.sold,
+          imageUrl: (p as { image_url?: string | null }).image_url ?? null,
         })),
       );
       const orderRows = or_.data ?? [];
@@ -225,6 +230,9 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           energyRate: Number(st.data.energy_rate),
           defaultMargin: Number(st.data.default_margin),
           failureRate: Number(st.data.failure_rate),
+          phone: (st.data as { phone?: string }).phone ?? "",
+          pixKey: (st.data as { pix_key?: string }).pix_key ?? "",
+          logoUrl: (st.data as { logo_url?: string | null }).logo_url ?? null,
         });
       }
       setLoading(false);
@@ -331,6 +339,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
             total_g: f.totalG,
             remaining_g: f.remainingG,
             price_per_kg: f.pricePerKg,
+            image_url: f.imageUrl ?? null,
           })
           .select()
           .single();
@@ -353,6 +362,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
             weight_g: p.weightG,
             hours: p.hours,
             price: p.price,
+            image_url: p.imageUrl ?? null,
           })
           .select()
           .single();
@@ -460,6 +470,9 @@ export function ErpProvider({ children }: { children: ReactNode }) {
               energy_rate: next.energyRate,
               default_margin: next.defaultMargin,
               failure_rate: next.failureRate,
+              phone: next.phone,
+              pix_key: next.pixKey,
+              logo_url: next.logoUrl,
             },
             { onConflict: "user_id" },
           );
@@ -498,6 +511,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       ...(patch.totalG !== undefined ? { total_g: patch.totalG } : {}),
       ...(patch.remainingG !== undefined ? { remaining_g: patch.remainingG } : {}),
       ...(patch.pricePerKg !== undefined ? { price_per_kg: patch.pricePerKg } : {}),
+      ...(patch.imageUrl !== undefined ? { image_url: patch.imageUrl } : {}),
     };
     void supabase.from("filaments").update(row).eq("id", id);
   }, []);
@@ -553,6 +567,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       ...(patch.hours !== undefined ? { hours: patch.hours } : {}),
       ...(patch.price !== undefined ? { price: patch.price } : {}),
       ...(patch.sold !== undefined ? { sold: patch.sold } : {}),
+      ...(patch.imageUrl !== undefined ? { image_url: patch.imageUrl } : {}),
     };
     void supabase.from("products").update(row).eq("id", id);
   }, []);
