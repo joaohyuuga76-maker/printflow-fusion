@@ -23,6 +23,7 @@ export interface Filament {
   totalG: number;
   remainingG: number;
   pricePerKg: number;
+  imageUrl?: string | null;
 }
 
 export type OrderStage =
@@ -57,6 +58,7 @@ export interface Product {
   hours: number;
   price: number;
   sold: number;
+  imageUrl?: string | null;
 }
 
 export interface Client {
@@ -92,6 +94,9 @@ export interface Settings {
   energyRate: number;
   defaultMargin: number;
   failureRate: number;
+  phone: string;
+  pixKey: string;
+  logoUrl: string | null;
 }
 
 export type FinanceKind = "receivable" | "payable";
