@@ -126,8 +126,8 @@ function AuthPage() {
             <TabsContent value="login">
               <form onSubmit={signIn} className="mt-4 grid gap-3">
                 <div className="grid gap-2">
-                  <Label htmlFor="login-email">Usuário (e-mail)</Label>
-                  <Input id="login-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <Label htmlFor="login-email">Usuário</Label>
+                  <Input id="login-email" required autoComplete="username" placeholder="joao ou joao@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="login-pass">Senha</Label>
@@ -146,8 +146,8 @@ function AuthPage() {
                   <Input id="su-name" required value={name} onChange={(e) => setName(e.target.value)} />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="su-email">E-mail</Label>
-                  <Input id="su-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <Label htmlFor="su-email">Usuário ou e-mail</Label>
+                  <Input id="su-email" required autoComplete="username" placeholder="joao ou joao@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="su-pass">Senha</Label>
