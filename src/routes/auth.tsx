@@ -37,10 +37,19 @@ function AuthPage() {
     });
   }, [navigate]);
 
+  // Aceita usuário simples (sem @) convertendo para um e-mail interno.
+  const toLogin = (v: string) => {
+    const t = v.trim().toLowerCase();
+    return t.includes("@") ? t : `${t.replace(/\s+/g, "")}@printflow.app`;
+  };
+
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email: toLogin(email),
+      password,
+    });
     setLoading(false);
     if (error) {
       toast.error(error.message);
@@ -53,7 +62,7 @@ function AuthPage() {
     e.preventDefault();
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
-      email,
+      email: toLogin(email),
       password,
       options: {
         emailRedirectTo: window.location.origin,
@@ -69,7 +78,15 @@ function AuthPage() {
       navigate({ to: "/", replace: true });
       return;
     }
-    toast.success("Conta criada! Confirme o e-mail para entrar.");
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: toLogin(email),
+      password,
+    });
+    if (signInError) {
+      toast.error(signInError.message);
+      return;
+    }
+    navigate({ to: "/", replace: true });
   };
 
   const google = async () => {
@@ -109,8 +126,8 @@ function AuthPage() {
             <TabsContent value="login">
               <form onSubmit={signIn} className="mt-4 grid gap-3">
                 <div className="grid gap-2">
-                  <Label htmlFor="login-email">Usuário (e-mail)</Label>
-                  <Input id="login-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <Label htmlFor="login-email">Usuário</Label>
+                  <Input id="login-email" required autoComplete="username" placeholder="joao ou joao@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="login-pass">Senha</Label>
@@ -129,8 +146,8 @@ function AuthPage() {
                   <Input id="su-name" required value={name} onChange={(e) => setName(e.target.value)} />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="su-email">E-mail</Label>
-                  <Input id="su-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <Label htmlFor="su-email">Usuário ou e-mail</Label>
+                  <Input id="su-email" required autoComplete="username" placeholder="joao ou joao@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="su-pass">Senha</Label>

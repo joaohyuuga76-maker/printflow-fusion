@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Calculator, Copy, FileDown, FilePlus2 } from "lucide-react";
+import { Calculator, Copy, FileDown, FilePlus2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,7 +38,8 @@ function Row({ label, value, tone }: { label: string; value: string; tone?: stri
 }
 
 function Orcamento() {
-  const { filaments, printers, settings, addOrder } = useErp();
+  const { filaments, printers, settings, addOrder, orders, updateOrder } = useErp();
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [client, setClient] = useState("");
   const [contact, setContact] = useState("");
   const [qty, setQty] = useState("1");
@@ -51,6 +52,32 @@ function Orcamento() {
   const [extra, setExtra] = useState("6");
   const [failRate, setFailRate] = useState(String(settings.failureRate));
   const [margin, setMargin] = useState(String(settings.defaultMargin));
+
+  const editable = orders.filter((o) => o.stage === "orcamento" || o.stage === "aprovado");
+
+  const loadOrder = (id: string) => {
+    const o = orders.find((x) => x.id === id);
+    if (!o) return;
+    setEditingId(o.id);
+    setClient(o.client);
+    setProject(o.title);
+    setWeight(String(o.weightG));
+    setHours(String(Math.floor(o.hours)));
+    setMinutes(String(Math.round((o.hours % 1) * 60)));
+    setMargin(String(o.cost > 0 ? Math.round((o.value / o.cost - 1) * 100) : Number(margin) || 0));
+    toast.info(`Editando orçamento ${o.ref}`);
+  };
+
+  const resetForm = () => {
+    setEditingId(null);
+    setClient("");
+    setContact("");
+    setProject("");
+    setWeight("120");
+    setHours("4");
+    setMinutes("30");
+    setMargin(String(settings.defaultMargin));
+  };
 
   const calc = useMemo(() => {
     const fil = filaments.find((f) => f.id === filamentId)!;
@@ -82,6 +109,28 @@ Obrigado pela preferência! 🖨️`;
   return (
     <div>
       <PageHeader title="Calculadora de Orçamentos" subtitle="Precificação automática por peso, tempo, energia e margem" />
+      <div className="mb-4 flex flex-col gap-3 rounded-xl border border-border bg-card p-3 sm:flex-row sm:items-end">
+        <div className="grid flex-1 gap-2">
+          <Label className="text-xs text-muted-foreground">Editar orçamento existente</Label>
+          <Select value={editingId ?? ""} onValueChange={loadOrder}>
+            <SelectTrigger>
+              <SelectValue placeholder={editable.length ? "Selecione um orçamento" : "Nenhum orçamento salvo ainda"} />
+            </SelectTrigger>
+            <SelectContent>
+              {editable.map((o) => (
+                <SelectItem key={o.id} value={o.id}>
+                  {o.ref} · {o.client} · {o.title} — {brl(o.value)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {editingId && (
+          <Button variant="outline" onClick={resetForm}>
+            <X className="h-4 w-4" /> Novo orçamento
+          </Button>
+        )}
+      </div>
       <div className="grid gap-4 lg:grid-cols-5">
         <div className="space-y-4 rounded-xl border border-border bg-card p-4 lg:col-span-3">
           <div className="grid gap-4 sm:grid-cols-2">
@@ -180,6 +229,18 @@ Obrigado pela preferência! 🖨️`;
             <div className="mt-4 grid gap-2">
               <Button
                 onClick={() => {
+                  if (editingId) {
+                    updateOrder(editingId, {
+                      client: client || "Cliente novo",
+                      title: project || "Peça sob demanda",
+                      value: Number(calc.price.toFixed(2)),
+                      cost: Number(calc.total.toFixed(2)),
+                      weightG: calc.g,
+                      hours: Number(calc.h.toFixed(1)),
+                    });
+                    toast.success("Orçamento atualizado!");
+                    return;
+                  }
                   addOrder({
                     ref: `#2K-${Math.floor(1050 + Math.random() * 900)}`,
                     client: client || "Cliente novo",
@@ -196,7 +257,8 @@ Obrigado pela preferência! 🖨️`;
                   toast.success("Pedido criado no Kanban de Vendas!");
                 }}
               >
-                <FilePlus2 className="h-4 w-4" /> Gerar Pedido
+                {editingId ? <Save className="h-4 w-4" /> : <FilePlus2 className="h-4 w-4" />}
+                {editingId ? "Salvar alterações" : "Gerar Pedido"}
               </Button>
               <Button
                 variant="outline"
@@ -205,6 +267,9 @@ Obrigado pela preferência! 🖨️`;
                   const doc = buildQuotePdf({
                     company: settings.company,
                     cnpj: settings.cnpj,
+                    phone: settings.phone,
+                    pixKey: settings.pixKey,
+                    logoUrl: settings.logoUrl,
                     client: client || "Cliente novo",
                     contact,
                     items: [
