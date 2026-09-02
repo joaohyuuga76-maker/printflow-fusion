@@ -41,8 +41,16 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { EmptyState } from "@/components/erp/QuickAdd";
 import { FinanceDialog, type FinanceForm } from "@/components/erp/FinanceDialog";
+import { buildFinanceReportPdf } from "@/lib/finance-report-pdf";
 import { brl, useErp } from "@/lib/erp-store";
 import type { FinanceEntry, FinanceKind } from "@/lib/erp-types";
+
+const periodLabels: Record<string, string> = {
+  todos: "Todo o período",
+  hoje: "Hoje",
+  "7d": "Últimos 7 dias",
+  mes: "Este mês",
+};
 
 export const Route = createFileRoute("/_authenticated/financeiro")({
   head: () => ({
