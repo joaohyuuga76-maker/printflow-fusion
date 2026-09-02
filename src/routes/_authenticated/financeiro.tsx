@@ -6,6 +6,7 @@ import {
   Check,
   Clock,
   FileCheck2,
+  FileDown,
   FileX2,
   Pencil,
   Plus,
@@ -221,7 +222,7 @@ function EntriesTable({
 }
 
 function Financeiro() {
-  const { finance, addFinance, updateFinance, deleteFinance } = useErp();
+  const { finance, addFinance, updateFinance, deleteFinance, settings } = useErp();
   const [tab, setTab] = useState("receber");
   const [dialogKind, setDialogKind] = useState<FinanceKind>("receivable");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -267,18 +268,51 @@ function Financeiro() {
   const toggle = (e: FinanceEntry) =>
     updateFinance(e.id, { status: e.status === "pago" ? "pendente" : "pago" });
 
+  const generateReport = () => {
+    const costs = new Map<string, number>();
+    for (const e of payables.filter((x) => x.status === "pago")) {
+      const key = e.category || "Sem categoria";
+      costs.set(key, (costs.get(key) ?? 0) + e.amount);
+    }
+    const periodLabel =
+      filters.period === "custom"
+        ? `${filters.from || "início"} até ${filters.to || "hoje"}`
+        : periodLabels[filters.period] ?? "Todo o período";
+    const doc = buildFinanceReportPdf({
+      company: settings.company,
+      cnpj: settings.cnpj,
+      phone: settings.phone,
+      logoUrl: settings.logoUrl,
+      periodLabel,
+      received: recebido,
+      paid: pago,
+      toReceive: aReceber,
+      toPay: aPagar,
+      costsByCategory: [...costs.entries()]
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value),
+    });
+    doc.save(`relatorio-lucro-custo-${new Date().toISOString().slice(0, 10)}.pdf`);
+    toast.success("Relatório de lucro/custo gerado!");
+  };
+
   return (
     <div>
       <PageHeader
         title="Financeiro"
         subtitle="Contas a receber, contas a pagar e resultado do período"
         action={
-          tab === "dre" ? undefined : (
-            <Button onClick={() => openNew(tab === "receber" ? "receivable" : "payable")}>
-              <Plus className="h-4 w-4" />
-              {tab === "receber" ? "Novo Recebimento" : "Nova Despesa"}
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={generateReport}>
+              <FileDown className="h-4 w-4" /> Gerar Relatório de Lucro/Custo
             </Button>
-          )
+            {tab !== "dre" && (
+              <Button onClick={() => openNew(tab === "receber" ? "receivable" : "payable")}>
+                <Plus className="h-4 w-4" />
+                {tab === "receber" ? "Novo Recebimento" : "Nova Despesa"}
+              </Button>
+            )}
+          </div>
         }
       />
 
