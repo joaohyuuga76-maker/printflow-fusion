@@ -1,48 +1,19 @@
-import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-type Theme = "dark" | "light";
-const KEY = "printflow-theme";
-
-function apply(theme: Theme) {
-  const root = document.documentElement;
-  root.classList.toggle("light", theme === "light");
-}
-
-export function useTheme() {
-  const [theme, setTheme] = useState<Theme>("dark");
-
-  useEffect(() => {
-    const stored = (localStorage.getItem(KEY) as Theme | null) ?? "dark";
-    setTheme(stored);
-    apply(stored);
-  }, []);
-
-  const toggle = () => {
-    setTheme((prev) => {
-      const next: Theme = prev === "dark" ? "light" : "dark";
-      localStorage.setItem(KEY, next);
-      apply(next);
-      return next;
-    });
-  };
-
-  return { theme, toggle };
-}
+import { useAppearance } from "@/lib/theme";
 
 export function ThemeToggle({ full, className }: { full?: boolean; className?: string }) {
-  const { theme, toggle } = useTheme();
-  const label = theme === "dark" ? "Modo claro" : "Modo escuro";
-  const Icon = theme === "dark" ? Sun : Moon;
+  const { config, toggleMode } = useAppearance();
+  const label = config.mode === "dark" ? "Modo claro" : "Modo escuro";
+  const Icon = config.mode === "dark" ? Sun : Moon;
 
   if (full) {
     return (
       <Button
         variant="ghost"
         size="sm"
-        onClick={toggle}
+        onClick={toggleMode}
         title={label}
         aria-label={label}
         className={cn("w-full justify-start gap-3 px-3 text-muted-foreground", className)}
@@ -56,7 +27,7 @@ export function ThemeToggle({ full, className }: { full?: boolean; className?: s
     <Button
       variant="ghost"
       size="icon"
-      onClick={toggle}
+      onClick={toggleMode}
       title={label}
       aria-label={label}
       className={className ?? ""}
