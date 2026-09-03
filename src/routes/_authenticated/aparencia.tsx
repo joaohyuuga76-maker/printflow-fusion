@@ -168,7 +168,7 @@ function Aparencia() {
       <PageHeader
         title="Aparência e Cores"
         subtitle="Temas prontos, modo claro/escuro e personalização em tempo real"
-        actions={
+        action={
           <Button
             variant="destructive"
             onClick={() => {

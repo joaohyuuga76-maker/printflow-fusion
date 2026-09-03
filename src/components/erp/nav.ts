@@ -14,6 +14,7 @@ import {
   ShoppingCart,
   FileInput,
   ShieldCheck,
+  Palette,
 } from "lucide-react";
 
 export const navSections = [
@@ -52,6 +53,7 @@ export const navSections = [
     items: [
       { to: "/financeiro", label: "Financeiro", icon: Wallet },
       { to: "/usuarios", label: "Usuários & Permissões", icon: ShieldCheck },
+      { to: "/aparencia", label: "Aparência e Cores", icon: Palette },
       { to: "/configuracoes", label: "Configurações", icon: Cog },
     ],
   },
