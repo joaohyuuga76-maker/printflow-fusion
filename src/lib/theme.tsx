@@ -240,29 +240,61 @@ type Ctx = {
   palette: Palette;
 };
 
-const ThemeCtx = createContext<Ctx | null>(null);
+let current: ThemeConfig = DEFAULT_CONFIG;
+let hydrated = false;
+const listeners = new Set<() => void>();
+
+function emit() {
+  for (const l of listeners) l();
+}
+
+function subscribe(cb: () => void) {
+  listeners.add(cb);
+  return () => listeners.delete(cb);
+}
+
+function getSnapshot() {
+  return current;
+}
+
+function getServerSnapshot() {
+  return DEFAULT_CONFIG;
+}
+
+function commit(next: ThemeConfig) {
+  current = next;
+  applyTheme(next);
+  try {
+    localStorage.setItem(KEY, JSON.stringify(next));
+    localStorage.setItem("printflow-theme", next.mode);
+  } catch {
+    /* ignore */
+  }
+  emit();
+}
+
+function hydrate() {
+  if (hydrated || typeof window === "undefined") return;
+  hydrated = true;
+  current = load();
+  applyTheme(current);
+  emit();
+}
 
 export function AppearanceProvider({ children }: { children: ReactNode }) {
-  const [config, setConfig] = useState<ThemeConfig>(DEFAULT_CONFIG);
-
   useEffect(() => {
-    const initial = load();
-    setConfig(initial);
-    applyTheme(initial);
+    hydrate();
+  }, []);
+  return <>{children}</>;
+}
+
+export function useAppearance(): Ctx {
+  const config = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  useEffect(() => {
+    hydrate();
   }, []);
 
-  const commit = useCallback((next: ThemeConfig) => {
-    setConfig(next);
-    applyTheme(next);
-    try {
-      localStorage.setItem(KEY, JSON.stringify(next));
-      localStorage.setItem("printflow-theme", next.mode);
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  const value = useMemo<Ctx>(
+  return useMemo<Ctx>(
     () => ({
       config,
       palette: resolvePalette(config),
@@ -274,7 +306,10 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
         commit({ ...config, custom: { ...config.custom, [m]: { ...config.custom[m], ...patch } } });
       },
       resetCustom: () =>
-        commit({ ...config, custom: { dark: { ...DEFAULT_CONFIG.custom.dark }, light: { ...DEFAULT_CONFIG.custom.light } } }),
+        commit({
+          ...config,
+          custom: { dark: { ...DEFAULT_CONFIG.custom.dark }, light: { ...DEFAULT_CONFIG.custom.light } },
+        }),
       resetAll: () => {
         try {
           localStorage.removeItem(KEY);
@@ -282,18 +317,11 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
         } catch {
           /* ignore */
         }
-        setConfig(DEFAULT_CONFIG);
+        current = DEFAULT_CONFIG;
         applyTheme(DEFAULT_CONFIG);
+        emit();
       },
     }),
-    [config, commit],
+    [config],
   );
-
-  return <ThemeCtx.Provider value={value}>{children}</ThemeCtx.Provider>;
-}
-
-export function useAppearance() {
-  const ctx = useContext(ThemeCtx);
-  if (!ctx) throw new Error("useAppearance must be used inside AppearanceProvider");
-  return ctx;
 }
