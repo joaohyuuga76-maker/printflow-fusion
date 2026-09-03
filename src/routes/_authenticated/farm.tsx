@@ -14,9 +14,9 @@ import type { PrinterStatus } from "@/lib/erp-types";
 export const Route = createFileRoute("/_authenticated/farm")({
   head: () => ({
     meta: [
-      { title: "Minha Farm | PrintFlow 2K Lab" },
+      { title: "Minha Farm | VisionFlow ERP" },
       { name: "description", content: "Status em tempo real de cada impressora 3D: progresso, arquivo atual e manutenções." },
-      { property: "og:title", content: "Minha Farm — PrintFlow" },
+      { property: "og:title", content: "Minha Farm — VisionFlow ERP" },
       { property: "og:description", content: "Gestão visual das impressoras da sua farm 3D." },
     ],
   }),

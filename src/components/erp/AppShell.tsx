@@ -20,8 +20,8 @@ function Brand({ compact }: { compact?: boolean }) {
       </div>
       {!compact && (
         <div className="min-w-0">
-          <p className="truncate text-sm font-bold tracking-tight">PrintFlow</p>
-          <p className="truncate text-[11px] text-muted-foreground">2K Lab · ERP 3D</p>
+          <p className="truncate text-sm font-bold tracking-tight">VisionFlow ERP</p>
+          <p className="truncate text-[11px] text-muted-foreground">Gestão & Produção</p>
         </div>
       )}
     </div>
@@ -146,7 +146,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Sheet>
 
           <div className="min-w-0 flex-1 lg:hidden">
-            <p className="truncate text-sm font-bold">PrintFlow</p>
+            <p className="truncate text-sm font-bold">VisionFlow ERP</p>
           </div>
 
           <div className="hidden min-w-0 flex-1 items-center gap-2 lg:flex">

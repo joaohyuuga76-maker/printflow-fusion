@@ -17,9 +17,9 @@ import { brl, useErp } from "@/lib/erp-store";
 export const Route = createFileRoute("/_authenticated/catalogo")({
   head: () => ({
     meta: [
-      { title: "Catálogo de Produtos | PrintFlow 2K Lab" },
+      { title: "Catálogo de Produtos | VisionFlow ERP" },
       { name: "description", content: "Produtos recorrentes com peso, tempo de impressão e preço pré-salvos para orçar em segundos." },
-      { property: "og:title", content: "Catálogo de Produtos — PrintFlow" },
+      { property: "og:title", content: "Catálogo de Produtos — VisionFlow ERP" },
       { property: "og:description", content: "Peças recorrentes da farm 3D com tempos e pesos salvos." },
     ],
   }),

@@ -11,9 +11,9 @@ import type { Order, OrderStage } from "@/lib/erp-types";
 export const Route = createFileRoute("/_authenticated/vendas")({
   head: () => ({
     meta: [
-      { title: "Kanban de Vendas | PrintFlow 2K Lab" },
+      { title: "Kanban de Vendas | VisionFlow ERP" },
       { name: "description", content: "Acompanhe cada pedido do orçamento à entrega no quadro Kanban da sua farm 3D." },
-      { property: "og:title", content: "Kanban de Vendas — PrintFlow" },
+      { property: "og:title", content: "Kanban de Vendas — VisionFlow ERP" },
       { property: "og:description", content: "Pedidos de impressão 3D organizados por etapa de produção." },
     ],
   }),

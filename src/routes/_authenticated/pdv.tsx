@@ -28,13 +28,13 @@ import { brl, useErp } from "@/lib/erp-store";
 export const Route = createFileRoute("/_authenticated/pdv")({
   head: () => ({
     meta: [
-      { title: "Frente de Caixa (PDV) | PrintFlow 2K Lab" },
+      { title: "Frente de Caixa (PDV) | VisionFlow ERP" },
       {
         name: "description",
         content:
           "Abertura e fechamento de caixa, registro de vendas em dinheiro, Pix e cartão e resumo diário para conferência.",
       },
-      { property: "og:title", content: "Frente de Caixa — PrintFlow" },
+      { property: "og:title", content: "Frente de Caixa — VisionFlow ERP" },
       { property: "og:description", content: "PDV com controle de caixa diário da sua farm 3D." },
     ],
   }),

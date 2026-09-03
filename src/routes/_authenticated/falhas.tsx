@@ -16,9 +16,9 @@ import { brl, useErp } from "@/lib/erp-store";
 export const Route = createFileRoute("/_authenticated/falhas")({
   head: () => ({
     meta: [
-      { title: "Registro de Falhas | PrintFlow 2K Lab" },
+      { title: "Registro de Falhas | VisionFlow ERP" },
       { name: "description", content: "Histórico de peças perdidas, motivos técnicos e prejuízo em filamento da farm 3D." },
-      { property: "og:title", content: "Registro de Falhas — PrintFlow" },
+      { property: "og:title", content: "Registro de Falhas — VisionFlow ERP" },
       { property: "og:description", content: "Controle de perdas e falhas técnicas na impressão 3D." },
     ],
   }),

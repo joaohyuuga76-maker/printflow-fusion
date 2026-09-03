@@ -19,9 +19,9 @@ import { buildQuotePdf } from "@/lib/quote-pdf";
 export const Route = createFileRoute("/_authenticated/orcamento")({
   head: () => ({
     meta: [
-      { title: "Calculadora de Orçamentos | PrintFlow 2K Lab" },
+      { title: "Calculadora de Orçamentos | VisionFlow ERP" },
       { name: "description", content: "Calcule filamento, energia, depreciação e margem para precificar peças 3D com precisão." },
-      { property: "og:title", content: "Calculadora de Orçamentos 3D — PrintFlow" },
+      { property: "og:title", content: "Calculadora de Orçamentos 3D — VisionFlow ERP" },
       { property: "og:description", content: "Preço final sugerido e lucro real em segundos." },
     ],
   }),
@@ -97,7 +97,7 @@ function Orcamento() {
     return { fil, prt, g, h, filamentCost, energyCost, depCost, extras, failCost, total, price, profit: price - total };
   }, [filaments, printers, filamentId, printerId, weight, hours, minutes, extra, failRate, margin, settings.energyRate]);
 
-  const summary = `*Orçamento 2K Lab — PrintFlow*
+  const summary = `*Orçamento VisionFlow ERP*
 Cliente: ${client || "—"}
 Projeto: ${project || "—"}
 Material: ${calc.fil.brand} ${calc.fil.type} ${calc.fil.color}

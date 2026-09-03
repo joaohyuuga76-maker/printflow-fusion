@@ -49,7 +49,7 @@ export function buildQuotePdf(data: QuotePdfData) {
   doc.setTextColor(241, 245, 249);
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
-  doc.text(data.company || "PrintFlow — 2K Lab", M + 58, 45);
+  doc.text(data.company || "VisionFlow ERP", M + 58, 45);
   doc.setFont("helvetica", "normal").setFontSize(10);
   doc.setTextColor(148, 163, 184);
   doc.text(
@@ -124,7 +124,7 @@ export function buildQuotePdf(data: QuotePdfData) {
 
   doc.setTextColor(148, 163, 184).setFontSize(9);
   doc.text(
-    "Obrigado pela preferência! Documento gerado automaticamente pelo PrintFlow.",
+    "Obrigado pela preferência! Documento gerado automaticamente pelo VisionFlow ERP.",
     M,
     doc.internal.pageSize.getHeight() - 40,
   );

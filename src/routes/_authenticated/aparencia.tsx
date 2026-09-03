@@ -20,13 +20,13 @@ import {
 export const Route = createFileRoute("/_authenticated/aparencia")({
   head: () => ({
     meta: [
-      { title: "Aparência e Cores | PrintFlow 2K Lab" },
+      { title: "Aparência e Cores | VisionFlow ERP" },
       {
         name: "description",
         content:
           "Personalize o tema do ERP: presets Polycraft 3D, modo claro/escuro, cor primária, matiz, saturação e temperatura em tempo real.",
       },
-      { property: "og:title", content: "Aparência e Personalização de Cores — PrintFlow" },
+      { property: "og:title", content: "Aparência e Personalização de Cores — VisionFlow ERP" },
       { property: "og:description", content: "Temas prontos e color picker com pré-visualização instantânea." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
