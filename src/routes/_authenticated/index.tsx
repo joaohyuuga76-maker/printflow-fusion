@@ -40,7 +40,7 @@ import type { FinanceEntry } from "@/lib/erp-types";
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
-      { title: "Dashboard | VisionFlow ERP — Gestão & Produção VisionFlow" },
+      { title: "Dashboard | VisionFlow ERP" },
       {
         name: "description",
         content:
