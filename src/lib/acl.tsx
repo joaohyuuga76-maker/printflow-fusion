@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 export type AppRole = "admin" | "operador";
 
 /** Rotas liberadas para o perfil Operador/Atendente. */
-export const OPERATOR_ROUTES = ["/pdv", "/vendas"];
+export const OPERATOR_ROUTES = ["/pdv", "/vendas", "/aparencia"];
 
 interface RoleState {
   role: AppRole | null;
