@@ -44,8 +44,8 @@ function Orcamento() {
   const [contact, setContact] = useState("");
   const [qty, setQty] = useState("1");
   const [project, setProject] = useState("");
-  const [filamentId, setFilamentId] = useState(filaments[0]!.id);
-  const [printerId, setPrinterId] = useState(printers[0]!.id);
+  const [filamentId, setFilamentId] = useState(filaments[0]?.id ?? "");
+  const [printerId, setPrinterId] = useState(printers[0]?.id ?? "");
   const [weight, setWeight] = useState("120");
   const [hours, setHours] = useState("4");
   const [minutes, setMinutes] = useState("30");
@@ -80,8 +80,10 @@ function Orcamento() {
   };
 
   const calc = useMemo(() => {
-    const fil = filaments.find((f) => f.id === filamentId)!;
-    const prt = printers.find((p) => p.id === printerId)!;
+    const fil = filaments.find((f) => f.id === filamentId) ??
+      filaments[0] ?? { id: "", brand: "—", type: "—", color: "—", pricePerKg: 0 };
+    const prt = printers.find((p) => p.id === printerId) ??
+      printers[0] ?? { id: "", name: "—", watts: 0, depreciationPerHour: 0 };
     const g = Number(weight) || 0;
     const h = (Number(hours) || 0) + (Number(minutes) || 0) / 60;
     const filamentCost = (g / 1000) * fil.pricePerKg;
