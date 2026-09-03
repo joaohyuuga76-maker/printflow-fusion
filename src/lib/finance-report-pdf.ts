@@ -32,7 +32,7 @@ export function buildFinanceReportPdf(data: FinanceReportData) {
   }
   const textX = data.logoUrl ? M + 58 : M;
   doc.setTextColor(241, 245, 249).setFont("helvetica", "bold").setFontSize(18);
-  doc.text(data.company || "PrintFlow — 2K Lab", textX, 45);
+  doc.text(data.company || "VisionFlow ERP", textX, 45);
   doc.setFont("helvetica", "normal").setFontSize(10).setTextColor(148, 163, 184);
   doc.text(
     `Relatório de Custo e Lucro${data.cnpj ? ` · CNPJ ${data.cnpj}` : ""}${data.phone ? ` · ${data.phone}` : ""}`,
@@ -86,7 +86,7 @@ export function buildFinanceReportPdf(data: FinanceReportData) {
 
   doc.setTextColor(148, 163, 184).setFontSize(9);
   doc.text(
-    "Documento gerado automaticamente pelo PrintFlow.",
+    "Documento gerado automaticamente pelo VisionFlow ERP.",
     M,
     doc.internal.pageSize.getHeight() - 40,
   );

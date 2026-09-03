@@ -15,9 +15,9 @@ import { brl, useErp } from "@/lib/erp-store";
 export const Route = createFileRoute("/_authenticated/maquinas")({
   head: () => ({
     meta: [
-      { title: "Máquinas & Custos Extras | PrintFlow 2K Lab" },
+      { title: "Máquinas & Custos Extras | VisionFlow ERP" },
       { name: "description", content: "Cadastro de impressoras com potência, depreciação por hora, tarifa de energia e insumos extras." },
-      { property: "og:title", content: "Máquinas & Custos — PrintFlow" },
+      { property: "og:title", content: "Máquinas & Custos — VisionFlow ERP" },
       { property: "og:description", content: "Parâmetros de custo que alimentam a calculadora de orçamentos." },
     ],
   }),

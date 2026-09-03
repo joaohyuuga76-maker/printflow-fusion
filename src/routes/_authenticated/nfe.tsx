@@ -20,13 +20,13 @@ import { brl, useErp } from "@/lib/erp-store";
 export const Route = createFileRoute("/_authenticated/nfe")({
   head: () => ({
     meta: [
-      { title: "Entrada de Nota Fiscal | PrintFlow 2K Lab" },
+      { title: "Entrada de Nota Fiscal | VisionFlow ERP" },
       {
         name: "description",
         content:
           "Importe o XML da NF-e, confira os itens, vincule aos filamentos ou produtos e atualize o estoque com lançamento em contas a pagar.",
       },
-      { property: "og:title", content: "Entrada de NF-e — PrintFlow" },
+      { property: "og:title", content: "Entrada de NF-e — VisionFlow ERP" },
       { property: "og:description", content: "Conferência e entrada automatizada de notas fiscais." },
     ],
   }),

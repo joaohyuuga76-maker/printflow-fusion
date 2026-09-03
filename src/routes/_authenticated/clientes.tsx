@@ -10,9 +10,9 @@ import { brl, useErp } from "@/lib/erp-store";
 export const Route = createFileRoute("/_authenticated/clientes")({
   head: () => ({
     meta: [
-      { title: "Clientes (CRM) | PrintFlow 2K Lab" },
+      { title: "Clientes (CRM) | VisionFlow ERP" },
       { name: "description", content: "Cadastro de clientes da farm 3D com histórico de compras e ticket médio." },
-      { property: "og:title", content: "CRM de Clientes — PrintFlow" },
+      { property: "og:title", content: "CRM de Clientes — VisionFlow ERP" },
       { property: "og:description", content: "Histórico de compras e relacionamento com clientes da impressão 3D." },
     ],
   }),

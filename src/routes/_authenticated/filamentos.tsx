@@ -33,9 +33,9 @@ import type { Filament } from "@/lib/erp-types";
 export const Route = createFileRoute("/_authenticated/filamentos")({
   head: () => ({
     meta: [
-      { title: "Filamentos & Estoque | PrintFlow 2K Lab" },
+      { title: "Filamentos & Estoque | VisionFlow ERP" },
       { name: "description", content: "Controle de carretéis PLA, PETG, ABS e TPU com peso restante em gramas e alerta de estoque baixo." },
-      { property: "og:title", content: "Controle de Filamentos — PrintFlow" },
+      { property: "og:title", content: "Controle de Filamentos — VisionFlow ERP" },
       { property: "og:description", content: "Estoque de carretéis com baixa automática por falhas e produção." },
     ],
   }),

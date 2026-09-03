@@ -12,13 +12,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Entrar | PrintFlow 2K Lab" },
+      { title: "Entrar | VisionFlow ERP" },
       {
         name: "description",
-        content: "Acesse sua conta do PrintFlow e gerencie sua farm de impressão 3D com dados salvos na nuvem.",
+        content: "Acesse sua conta do VisionFlow ERP e gerencie sua farm de impressão 3D com dados salvos na nuvem.",
       },
-      { property: "og:title", content: "Entrar no PrintFlow" },
-      { property: "og:description", content: "Login do ERP de impressão 3D da 2K Lab." },
+      { property: "og:title", content: "Entrar no VisionFlow ERP" },
+      { property: "og:description", content: "Login do ERP de impressão 3D ." },
     ],
   }),
   component: AuthPage,
@@ -111,8 +111,8 @@ function AuthPage() {
             <Zap className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-lg font-bold tracking-tight">PrintFlow</h1>
-            <p className="text-xs text-muted-foreground">2K Lab · ERP de impressão 3D</p>
+            <h1 className="text-lg font-bold tracking-tight">VisionFlow ERP</h1>
+            <p className="text-xs text-muted-foreground">Sistema de Gestão & Produção</p>
           </div>
         </div>
 

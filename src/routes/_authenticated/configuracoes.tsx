@@ -11,13 +11,13 @@ import { useErp } from "@/lib/erp-store";
 export const Route = createFileRoute("/_authenticated/configuracoes")({
   head: () => ({
     meta: [
-      { title: "Configurações da Loja | PrintFlow 2K Lab" },
+      { title: "Configurações da Loja | VisionFlow ERP" },
       {
         name: "description",
         content:
           "Nome da empresa, contato, chave Pix, logomarca e parâmetros de custo usados nos orçamentos e relatórios.",
       },
-      { property: "og:title", content: "Configurações da Loja — PrintFlow" },
+      { property: "og:title", content: "Configurações da Loja — VisionFlow ERP" },
       { property: "og:description", content: "Personalize sua loja, logo e parâmetros do ERP 3D." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -46,7 +46,7 @@ function Configuracoes() {
               <Input
                 value={settings.company}
                 onChange={(e) => updateSettings({ company: e.target.value })}
-                placeholder="2K Lab — PrintFlow"
+                placeholder="VisionFlow ERP"
               />
             </div>
             <div className="grid gap-2">

@@ -43,13 +43,13 @@ import {
 export const Route = createFileRoute("/_authenticated/usuarios")({
   head: () => ({
     meta: [
-      { title: "Usuários & Permissões | PrintFlow 2K Lab" },
+      { title: "Usuários & Permissões | VisionFlow ERP" },
       {
         name: "description",
         content:
           "Cadastre operadores e administradores e defina o nível de acesso de cada usuário do ERP.",
       },
-      { property: "og:title", content: "Usuários & Permissões — PrintFlow" },
+      { property: "og:title", content: "Usuários & Permissões — VisionFlow ERP" },
       { property: "og:description", content: "Controle de perfis de acesso do ERP 3D." },
     ],
   }),

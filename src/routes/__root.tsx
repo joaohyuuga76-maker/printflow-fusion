@@ -79,13 +79,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "PrintFlow — ERP de Impressão 3D | 2K Lab" },
+      { title: "VisionFlow ERP" },
       {
         name: "description",
         content: "ERP completo para farms de impressão 3D: pedidos, orçamentos, filamentos, impressoras e financeiro.",
       },
-      { name: "author", content: "2K Lab" },
-      { property: "og:title", content: "PrintFlow — ERP de Impressão 3D" },
+      { name: "author", content: "VisionFlow" },
+      { property: "og:title", content: "VisionFlow ERP — Gestão & Produção" },
       { property: "og:description", content: "Gestão completa da sua farm 3D em um só painel." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

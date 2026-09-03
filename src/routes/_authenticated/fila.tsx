@@ -9,9 +9,9 @@ import { brl, useErp } from "@/lib/erp-store";
 export const Route = createFileRoute("/_authenticated/fila")({
   head: () => ({
     meta: [
-      { title: "Fila de Impressão | PrintFlow 2K Lab" },
+      { title: "Fila de Impressão | VisionFlow ERP" },
       { name: "description", content: "Peças prontas para rodar organizadas por prioridade, peso e tempo estimado." },
-      { property: "og:title", content: "Fila de Impressão — PrintFlow" },
+      { property: "og:title", content: "Fila de Impressão — VisionFlow ERP" },
       { property: "og:description", content: "Priorize os jobs da sua farm 3D." },
     ],
   }),

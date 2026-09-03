@@ -56,13 +56,13 @@ const periodLabels: Record<string, string> = {
 export const Route = createFileRoute("/_authenticated/financeiro")({
   head: () => ({
     meta: [
-      { title: "Financeiro | PrintFlow 2K Lab" },
+      { title: "Financeiro | VisionFlow ERP" },
       {
         name: "description",
         content:
           "Contas a receber, contas a pagar e DRE em tempo real da sua operação de impressão 3D.",
       },
-      { property: "og:title", content: "Financeiro — PrintFlow" },
+      { property: "og:title", content: "Financeiro — VisionFlow ERP" },
       {
         property: "og:description",
         content: "Controle de recebimentos, despesas e resultado líquido da farm 3D.",

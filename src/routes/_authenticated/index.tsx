@@ -40,13 +40,13 @@ import type { FinanceEntry } from "@/lib/erp-types";
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
-      { title: "Dashboard | PrintFlow — ERP de Impressão 3D 2K Lab" },
+      { title: "Dashboard | VisionFlow ERP — Gestão & Produção VisionFlow" },
       {
         name: "description",
         content:
           "Painel completo da sua farm 3D: faturamento, lucro líquido, custos de produção, filamentos e status das impressoras.",
       },
-      { property: "og:title", content: "PrintFlow — ERP de Impressão 3D" },
+      { property: "og:title", content: "VisionFlow ERP — Gestão & Produção" },
       {
         property: "og:description",
         content: "Gestão de pedidos, farm de impressoras, filamentos e finanças em um só lugar.",
