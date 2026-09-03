@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useSyncExternalStore, type ReactNode } from "react";
 
 export type Mode = "dark" | "light";
 export type PresetId = "polycraft" | "padrao";
