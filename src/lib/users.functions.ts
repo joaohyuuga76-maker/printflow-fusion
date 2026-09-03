@@ -10,11 +10,14 @@ export interface AppUser {
 }
 
 async function assertAdmin(context: { supabase: any; userId: string }) {
-  const { data: isAdmin } = await context.supabase.rpc("has_role", {
-    _user_id: context.userId,
-    _role: "admin",
-  });
-  if (!isAdmin) throw new Error("Acesso restrito a administradores.");
+  // Checked with the caller's own (RLS-scoped) client: users may only read their own roles.
+  const { data } = await context.supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", context.userId)
+    .eq("role", "admin")
+    .maybeSingle();
+  if (!data) throw new Error("Acesso restrito a administradores.");
 }
 
 export const listAppUsers = createServerFn({ method: "GET" })
