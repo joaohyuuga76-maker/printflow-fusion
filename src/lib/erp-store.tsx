@@ -20,6 +20,13 @@ import type {
   Product,
   Settings,
 } from "./erp-types";
+import {
+  readLocalImages,
+  readLocalSettings,
+  removeLocalImage,
+  saveLocalImage,
+  writeLocalSettings,
+} from "./local-cache";
 
 const defaultSettings: Settings = {
   company: "Minha Farm 3D",
@@ -148,6 +155,8 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           failures: p.failures,
         })),
       );
+      const localFilamentImages = readLocalImages("filaments");
+      const localProductImages = readLocalImages("products");
       setFilaments(
         (fi.data ?? []).map((f) => ({
           id: f.id,
@@ -158,7 +167,8 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           totalG: Number(f.total_g),
           remainingG: Number(f.remaining_g),
           pricePerKg: Number(f.price_per_kg),
-          imageUrl: (f as { image_url?: string | null }).image_url ?? null,
+          imageUrl:
+            (f as { image_url?: string | null }).image_url ?? localFilamentImages[f.id] ?? null,
         })),
       );
       setOrders(
@@ -186,7 +196,8 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           hours: Number(p.hours),
           price: Number(p.price),
           sold: p.sold,
-          imageUrl: (p as { image_url?: string | null }).image_url ?? null,
+          imageUrl:
+            (p as { image_url?: string | null }).image_url ?? localProductImages[p.id] ?? null,
         })),
       );
       const orderRows = or_.data ?? [];
@@ -223,6 +234,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           unit: e.unit,
         })),
       );
+      const localSettings = readLocalSettings<Settings>();
       if (st.data) {
         setSettings({
           company: st.data.company,
@@ -233,8 +245,12 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           phone: (st.data as { phone?: string }).phone ?? "",
           pixKey: (st.data as { pix_key?: string }).pix_key ?? "",
           logoUrl: (st.data as { logo_url?: string | null }).logo_url ?? null,
+          ...localSettings,
         });
+      } else {
+        setSettings((prev) => ({ ...prev, ...localSettings }));
       }
+
       setLoading(false);
     })();
     return () => {
@@ -343,7 +359,10 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           })
           .select()
           .single();
-        if (data) setFilaments((prev) => [...prev, { ...f, id: data.id }]);
+        if (data) {
+          saveLocalImage("filaments", data.id, f.imageUrl ?? null);
+          setFilaments((prev) => [...prev, { ...f, id: data.id }]);
+        }
       })();
     },
     [userId],
@@ -366,7 +385,10 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           })
           .select()
           .single();
-        if (data) setProducts((prev) => [...prev, { ...p, id: data.id, sold: 0 }]);
+        if (data) {
+          saveLocalImage("products", data.id, p.imageUrl ?? null);
+          setProducts((prev) => [...prev, { ...p, id: data.id, sold: 0 }]);
+        }
       })();
     },
     [userId],
@@ -461,6 +483,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
     (s) => {
       setSettings((prev) => {
         const next = { ...prev, ...s };
+        writeLocalSettings(next);
         if (userId) {
           void supabase.from("settings").upsert(
             {
@@ -502,6 +525,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const updateFilament = useCallback<Store["updateFilament"]>((id, patch) => {
+    if (patch.imageUrl !== undefined) saveLocalImage("filaments", id, patch.imageUrl ?? null);
     setFilaments((prev) => prev.map((f) => (f.id === id ? { ...f, ...patch } : f)));
     const row = {
       ...(patch.brand !== undefined ? { brand: patch.brand } : {}),
@@ -517,6 +541,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const deleteFilament = useCallback<Store["deleteFilament"]>((id) => {
+    removeLocalImage("filaments", id);
     setFilaments((prev) => prev.filter((f) => f.id !== id));
     void supabase.from("filaments").delete().eq("id", id);
   }, []);
@@ -559,6 +584,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const updateProduct = useCallback<Store["updateProduct"]>((id, patch) => {
+    if (patch.imageUrl !== undefined) saveLocalImage("products", id, patch.imageUrl ?? null);
     setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
     const row = {
       ...(patch.name !== undefined ? { name: patch.name } : {}),
@@ -573,6 +599,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const deleteProduct = useCallback<Store["deleteProduct"]>((id) => {
+    removeLocalImage("products", id);
     setProducts((prev) => prev.filter((p) => p.id !== id));
     void supabase.from("products").delete().eq("id", id);
   }, []);
