@@ -234,8 +234,8 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           unit: e.unit,
         })),
       );
+      const localSettings = readLocalSettings<Settings>();
       if (st.data) {
-        const localSettings = readLocalSettings<Settings>();
         setSettings({
           company: st.data.company,
           cnpj: st.data.cnpj,
@@ -247,7 +247,10 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           logoUrl: (st.data as { logo_url?: string | null }).logo_url ?? null,
           ...localSettings,
         });
+      } else {
+        setSettings((prev) => ({ ...prev, ...localSettings }));
       }
+
       setLoading(false);
     })();
     return () => {
