@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
   Calculator,
@@ -10,6 +10,7 @@ import {
   Plus,
   Save,
   Settings2,
+  Timer,
   Wallet,
   X,
 } from "lucide-react";
@@ -40,7 +41,7 @@ export const Route = createFileRoute("/_authenticated/orcamento")({
       {
         name: "description",
         content:
-          "Precificação comercial avançada: custo unitário, desconto progressivo por lote, lucro líquido e condição de pagamento.",
+          "Precificação comercial avançada: custo unitário, margem desejada, desconto progressivo por lote e lucro líquido real.",
       },
       { property: "og:title", content: "Calculadora Comercial 3D — VisionFlow ERP" },
       { property: "og:description", content: "Preço por lote, lucro real e margem líquida em segundos." },
@@ -60,6 +61,16 @@ function parseHours(input: string): number {
   }
   return Number(raw) || 0;
 }
+
+/** 25.5 -> "25h30" */
+function fmtHours(h: number): string {
+  const total = Math.round(h * 60);
+  const hh = Math.floor(total / 60);
+  const mm = total % 60;
+  return `${hh}h${String(mm).padStart(2, "0")}`;
+}
+
+const fmtWeight = (g: number) => (g >= 1000 ? `${(g / 1000).toFixed(2)} kg` : `${Math.round(g)} g`);
 
 const TIERS = [
   { min: 20, pct: 30 },
@@ -103,6 +114,7 @@ function NumberField({
 
 function Orcamento() {
   const { settings, addOrder, orders, updateOrder } = useErp();
+  const navigate = useNavigate();
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [client, setClient] = useState("");
@@ -111,7 +123,9 @@ function Orcamento() {
   const [weight, setWeight] = useState("120");
   const [time, setTime] = useState("4:30");
   const [qty, setQty] = useState(1);
-  const [basePrice, setBasePrice] = useState("150");
+  const [margin, setMargin] = useState("100");
+  const [basePrice, setBasePrice] = useState("");
+  const [manualBase, setManualBase] = useState(false);
 
   // Custos operacionais avançados
   const [filamentKg, setFilamentKg] = useState("103");
@@ -122,14 +136,54 @@ function Orcamento() {
 
   const editable = orders.filter((o) => o.stage === "orcamento" || o.stage === "aprovado");
 
+  // Custos unitários
+  const unitG = Number(weight) || 0;
+  const unitH = parseHours(time);
+  const units = Math.max(1, qty);
+  const material = (unitG / 1000) * (Number(filamentKg) || 0);
+  const energy = unitH * ((Number(watts) || 0) / 1000) * (Number(energyRate) || 0);
+  const wear = unitH * (Number(wearPerHour) || 0);
+  const finish = Number(finishing) || 0;
+  const unitCost = material + energy + wear + finish;
+  const suggestedBase = unitCost * (1 + (Number(margin) || 0) / 100);
+
+  // Preenche o preço base automaticamente enquanto o usuário não editar à mão
+  useEffect(() => {
+    if (!manualBase) setBasePrice(suggestedBase ? suggestedBase.toFixed(2) : "0.00");
+  }, [suggestedBase, manualBase]);
+
+  const c = useMemo(() => {
+    const base = Number(String(basePrice).replace(",", ".")) || 0;
+    const discount = discountFor(units);
+    const unitPrice = base * (1 - discount / 100);
+    const revenue = unitPrice * units;
+    const totalCost = unitCost * units;
+    const profit = revenue - totalCost;
+    const marginReal = revenue > 0 ? (profit / revenue) * 100 : 0;
+    return {
+      base,
+      discount,
+      unitPrice,
+      revenue,
+      totalCost,
+      profit,
+      marginReal,
+      entry: revenue / 2,
+      totalH: unitH * units,
+      totalG: unitG * units,
+    };
+  }, [basePrice, units, unitCost, unitH, unitG]);
+
   const loadOrder = (id: string) => {
     const o = orders.find((x) => x.id === id);
     if (!o) return;
     setEditingId(o.id);
     setClient(o.client);
     setPiece(o.title);
+    setQty(1);
     setWeight(String(o.weightG));
     setTime(String(o.hours));
+    setManualBase(true);
     setBasePrice(String(o.value));
     toast.info(`Editando orçamento ${o.ref}`);
   };
@@ -142,49 +196,80 @@ function Orcamento() {
     setWeight("120");
     setTime("4:30");
     setQty(1);
-    setBasePrice("150");
+    setMargin("100");
+    setManualBase(false);
   };
 
-  const c = useMemo(() => {
-    const g = Number(weight) || 0;
-    const h = parseHours(time);
-    const units = Math.max(1, qty);
-    const material = (g / 1000) * (Number(filamentKg) || 0);
-    const energy = h * ((Number(watts) || 0) / 1000) * (Number(energyRate) || 0);
-    const wear = h * (Number(wearPerHour) || 0);
-    const finish = Number(finishing) || 0;
-    const unitCost = material + energy + wear + finish;
-    const base = Number(basePrice) || 0;
-    const discount = discountFor(units);
-    const unitPrice = base * (1 - discount / 100);
-    const revenue = unitPrice * units;
-    const totalCost = unitCost * units;
-    const profit = revenue - totalCost;
-    const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
-    return {
-      g,
-      h,
-      units,
-      material,
-      energy,
-      wear,
-      finish,
-      unitCost,
-      discount,
-      unitPrice,
-      revenue,
-      totalCost,
-      profit,
-      margin,
-      entry: revenue / 2,
-    };
-  }, [weight, time, qty, filamentKg, energyRate, watts, wearPerHour, finishing, basePrice]);
+  const orderPayload = () => ({
+    client: client || "Cliente novo",
+    title: `${piece || "Peça sob demanda"}${units > 1 ? ` (lote ${units} un)` : ""}`,
+    value: Number(c.revenue.toFixed(2)),
+    cost: Number(c.totalCost.toFixed(2)),
+    weightG: Number(c.totalG.toFixed(0)),
+    hours: Number(c.totalH.toFixed(2)),
+  });
+
+  const saveOrder = (goToSales: boolean) => {
+    const payload = orderPayload();
+    if (editingId) {
+      updateOrder(editingId, payload);
+      toast.success("Orçamento atualizado!");
+    } else {
+      addOrder({
+        ref: `#VF-${Math.floor(1050 + Math.random() * 900)}`,
+        ...payload,
+        stage: "orcamento",
+        date: new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+        channel: "Calculadora",
+        priority: "media",
+      });
+      toast.success(
+        `Orçamento do lote gerado: ${units} un a ${brl(c.unitPrice)} · total ${brl(c.revenue)} (50/50)`,
+      );
+    }
+    if (goToSales) void navigate({ to: "/vendas" });
+  };
+
+  const exportPdf = () => {
+    const doc = buildQuotePdf({
+      company: settings.company,
+      cnpj: settings.cnpj,
+      phone: settings.phone,
+      pixKey: settings.pixKey,
+      logoUrl: settings.logoUrl,
+      client: client || "Cliente novo",
+      contact,
+      items: [
+        {
+          name: piece || "Peça sob demanda",
+          qty: units,
+          hours: fmtHours(c.totalH),
+          material: fmtWeight(c.totalG),
+          price: c.revenue,
+        },
+      ],
+      total: c.revenue,
+      production: {
+        totalHours: fmtHours(c.totalH),
+        totalWeight: fmtWeight(c.totalG),
+        unitHours: fmtHours(unitH),
+        unitWeight: fmtWeight(unitG),
+        unitPrice: c.unitPrice,
+        discount: c.discount,
+      },
+      payment: `Entrada de ${brl(c.entry)} (50% via Pix) e ${brl(c.entry)} na entrega`,
+      deadline: `${Math.max(2, Math.ceil(c.totalH / 8) + 1)} dias úteis`,
+      validity: "7 dias corridos a partir da emissão",
+    });
+    doc.save(`orcamento-${(client || "cliente").toLowerCase().replace(/\s+/g, "-")}.pdf`);
+    toast.success("PDF do orçamento gerado!");
+  };
 
   const summary = `*Orçamento ${settings.company || "VisionFlow ERP"}*
 Cliente: ${client || "—"}
 Peça: ${piece || "—"}
-Quantidade: ${c.units} un${c.discount ? ` (${c.discount}% OFF)` : ""}
-Peso: ${c.g}g | Tempo: ${c.h.toFixed(2)}h por peça
+Quantidade: ${units} un${c.discount ? ` (${c.discount}% OFF)` : ""}
+Tempo total: ${fmtHours(c.totalH)} | Filamento: ${fmtWeight(c.totalG)}
 
 Valor unitário: ${brl(c.unitPrice)}
 *Total: ${brl(c.revenue)}*
@@ -195,7 +280,7 @@ Na entrega (50%): ${brl(c.entry)}`;
     <div>
       <PageHeader
         title="Calculadora Comercial"
-        subtitle="Custo real, desconto progressivo por lote e lucro líquido por pedido"
+        subtitle="Custo real, margem desejada, desconto progressivo por lote e lucro líquido do pedido"
       />
 
       <div className="mb-4 flex flex-col gap-3 rounded-xl border border-border bg-card/70 p-3 backdrop-blur sm:flex-row sm:items-end">
@@ -244,11 +329,11 @@ Na entrega (50%): ${brl(c.entry)}`;
                 <Input value={contact} onChange={(e) => setContact(e.target.value)} placeholder="(11) 99999-0000" />
               </div>
               <div className="grid gap-2">
-                <Label>Peso (gramas)</Label>
+                <Label>Peso unitário (gramas)</Label>
                 <Input inputMode="decimal" value={weight} onChange={(e) => setWeight(e.target.value)} />
               </div>
               <div className="grid gap-2">
-                <Label>Tempo de impressão (hh:mm ou decimal)</Label>
+                <Label>Tempo unitário (hh:mm ou decimal)</Label>
                 <Input value={time} onChange={(e) => setTime(e.target.value)} placeholder="4:30" />
               </div>
               <div className="grid gap-2">
@@ -274,8 +359,33 @@ Na entrega (50%): ${brl(c.entry)}`;
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label>Preço base avulso (R$)</Label>
-                <Input inputMode="decimal" value={basePrice} onChange={(e) => setBasePrice(e.target.value)} />
+                <Label>Margem de lucro desejada (%)</Label>
+                <Input inputMode="decimal" value={margin} onChange={(e) => setMargin(e.target.value)} />
+              </div>
+              <div className="grid gap-2 sm:col-span-2">
+                <div className="flex items-center justify-between">
+                  <Label>Preço base avulso (R$)</Label>
+                  {manualBase && (
+                    <button
+                      type="button"
+                      className="text-[11px] font-semibold text-info underline"
+                      onClick={() => setManualBase(false)}
+                    >
+                      voltar ao cálculo automático
+                    </button>
+                  )}
+                </div>
+                <Input
+                  inputMode="decimal"
+                  value={basePrice}
+                  onChange={(e) => {
+                    setManualBase(true);
+                    setBasePrice(e.target.value);
+                  }}
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  Sugerido: custo {brl(unitCost)} + {Number(margin) || 0}% = {brl(suggestedBase)}
+                </p>
               </div>
             </div>
 
@@ -306,7 +416,7 @@ Na entrega (50%): ${brl(c.entry)}`;
                 { r: "10–19 un", p: "23.3%", min: 10 },
                 { r: "20+ un", p: "30%", min: 20 },
               ].map((t) => {
-                const active = discountFor(c.units) === discountFor(t.min);
+                const active = discountFor(units) === discountFor(t.min);
                 return (
                   <div
                     key={t.r}
@@ -323,18 +433,43 @@ Na entrega (50%): ${brl(c.entry)}`;
               })}
             </div>
           </div>
+
+          <div className="rounded-xl border border-info/30 bg-info/10 p-4">
+            <p className="flex items-center gap-2 text-sm font-semibold">
+              <Timer className="h-4 w-4 text-info" /> Produção do lote ({units} un)
+            </p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              <div className="rounded-lg border border-border/60 bg-background/40 p-3">
+                <p className="text-[11px] text-muted-foreground">Tempo total de impressão</p>
+                <p className="text-xl font-bold">{fmtHours(c.totalH)}</p>
+                <p className="text-[11px] text-muted-foreground">{fmtHours(unitH)} por peça</p>
+              </div>
+              <div className="rounded-lg border border-border/60 bg-background/40 p-3">
+                <p className="text-[11px] text-muted-foreground">Filamento total</p>
+                <p className="text-xl font-bold">{fmtWeight(c.totalG)}</p>
+                <p className="text-[11px] text-muted-foreground">{fmtWeight(unitG)} por peça</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Resultados */}
         <div className="space-y-4 lg:col-span-2">
           <div className="rounded-xl border border-border bg-card/70 p-4 backdrop-blur">
-            <p className="text-sm font-semibold">Custo unitário</p>
+            <div className="flex items-center justify-between text-sm font-semibold">
+              <span>Custo unitário</span>
+              <span className="text-muted-foreground">Total do lote</span>
+            </div>
             <div className="mt-2">
-              <Row label="Material (filamento)" value={brl(c.material)} />
-              <Row label="Energia" value={brl(c.energy)} />
-              <Row label="Desgaste da máquina" value={brl(c.wear)} />
-              <Row label="Acabamento" value={brl(c.finish)} />
-              <Row label="Custo total por peça" value={brl(c.unitCost)} tone="text-danger" />
+              <Row label="Material (filamento)" value={`${brl(material)} · ${brl(material * units)}`} />
+              <Row label="Energia" value={`${brl(energy)} · ${brl(energy * units)}`} />
+              <Row label="Desgaste da máquina" value={`${brl(wear)} · ${brl(wear * units)}`} />
+              <Row label="Acabamento" value={`${brl(finish)} · ${brl(finish * units)}`} />
+              <Row
+                label="Custo"
+                value={`${brl(unitCost)} · ${brl(c.totalCost)}`}
+                tone="text-danger"
+              />
             </div>
           </div>
 
@@ -349,7 +484,7 @@ Na entrega (50%): ${brl(c.entry)}`;
             </div>
             <p className="mt-1 text-3xl font-bold text-profit">{brl(c.unitPrice)}</p>
             <p className="text-xs text-muted-foreground">
-              {c.units} {c.units > 1 ? "peças" : "peça"} · base {brl(Number(basePrice) || 0)}
+              {units} {units > 1 ? "peças" : "peça"} · base {brl(c.base)}
             </p>
             <div className="mt-4 grid gap-2 sm:grid-cols-3">
               <div className="rounded-lg border border-border/60 bg-background/40 p-2">
@@ -357,15 +492,15 @@ Na entrega (50%): ${brl(c.entry)}`;
                 <p className="text-sm font-bold">{brl(c.revenue)}</p>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/40 p-2">
-                <p className="text-[11px] text-muted-foreground">Lucro líquido</p>
+                <p className="text-[11px] text-muted-foreground">Lucro líquido real</p>
                 <p className={`text-sm font-bold ${c.profit >= 0 ? "text-profit" : "text-danger"}`}>
                   {brl(c.profit)}
                 </p>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/40 p-2">
-                <p className="text-[11px] text-muted-foreground">Margem líquida</p>
-                <p className={`text-sm font-bold ${c.margin >= 0 ? "text-profit" : "text-danger"}`}>
-                  {c.margin.toFixed(1)}%
+                <p className="text-[11px] text-muted-foreground">Margem líquida real</p>
+                <p className={`text-sm font-bold ${c.marginReal >= 0 ? "text-profit" : "text-danger"}`}>
+                  {c.marginReal.toFixed(1)}%
                 </p>
               </div>
             </div>
@@ -386,64 +521,14 @@ Na entrega (50%): ${brl(c.entry)}`;
           </div>
 
           <div className="grid gap-2">
-            <Button
-              onClick={() => {
-                const payload = {
-                  client: client || "Cliente novo",
-                  title: piece || "Peça sob demanda",
-                  value: Number(c.revenue.toFixed(2)),
-                  cost: Number(c.totalCost.toFixed(2)),
-                  weightG: c.g * c.units,
-                  hours: Number((c.h * c.units).toFixed(2)),
-                };
-                if (editingId) {
-                  updateOrder(editingId, payload);
-                  toast.success("Orçamento atualizado!");
-                  return;
-                }
-                addOrder({
-                  ref: `#VF-${Math.floor(1050 + Math.random() * 900)}`,
-                  ...payload,
-                  stage: "orcamento",
-                  date: new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
-                  channel: "Calculadora",
-                  priority: "media",
-                });
-                toast.success("Pedido criado no Kanban de Vendas!");
-              }}
-            >
-              {editingId ? <Save className="h-4 w-4" /> : <FilePlus2 className="h-4 w-4" />}
-              {editingId ? "Salvar alterações" : "Gerar Pedido"}
+            <Button onClick={() => saveOrder(true)}>
+              <FilePlus2 className="h-4 w-4" /> Gerar Orçamento deste Lote
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                const doc = buildQuotePdf({
-                  company: settings.company,
-                  cnpj: settings.cnpj,
-                  phone: settings.phone,
-                  pixKey: settings.pixKey,
-                  logoUrl: settings.logoUrl,
-                  client: client || "Cliente novo",
-                  contact,
-                  items: [
-                    {
-                      name: piece || "Peça sob demanda",
-                      qty: c.units,
-                      hours: `${c.h.toFixed(2)}h`,
-                      material: `${c.g}g`,
-                      price: c.revenue,
-                    },
-                  ],
-                  total: c.revenue,
-                  payment: `Entrada de ${brl(c.entry)} (50% via Pix) e ${brl(c.entry)} na entrega`,
-                  deadline: `${Math.max(2, Math.ceil((c.h * c.units) / 8) + 1)} dias úteis`,
-                  validity: "7 dias corridos a partir da emissão",
-                });
-                doc.save(`orcamento-${(client || "cliente").toLowerCase().replace(/\s+/g, "-")}.pdf`);
-                toast.success("PDF do orçamento gerado!");
-              }}
-            >
+            <Button variant="outline" onClick={() => saveOrder(false)}>
+              {editingId ? <Save className="h-4 w-4" /> : <FilePlus2 className="h-4 w-4" />}
+              {editingId ? "Salvar alterações" : "Salvar sem sair"}
+            </Button>
+            <Button variant="outline" onClick={exportPdf}>
               <FileDown className="h-4 w-4" /> Exportar PDF
             </Button>
             <Button
