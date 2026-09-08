@@ -16,6 +16,14 @@ export interface QuotePdfData {
     price: number;
   }[];
   total: number;
+  production?: {
+    totalHours: string;
+    totalWeight: string;
+    unitHours: string;
+    unitWeight: string;
+    unitPrice: number;
+    discount: number;
+  };
   payment: string;
   deadline: string;
   validity: string;
