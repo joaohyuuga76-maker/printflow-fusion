@@ -95,7 +95,10 @@ export function ErpProvider({ children }: { children: ReactNode }) {
   const [failures, setFailures] = useState<Failure[]>([]);
   const [extras, setExtras] = useState<ExtraCost[]>([]);
   const [finance, setFinance] = useState<FinanceEntry[]>([]);
-  const [settings, setSettings] = useState<Settings>(defaultSettings);
+  const [settings, setSettings] = useState<Settings>(() => ({
+    ...defaultSettings,
+    ...readLocalSettings<Settings>(),
+  }));
   const [failureOpen, setFailureOpen] = useState(false);
 
   useEffect(() => {
