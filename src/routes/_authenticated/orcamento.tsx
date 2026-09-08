@@ -137,15 +137,15 @@ function Orcamento() {
   const editable = orders.filter((o) => o.stage === "orcamento" || o.stage === "aprovado");
 
   // Custos unitários
-  const unitG = Number(weight) || 0;
+  const unitG = num(weight);
   const unitH = parseHours(time);
   const units = Math.max(1, qty);
-  const material = (unitG / 1000) * (Number(filamentKg) || 0);
-  const energy = unitH * ((Number(watts) || 0) / 1000) * (Number(energyRate) || 0);
-  const wear = unitH * (Number(wearPerHour) || 0);
-  const finish = Number(finishing) || 0;
+  const material = (unitG / 1000) * num(filamentKg);
+  const energy = unitH * (num(watts) / 1000) * num(energyRate);
+  const wear = unitH * num(wearPerHour);
+  const finish = num(finishing);
   const unitCost = material + energy + wear + finish;
-  const suggestedBase = unitCost * (1 + (Number(margin) || 0) / 100);
+  const suggestedBase = unitCost * (1 + num(margin) / 100);
 
   // Preenche o preço base automaticamente enquanto o usuário não editar à mão
   useEffect(() => {
