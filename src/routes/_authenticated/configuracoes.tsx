@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Save, Store } from "lucide-react";
@@ -26,8 +27,29 @@ export const Route = createFileRoute("/_authenticated/configuracoes")({
   component: Configuracoes,
 });
 
+/** Parse flexível: aceita "," ou "." e nunca reseta o input durante digitação. */
+const parseNum = (v: string) => {
+  const cleaned = v.trim().replace(",", ".");
+  if (cleaned === "" || cleaned === "-" || cleaned === "." || cleaned === "-.") return 0;
+  const n = Number(cleaned);
+  return isFinite(n) ? n : 0;
+};
+
 function Configuracoes() {
   const { settings, updateSettings } = useErp();
+
+  // Estados-string locais para permitir digitar "0.", "1,5" sem reset imediato do input.
+  const [energyRateStr, setEnergyRateStr] = useState(String(settings.energyRate ?? ""));
+  const [defaultMarginStr, setDefaultMarginStr] = useState(String(settings.defaultMargin ?? ""));
+  const [failureRateStr, setFailureRateStr] = useState(String(settings.failureRate ?? ""));
+
+  useEffect(() => {
+    // Sincroniza quando settings vem do storage / supabase (só se o usuário não estiver digitando algo diferente numericamente equivalente).
+    if (parseNum(energyRateStr) !== Number(settings.energyRate)) setEnergyRateStr(String(settings.energyRate ?? ""));
+    if (parseNum(defaultMarginStr) !== Number(settings.defaultMargin)) setDefaultMarginStr(String(settings.defaultMargin ?? ""));
+    if (parseNum(failureRateStr) !== Number(settings.failureRate)) setFailureRateStr(String(settings.failureRate ?? ""));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings.energyRate, settings.defaultMargin, settings.failureRate]);
 
   return (
     <div>
@@ -44,6 +66,7 @@ function Configuracoes() {
             <div className="grid gap-2">
               <Label>Nome da empresa</Label>
               <Input
+                data-testid="settings-company-input"
                 value={settings.company}
                 onChange={(e) => updateSettings({ company: e.target.value })}
                 placeholder="VisionFlow ERP"
@@ -52,6 +75,7 @@ function Configuracoes() {
             <div className="grid gap-2">
               <Label>Telefone / Contato</Label>
               <Input
+                data-testid="settings-phone-input"
                 value={settings.phone}
                 onChange={(e) => updateSettings({ phone: e.target.value })}
                 placeholder="(11) 99999-0000"
@@ -59,11 +83,16 @@ function Configuracoes() {
             </div>
             <div className="grid gap-2">
               <Label>CNPJ</Label>
-              <Input value={settings.cnpj} onChange={(e) => updateSettings({ cnpj: e.target.value })} />
+              <Input
+                data-testid="settings-cnpj-input"
+                value={settings.cnpj}
+                onChange={(e) => updateSettings({ cnpj: e.target.value })}
+              />
             </div>
             <div className="grid gap-2">
               <Label>Chave Pix</Label>
               <Input
+                data-testid="settings-pix-input"
                 value={settings.pixKey}
                 onChange={(e) => updateSettings({ pixKey: e.target.value })}
                 placeholder="pix@2klab.com.br"
@@ -71,14 +100,18 @@ function Configuracoes() {
             </div>
             <div className="sm:col-span-2">
               <ImageField
-                label="Logomarca (aparece no PDF)"
+                label="Logomarca (aparece no header e no PDF)"
                 max={600}
                 value={settings.logoUrl ?? ""}
                 onChange={(v) => updateSettings({ logoUrl: v || null })}
               />
             </div>
           </div>
-          <Button className="mt-4" onClick={() => toast.success("Configurações da loja salvas!")}>
+          <Button
+            data-testid="settings-save-btn"
+            className="mt-4"
+            onClick={() => toast.success("Configurações da loja salvas!")}
+          >
             <Save className="h-4 w-4" /> Salvar
           </Button>
         </div>
@@ -89,25 +122,37 @@ function Configuracoes() {
             <div className="grid gap-2">
               <Label>Tarifa de energia (R$/kWh)</Label>
               <Input
+                data-testid="settings-energy-rate"
                 inputMode="decimal"
-                value={settings.energyRate}
-                onChange={(e) => updateSettings({ energyRate: Number(e.target.value) || 0 })}
+                value={energyRateStr}
+                onChange={(e) => {
+                  setEnergyRateStr(e.target.value);
+                  updateSettings({ energyRate: parseNum(e.target.value) });
+                }}
               />
             </div>
             <div className="grid gap-2">
               <Label>Margem padrão (%)</Label>
               <Input
-                inputMode="numeric"
-                value={settings.defaultMargin}
-                onChange={(e) => updateSettings({ defaultMargin: Number(e.target.value) || 0 })}
+                data-testid="settings-default-margin"
+                inputMode="decimal"
+                value={defaultMarginStr}
+                onChange={(e) => {
+                  setDefaultMarginStr(e.target.value);
+                  updateSettings({ defaultMargin: parseNum(e.target.value) });
+                }}
               />
             </div>
             <div className="grid gap-2">
               <Label>Taxa de falha padrão (%)</Label>
               <Input
-                inputMode="numeric"
-                value={settings.failureRate}
-                onChange={(e) => updateSettings({ failureRate: Number(e.target.value) || 0 })}
+                data-testid="settings-failure-rate"
+                inputMode="decimal"
+                value={failureRateStr}
+                onChange={(e) => {
+                  setFailureRateStr(e.target.value);
+                  updateSettings({ failureRate: parseNum(e.target.value) });
+                }}
               />
             </div>
           </div>

@@ -13,14 +13,26 @@ import { supabase } from "@/integrations/supabase/client";
 import { OPERATOR_ROUTES, useRole } from "@/lib/acl";
 
 function Brand({ compact }: { compact?: boolean }) {
+  const { settings } = useErp();
+  const company = (settings?.company || "").trim() || "VisionFlow ERP";
+  const logo = settings?.logoUrl || null;
   return (
     <div className="flex min-w-0 items-center gap-3 px-2">
-      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
-        <Zap className="h-5 w-5" />
+      <div
+        data-testid="brand-logo"
+        className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-xl bg-primary text-primary-foreground"
+      >
+        {logo ? (
+          <img src={logo} alt={company} className="h-full w-full object-cover" />
+        ) : (
+          <Zap className="h-5 w-5" />
+        )}
       </div>
       {!compact && (
         <div className="min-w-0">
-          <p className="truncate text-sm font-bold tracking-tight">VisionFlow ERP</p>
+          <p data-testid="brand-company-name" className="truncate text-sm font-bold tracking-tight">
+            {company}
+          </p>
           <p className="truncate text-[11px] text-muted-foreground">Gestão & Produção</p>
         </div>
       )}
@@ -80,7 +92,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { setFailureOpen, filaments } = useErp();
+  const { setFailureOpen, filaments, settings: erpSettings } = useErp();
   const { isAdmin, loading: roleLoading } = useRole();
   const lowStock = filaments.filter((f) => f.remainingG < 150).length;
 
@@ -146,7 +158,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Sheet>
 
           <div className="min-w-0 flex-1 lg:hidden">
-            <p className="truncate text-sm font-bold">VisionFlow ERP</p>
+            <p data-testid="brand-company-name-mobile" className="truncate text-sm font-bold">
+              {(erpSettings?.company || "").trim() || "VisionFlow ERP"}
+            </p>
           </div>
 
           <div className="hidden min-w-0 flex-1 items-center gap-2 lg:flex">

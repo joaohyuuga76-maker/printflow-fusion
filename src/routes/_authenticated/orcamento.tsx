@@ -62,6 +62,17 @@ function parseHours(input: string): number {
   return Number(raw) || 0;
 }
 
+/** Parsing numérico flexível — aceita vírgula ou ponto e nunca "reseta" durante digitação.
+ *  Só converte no cálculo final; strings intermediárias ("0.", "1,") viram 0/1 apenas no compute. */
+function num(input: string | number | undefined | null): number {
+  if (input === null || input === undefined) return 0;
+  if (typeof input === "number") return isFinite(input) ? input : 0;
+  const cleaned = String(input).trim().replace(",", ".");
+  if (cleaned === "" || cleaned === "-" || cleaned === "." || cleaned === "-.") return 0;
+  const n = Number(cleaned);
+  return isFinite(n) ? n : 0;
+}
+
 /** 25.5 -> "25h30" */
 function fmtHours(h: number): string {
   const total = Math.round(h * 60);
@@ -96,18 +107,25 @@ function NumberField({
   value,
   onChange,
   suffix,
+  testId,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   suffix?: string;
+  testId?: string;
 }) {
   return (
     <div className="grid gap-2">
       <Label className="text-xs text-muted-foreground">
         {label} {suffix ? <span className="opacity-70">({suffix})</span> : null}
       </Label>
-      <Input inputMode="decimal" value={value} onChange={(e) => onChange(e.target.value)} />
+      <Input
+        data-testid={testId}
+        inputMode="decimal"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
     </div>
   );
 }
@@ -318,28 +336,54 @@ Na entrega (50%): ${brl(c.entry)}`;
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2 sm:col-span-2">
                 <Label>Nome da peça</Label>
-                <Input value={piece} onChange={(e) => setPiece(e.target.value)} placeholder="Suporte de headset" />
+                <Input
+                  data-testid="calc-piece-name"
+                  value={piece}
+                  onChange={(e) => setPiece(e.target.value)}
+                  placeholder="Suporte de headset"
+                />
               </div>
               <div className="grid gap-2">
                 <Label>Cliente</Label>
-                <Input value={client} onChange={(e) => setClient(e.target.value)} placeholder="Studio Rocha" />
+                <Input
+                  data-testid="calc-client"
+                  value={client}
+                  onChange={(e) => setClient(e.target.value)}
+                  placeholder="Studio Rocha"
+                />
               </div>
               <div className="grid gap-2">
                 <Label>Contato</Label>
-                <Input value={contact} onChange={(e) => setContact(e.target.value)} placeholder="(11) 99999-0000" />
+                <Input
+                  data-testid="calc-contact"
+                  value={contact}
+                  onChange={(e) => setContact(e.target.value)}
+                  placeholder="(11) 99999-0000"
+                />
               </div>
               <div className="grid gap-2">
                 <Label>Peso unitário (gramas)</Label>
-                <Input inputMode="decimal" value={weight} onChange={(e) => setWeight(e.target.value)} />
+                <Input
+                  data-testid="calc-weight"
+                  inputMode="decimal"
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                />
               </div>
               <div className="grid gap-2">
                 <Label>Tempo unitário (hh:mm ou decimal)</Label>
-                <Input value={time} onChange={(e) => setTime(e.target.value)} placeholder="4:30" />
+                <Input
+                  data-testid="calc-time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  placeholder="4:30"
+                />
               </div>
               <div className="grid gap-2">
                 <Label>Quantidade</Label>
                 <div className="flex items-center gap-2">
                   <Button
+                    data-testid="calc-qty-minus"
                     type="button"
                     variant="outline"
                     size="icon"
@@ -348,19 +392,31 @@ Na entrega (50%): ${brl(c.entry)}`;
                     <Minus className="h-4 w-4" />
                   </Button>
                   <Input
+                    data-testid="calc-qty"
                     className="text-center"
                     inputMode="numeric"
                     value={qty}
                     onChange={(e) => setQty(Math.max(1, Number(e.target.value.replace(/\D/g, "")) || 1))}
                   />
-                  <Button type="button" variant="outline" size="icon" onClick={() => setQty((q) => q + 1)}>
+                  <Button
+                    data-testid="calc-qty-plus"
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setQty((q) => q + 1)}
+                  >
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
               <div className="grid gap-2">
                 <Label>Margem de lucro desejada (%)</Label>
-                <Input inputMode="decimal" value={margin} onChange={(e) => setMargin(e.target.value)} />
+                <Input
+                  data-testid="calc-margin"
+                  inputMode="decimal"
+                  value={margin}
+                  onChange={(e) => setMargin(e.target.value)}
+                />
               </div>
               <div className="grid gap-2 sm:col-span-2">
                 <div className="flex items-center justify-between">
@@ -376,6 +432,7 @@ Na entrega (50%): ${brl(c.entry)}`;
                   )}
                 </div>
                 <Input
+                  data-testid="calc-base-price"
                   inputMode="decimal"
                   value={basePrice}
                   onChange={(e) => {
@@ -384,7 +441,7 @@ Na entrega (50%): ${brl(c.entry)}`;
                   }}
                 />
                 <p className="text-[11px] text-muted-foreground">
-                  Sugerido: custo {brl(unitCost)} + {Number(margin) || 0}% = {brl(suggestedBase)}
+                  Sugerido: custo {brl(unitCost)} + {num(margin)}% = {brl(suggestedBase)}
                 </p>
               </div>
             </div>
@@ -398,11 +455,11 @@ Na entrega (50%): ${brl(c.entry)}`;
                 </AccordionTrigger>
                 <AccordionContent>
                   <div className="grid gap-4 pb-2 sm:grid-cols-2 lg:grid-cols-3">
-                    <NumberField label="Filamento" suffix="R$/kg" value={filamentKg} onChange={setFilamentKg} />
-                    <NumberField label="Energia" suffix="R$/kWh" value={energyRate} onChange={setEnergyRate} />
-                    <NumberField label="Potência" suffix="W" value={watts} onChange={setWatts} />
-                    <NumberField label="Desgaste da máquina" suffix="R$/h" value={wearPerHour} onChange={setWearPerHour} />
-                    <NumberField label="Acabamento" suffix="R$/peça" value={finishing} onChange={setFinishing} />
+                    <NumberField testId="calc-filament-kg" label="Filamento" suffix="R$/kg" value={filamentKg} onChange={setFilamentKg} />
+                    <NumberField testId="calc-energy-rate" label="Energia" suffix="R$/kWh" value={energyRate} onChange={setEnergyRate} />
+                    <NumberField testId="calc-watts" label="Potência" suffix="W" value={watts} onChange={setWatts} />
+                    <NumberField testId="calc-wear-hour" label="Desgaste da máquina" suffix="R$/h" value={wearPerHour} onChange={setWearPerHour} />
+                    <NumberField testId="calc-finishing" label="Acabamento" suffix="R$/peça" value={finishing} onChange={setFinishing} />
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -473,33 +530,33 @@ Na entrega (50%): ${brl(c.entry)}`;
             </div>
           </div>
 
-          <div className="rounded-xl border border-primary/30 bg-primary/10 p-4">
+          <div data-testid="calc-final-price-card" className="rounded-xl border border-primary/30 bg-primary/10 p-4">
             <div className="flex items-center justify-between">
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Preço final unitário</p>
               {c.discount > 0 && (
-                <span className="rounded-full bg-profit/20 px-2 py-0.5 text-[11px] font-bold text-profit">
+                <span data-testid="calc-discount-badge" className="rounded-full bg-profit/20 px-2 py-0.5 text-[11px] font-bold text-profit">
                   {c.discount}% OFF
                 </span>
               )}
             </div>
-            <p className="mt-1 text-3xl font-bold text-profit">{brl(c.unitPrice)}</p>
+            <p data-testid="calc-unit-price" className="mt-1 text-3xl font-bold text-profit">{brl(c.unitPrice)}</p>
             <p className="text-xs text-muted-foreground">
               {units} {units > 1 ? "peças" : "peça"} · base {brl(c.base)}
             </p>
             <div className="mt-4 grid gap-2 sm:grid-cols-3">
               <div className="rounded-lg border border-border/60 bg-background/40 p-2">
                 <p className="text-[11px] text-muted-foreground">Faturamento</p>
-                <p className="text-sm font-bold">{brl(c.revenue)}</p>
+                <p data-testid="calc-revenue" className="text-sm font-bold">{brl(c.revenue)}</p>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/40 p-2">
                 <p className="text-[11px] text-muted-foreground">Lucro líquido real</p>
-                <p className={`text-sm font-bold ${c.profit >= 0 ? "text-profit" : "text-danger"}`}>
+                <p data-testid="calc-profit" className={`text-sm font-bold ${c.profit >= 0 ? "text-profit" : "text-danger"}`}>
                   {brl(c.profit)}
                 </p>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/40 p-2">
                 <p className="text-[11px] text-muted-foreground">Margem líquida real</p>
-                <p className={`text-sm font-bold ${c.marginReal >= 0 ? "text-profit" : "text-danger"}`}>
+                <p data-testid="calc-margin-real" className={`text-sm font-bold ${c.marginReal >= 0 ? "text-profit" : "text-danger"}`}>
                   {c.marginReal.toFixed(1)}%
                 </p>
               </div>
@@ -521,17 +578,18 @@ Na entrega (50%): ${brl(c.entry)}`;
           </div>
 
           <div className="grid gap-2">
-            <Button onClick={() => saveOrder(true)}>
+            <Button data-testid="calc-generate-quote-btn" onClick={() => saveOrder(true)}>
               <FilePlus2 className="h-4 w-4" /> Gerar Orçamento deste Lote
             </Button>
-            <Button variant="outline" onClick={() => saveOrder(false)}>
+            <Button data-testid="calc-save-quote-btn" variant="outline" onClick={() => saveOrder(false)}>
               {editingId ? <Save className="h-4 w-4" /> : <FilePlus2 className="h-4 w-4" />}
               {editingId ? "Salvar alterações" : "Salvar sem sair"}
             </Button>
-            <Button variant="outline" onClick={exportPdf}>
+            <Button data-testid="calc-export-pdf-btn" variant="outline" onClick={exportPdf}>
               <FileDown className="h-4 w-4" /> Exportar PDF
             </Button>
             <Button
+              data-testid="calc-copy-summary-btn"
               variant="outline"
               onClick={() => {
                 void navigator.clipboard?.writeText(summary);
