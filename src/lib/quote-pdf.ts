@@ -16,6 +16,14 @@ export interface QuotePdfData {
     price: number;
   }[];
   total: number;
+  production?: {
+    totalHours: string;
+    totalWeight: string;
+    unitHours: string;
+    unitWeight: string;
+    unitPrice: number;
+    discount: number;
+  };
   payment: string;
   deadline: string;
   validity: string;
@@ -108,7 +116,24 @@ export function buildQuotePdf(data: QuotePdfData) {
   doc.text(`Total: ${brl(data.total)}`, W - M - 12, y + 6, { align: "right" });
 
   y += 62;
-  doc.setTextColor(15, 23, 42).setFontSize(12);
+  if (data.production) {
+    const p = data.production;
+    doc.setTextColor(15, 23, 42).setFont("helvetica", "bold").setFontSize(12);
+    doc.text("Produção estimada do lote", M, y);
+    y += 18;
+    doc.setFont("helvetica", "normal").setFontSize(10);
+    for (const line of [
+      `Tempo total estimado de produção: ${p.totalHours} (${p.unitHours} por peça)`,
+      `Peso total de filamento: ${p.totalWeight} (${p.unitWeight} por peça)`,
+      `Valor unitário: ${brl(p.unitPrice)}${p.discount > 0 ? ` (desconto de lote de ${p.discount}%)` : ""}`,
+    ]) {
+      doc.text(line, M, y);
+      y += 16;
+    }
+    y += 14;
+  }
+
+  doc.setTextColor(15, 23, 42).setFont("helvetica", "bold").setFontSize(12);
   doc.text("Condições comerciais", M, y);
   y += 18;
   doc.setFont("helvetica", "normal").setFontSize(10);
