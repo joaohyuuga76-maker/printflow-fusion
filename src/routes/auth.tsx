@@ -43,18 +43,39 @@ function AuthPage() {
     return t.includes("@") ? t : `${t.replace(/\s+/g, "")}@printflow.app`;
   };
 
+  const friendlyError = (message: string) => {
+    const m = message.toLowerCase();
+    if (m.includes("invalid login credentials")) return "E-mail ou senha incorretos.";
+    if (m.includes("email not confirmed")) return "Este acesso ainda não foi confirmado.";
+    if (m.includes("user not found")) return "Usuário não encontrado.";
+    if (m.includes("too many") || m.includes("rate limit"))
+      return "Muitas tentativas. Aguarde alguns instantes e tente novamente.";
+    if (m.includes("network") || m.includes("fetch"))
+      return "Sem conexão com o servidor. Verifique sua internet.";
+    return "Não foi possível entrar. Tente novamente.";
+  };
+
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user.trim() || !password) {
+      toast.error("Informe usuário e senha.");
+      return;
+    }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: toLogin(user),
       password,
     });
     setLoading(false);
     if (error) {
-      toast.error("Usuário ou senha inválidos.");
+      toast.error(friendlyError(error.message));
       return;
     }
+    if (!data.session) {
+      toast.error("Sessão não pôde ser iniciada. Tente novamente.");
+      return;
+    }
+    toast.success("Bem-vindo de volta!");
     navigate({ to: "/", replace: true });
   };
 
