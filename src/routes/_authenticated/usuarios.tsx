@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Loader2, Trash2, UserPlus } from "lucide-react";
+import { Loader2, Pencil, Trash2, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,6 +37,7 @@ import {
   deleteAppUser,
   listAppUsers,
   setAppUserRole,
+  updateAppUser,
   type AppUser,
 } from "@/lib/users.functions";
 
