@@ -264,6 +264,66 @@ function Usuarios() {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar usuário</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-3">
+            <div className="grid gap-2">
+              <Label htmlFor="eu-name">Nome</Label>
+              <Input
+                id="eu-name"
+                value={editForm.fullName}
+                onChange={(e) => setEditForm((f) => ({ ...f, fullName: e.target.value }))}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="eu-email">Usuário (e-mail)</Label>
+              <Input
+                id="eu-email"
+                type="email"
+                value={editForm.email}
+                onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="eu-pass">Nova senha (opcional)</Label>
+              <Input
+                id="eu-pass"
+                type="password"
+                placeholder="Deixe em branco para manter a atual"
+                value={editForm.password}
+                onChange={(e) => setEditForm((f) => ({ ...f, password: e.target.value }))}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Perfil de acesso</Label>
+              <Select
+                value={editForm.role}
+                onValueChange={(v) => setEditForm((f) => ({ ...f, role: v as AppUser["role"] }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="operador">Operador / Atendente</SelectItem>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)}>
+              Cancelar
+            </Button>
+            <Button disabled={saving} onClick={saveEdit}>
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />} Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <AlertDialog open={!!removing} onOpenChange={(v) => !v && setRemoving(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
