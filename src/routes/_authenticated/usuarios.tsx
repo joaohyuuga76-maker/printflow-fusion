@@ -69,6 +69,13 @@ function Usuarios() {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [removing, setRemoving] = useState<AppUser | null>(null);
+  const [editing, setEditing] = useState<AppUser | null>(null);
+  const [editForm, setEditForm] = useState({
+    email: "",
+    fullName: "",
+    password: "",
+    role: "operador" as AppUser["role"],
+  });
   const [form, setForm] = useState({
     email: "",
     password: "",
