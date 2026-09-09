@@ -27,13 +27,7 @@ export interface Filament {
 }
 
 export type OrderStage =
-  | "orcamento"
-  | "aprovado"
-  | "fila"
-  | "impressao"
-  | "pos"
-  | "envio"
-  | "concluido";
+  "orcamento" | "aprovado" | "fila" | "impressao" | "pos" | "envio" | "concluido";
 
 export interface Order {
   id: string;

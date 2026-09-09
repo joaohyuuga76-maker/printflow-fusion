@@ -94,7 +94,7 @@ export function RowActions({
             <DialogTitle>Editar {title}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 sm:grid-cols-2">
-            {fields.map((f) => (
+            {fields.map((f) =>
               f.image ? (
                 <div key={f.key} className="sm:col-span-2">
                   <ImageField
@@ -104,35 +104,35 @@ export function RowActions({
                   />
                 </div>
               ) : (
-              <div key={f.key} className="grid gap-2">
-                <Label>{f.label}</Label>
-                {f.options ? (
-                  <Select
-                    value={form[f.key] ?? ""}
-                    onValueChange={(v) => setForm({ ...form, [f.key]: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {f.options.map((o) => (
-                        <SelectItem key={o.value} value={o.value}>
-                          {o.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Input
-                    {...(f.numeric ? { inputMode: "decimal" as const } : {})}
-                    {...(f.color ? { type: "color", className: "h-9 p-1" } : {})}
-                    value={form[f.key] ?? ""}
-                    onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
-                  />
-                )}
-              </div>
-              )
-            ))}
+                <div key={f.key} className="grid gap-2">
+                  <Label>{f.label}</Label>
+                  {f.options ? (
+                    <Select
+                      value={form[f.key] ?? ""}
+                      onValueChange={(v) => setForm({ ...form, [f.key]: v })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {f.options.map((o) => (
+                          <SelectItem key={o.value} value={o.value}>
+                            {o.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      {...(f.numeric ? { inputMode: "decimal" as const } : {})}
+                      {...(f.color ? { type: "color", className: "h-9 p-1" } : {})}
+                      value={form[f.key] ?? ""}
+                      onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
+                    />
+                  )}
+                </div>
+              ),
+            )}
           </div>
           <DialogFooter>
             <Button

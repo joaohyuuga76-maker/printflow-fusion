@@ -27,7 +27,10 @@ export const Route = createFileRoute("/_authenticated/aparencia")({
           "Personalize o tema do ERP: presets Polycraft 3D, modo claro/escuro, cor primária, matiz, saturação e temperatura em tempo real.",
       },
       { property: "og:title", content: "Aparência e Personalização de Cores — VisionFlow ERP" },
-      { property: "og:description", content: "Temas prontos e color picker com pré-visualização instantânea." },
+      {
+        property: "og:description",
+        content: "Temas prontos e color picker com pré-visualização instantânea.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -40,7 +43,11 @@ function Swatches({ preset, mode }: { preset: PresetId; mode: Mode }) {
   return (
     <div className="flex gap-1.5">
       {[p.background, p.card, p.primary, p.foreground, p.border].map((c, i) => (
-        <span key={i} className="h-5 w-5 rounded-md border border-border" style={{ background: c }} />
+        <span
+          key={i}
+          className="h-5 w-5 rounded-md border border-border"
+          style={{ background: c }}
+        />
       ))}
     </div>
   );
@@ -56,7 +63,11 @@ function Aparencia() {
     return (
       <div key={m} className="rounded-xl border border-border bg-card p-4">
         <p className="flex items-center gap-2 text-sm font-semibold">
-          {m === "dark" ? <Moon className="h-4 w-4 text-info" /> : <Sun className="h-4 w-4 text-warn" />}
+          {m === "dark" ? (
+            <Moon className="h-4 w-4 text-info" />
+          ) : (
+            <Sun className="h-4 w-4 text-warn" />
+          )}
           {m === "dark" ? "Modo Escuro" : "Modo Claro"}
         </p>
 
@@ -124,7 +135,11 @@ function Aparencia() {
                 <Thermometer className="h-3.5 w-3.5" /> Temperatura de cor
               </span>
               <span className="text-muted-foreground">
-                {adj.temp === 0 ? "neutra" : adj.temp > 0 ? `+${adj.temp} quente` : `${adj.temp} fria`}
+                {adj.temp === 0
+                  ? "neutra"
+                  : adj.temp > 0
+                    ? `+${adj.temp} quente`
+                    : `${adj.temp} fria`}
               </span>
             </Label>
             <Slider
@@ -206,11 +221,15 @@ function Aparencia() {
                   <p className="text-xs text-muted-foreground">{PRESETS[id].hint}</p>
                   <div className="flex flex-wrap items-center gap-4">
                     <div className="grid gap-1">
-                      <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Escuro</span>
+                      <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                        Escuro
+                      </span>
                       <Swatches preset={id} mode="dark" />
                     </div>
                     <div className="grid gap-1">
-                      <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Claro</span>
+                      <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                        Claro
+                      </span>
                       <Swatches preset={id} mode="light" />
                     </div>
                   </div>
@@ -229,10 +248,16 @@ function Aparencia() {
                   onClick={() => setMode(m)}
                   className={cn(
                     "flex items-center gap-2 px-3 py-1.5 text-xs transition-colors",
-                    config.mode === m ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent",
+                    config.mode === m
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent",
                   )}
                 >
-                  {m === "dark" ? <Moon className="h-3.5 w-3.5" /> : <Sun className="h-3.5 w-3.5" />}
+                  {m === "dark" ? (
+                    <Moon className="h-3.5 w-3.5" />
+                  ) : (
+                    <Sun className="h-3.5 w-3.5" />
+                  )}
                   {m === "dark" ? "Escuro" : "Claro"}
                 </button>
               ))}
@@ -243,7 +268,9 @@ function Aparencia() {
           </div>
         </div>
 
-        <div className="grid gap-3 xl:grid-cols-2">{(["dark", "light"] as Mode[]).map(editMode)}</div>
+        <div className="grid gap-3 xl:grid-cols-2">
+          {(["dark", "light"] as Mode[]).map(editMode)}
+        </div>
 
         <p className="text-xs text-muted-foreground">
           As preferências ficam salvas neste navegador (localStorage). Padrão oficial:{" "}

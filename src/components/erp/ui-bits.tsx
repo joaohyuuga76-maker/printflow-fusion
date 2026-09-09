@@ -45,11 +45,15 @@ export function StatCard({
     <div className="rounded-xl border border-border bg-card p-4 transition-colors hover:border-muted-foreground/30">
       <div className="flex items-start justify-between gap-3">
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
-        <span className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-lg border", tones[tone])}>
+        <span
+          className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-lg border", tones[tone])}
+        >
           <Icon className="h-4 w-4" />
         </span>
       </div>
-      <p className={cn("mt-3 text-2xl font-bold tracking-tight", tones[tone].split(" ")[0])}>{value}</p>
+      <p className={cn("mt-3 text-2xl font-bold tracking-tight", tones[tone].split(" ")[0])}>
+        {value}
+      </p>
       {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
     </div>
   );

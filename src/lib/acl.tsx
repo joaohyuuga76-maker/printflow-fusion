@@ -26,10 +26,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
     void (async () => {
       const { data: auth } = await supabase.auth.getUser();
       if (!auth.user) return;
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", auth.user.id);
+      const { data } = await supabase.from("user_roles").select("role").eq("user_id", auth.user.id);
       if (!active) return;
       const roles = (data ?? []).map((r) => r.role as AppRole);
       setRole(roles.includes("admin") ? "admin" : (roles[0] ?? "operador"));

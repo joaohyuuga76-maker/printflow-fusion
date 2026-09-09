@@ -17,9 +17,16 @@ export const Route = createFileRoute("/_authenticated/falhas")({
   head: () => ({
     meta: [
       { title: "Registro de Falhas | VisionFlow ERP" },
-      { name: "description", content: "Histórico de peças perdidas, motivos técnicos e prejuízo em filamento da farm 3D." },
+      {
+        name: "description",
+        content:
+          "Histórico de peças perdidas, motivos técnicos e prejuízo em filamento da farm 3D.",
+      },
       { property: "og:title", content: "Registro de Falhas — VisionFlow ERP" },
-      { property: "og:description", content: "Controle de perdas e falhas técnicas na impressão 3D." },
+      {
+        property: "og:description",
+        content: "Controle de perdas e falhas técnicas na impressão 3D.",
+      },
     ],
   }),
   component: Falhas,
@@ -42,10 +49,25 @@ function Falhas() {
         }
       />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Falhas registradas" value={String(failures.length)} icon={AlertTriangle} tone="danger" />
-        <StatCard label="Filamento perdido" value={`${totalG} g`} icon={AlertTriangle} tone="warn" />
+        <StatCard
+          label="Falhas registradas"
+          value={String(failures.length)}
+          icon={AlertTriangle}
+          tone="danger"
+        />
+        <StatCard
+          label="Filamento perdido"
+          value={`${totalG} g`}
+          icon={AlertTriangle}
+          tone="warn"
+        />
         <StatCard label="Prejuízo total" value={brl(totalR)} icon={AlertTriangle} tone="danger" />
-        <StatCard label="Custo médio/falha" value={brl(failures.length ? totalR / failures.length : 0)} icon={AlertTriangle} tone="production" />
+        <StatCard
+          label="Custo médio/falha"
+          value={brl(failures.length ? totalR / failures.length : 0)}
+          icon={AlertTriangle}
+          tone="production"
+        />
       </div>
 
       <div className="mt-4 overflow-x-auto rounded-xl border border-border bg-card">
@@ -66,7 +88,9 @@ function Falhas() {
               const fil = filaments.find((x) => x.id === f.filamentId);
               return (
                 <TableRow key={f.id}>
-                  <TableCell className="whitespace-nowrap text-muted-foreground">{f.date}</TableCell>
+                  <TableCell className="whitespace-nowrap text-muted-foreground">
+                    {f.date}
+                  </TableCell>
                   <TableCell className="whitespace-nowrap">{p?.name ?? "—"}</TableCell>
                   <TableCell className="whitespace-nowrap">
                     <span className="inline-flex items-center gap-2">
@@ -75,8 +99,12 @@ function Falhas() {
                     </span>
                   </TableCell>
                   <TableCell className="text-warn">{f.lostG}g</TableCell>
-                  <TableCell><Badge variant="secondary">{f.reason}</Badge></TableCell>
-                  <TableCell className="text-right font-semibold text-danger">{brl(f.cost)}</TableCell>
+                  <TableCell>
+                    <Badge variant="secondary">{f.reason}</Badge>
+                  </TableCell>
+                  <TableCell className="text-right font-semibold text-danger">
+                    {brl(f.cost)}
+                  </TableCell>
                 </TableRow>
               );
             })}

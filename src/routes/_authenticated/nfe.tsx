@@ -27,7 +27,10 @@ export const Route = createFileRoute("/_authenticated/nfe")({
           "Importe o XML da NF-e, confira os itens, vincule aos filamentos ou produtos e atualize o estoque com lançamento em contas a pagar.",
       },
       { property: "og:title", content: "Entrada de NF-e — VisionFlow ERP" },
-      { property: "og:description", content: "Conferência e entrada automatizada de notas fiscais." },
+      {
+        property: "og:description",
+        content: "Conferência e entrada automatizada de notas fiscais.",
+      },
     ],
   }),
   component: () => (
@@ -163,7 +166,8 @@ function NfeEntrada() {
 
     addFinance({
       kind: "payable",
-      description: `Entrada NF-e ${accessKey ? accessKey.slice(-9) : ""} · ${items.length} item(ns)`.trim(),
+      description:
+        `Entrada NF-e ${accessKey ? accessKey.slice(-9) : ""} · ${items.length} item(ns)`.trim(),
       party: supplier || "Fornecedor",
       amount: total,
       dueDate: issueDate,
@@ -254,7 +258,10 @@ function NfeEntrada() {
         ) : (
           <div className="divide-y divide-border">
             {items.map((i) => (
-              <div key={i.key} className="grid gap-2 p-3 lg:grid-cols-[2fr_90px_120px_150px_1fr_auto] lg:items-end">
+              <div
+                key={i.key}
+                className="grid gap-2 p-3 lg:grid-cols-[2fr_90px_120px_150px_1fr_auto] lg:items-end"
+              >
                 <div className="grid gap-1">
                   <Label className="text-xs">Descrição</Label>
                   <Input
@@ -335,7 +342,8 @@ function NfeEntrada() {
       </div>
 
       <p className="mt-3 text-xs text-muted-foreground">
-        Itens vinculados a filamentos entram no estoque considerando a quantidade em quilos (1 = 1 kg).
+        Itens vinculados a filamentos entram no estoque considerando a quantidade em quilos (1 = 1
+        kg).
       </p>
     </div>
   );

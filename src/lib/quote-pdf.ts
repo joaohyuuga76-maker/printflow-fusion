@@ -29,8 +29,7 @@ export interface QuotePdfData {
   validity: string;
 }
 
-const brl = (n: number) =>
-  n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 export function buildQuotePdf(data: QuotePdfData) {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
@@ -65,12 +64,9 @@ export function buildQuotePdf(data: QuotePdfData) {
     M + 58,
     62,
   );
-  doc.text(
-    `Orçamento emitido em ${new Date().toLocaleDateString("pt-BR")}`,
-    W - M,
-    45,
-    { align: "right" },
-  );
+  doc.text(`Orçamento emitido em ${new Date().toLocaleDateString("pt-BR")}`, W - M, 45, {
+    align: "right",
+  });
 
   let y = 128;
   doc.setTextColor(15, 23, 42);

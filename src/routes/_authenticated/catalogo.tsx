@@ -18,9 +18,16 @@ export const Route = createFileRoute("/_authenticated/catalogo")({
   head: () => ({
     meta: [
       { title: "Catálogo de Produtos | VisionFlow ERP" },
-      { name: "description", content: "Produtos recorrentes com peso, tempo de impressão e preço pré-salvos para orçar em segundos." },
+      {
+        name: "description",
+        content:
+          "Produtos recorrentes com peso, tempo de impressão e preço pré-salvos para orçar em segundos.",
+      },
       { property: "og:title", content: "Catálogo de Produtos — VisionFlow ERP" },
-      { property: "og:description", content: "Peças recorrentes da farm 3D com tempos e pesos salvos." },
+      {
+        property: "og:description",
+        content: "Peças recorrentes da farm 3D com tempos e pesos salvos.",
+      },
     ],
   }),
   component: Catalogo,
@@ -48,18 +55,20 @@ function Catalogo() {
             ]}
             onSubmit={(v) =>
               addProduct({
-                name: v['name'] || "Novo produto",
-                category: v['category'] || "Geral",
-                weightG: Number(v['weightG']) || 0,
-                hours: Number(v['hours']) || 0,
-                price: Number(v['price']) || 0,
-                imageUrl: v['imageUrl'] || null,
+                name: v["name"] || "Novo produto",
+                category: v["category"] || "Geral",
+                weightG: Number(v["weightG"]) || 0,
+                hours: Number(v["hours"]) || 0,
+                price: Number(v["price"]) || 0,
+                imageUrl: v["imageUrl"] || null,
               })
             }
           />
         }
       />
-      {products.length === 0 && <EmptyState text="Catálogo vazio. Cadastre seus produtos recorrentes." />}
+      {products.length === 0 && (
+        <EmptyState text="Catálogo vazio. Cadastre seus produtos recorrentes." />
+      )}
       <div className="overflow-x-auto rounded-xl border border-border bg-card">
         <Table>
           <TableHeader>
@@ -92,11 +101,15 @@ function Catalogo() {
                     {p.name}
                   </span>
                 </TableCell>
-                <TableCell><Badge variant="secondary">{p.category}</Badge></TableCell>
+                <TableCell>
+                  <Badge variant="secondary">{p.category}</Badge>
+                </TableCell>
                 <TableCell className="whitespace-nowrap">{p.weightG}g</TableCell>
                 <TableCell className="whitespace-nowrap">{p.hours}h</TableCell>
                 <TableCell className="whitespace-nowrap">{brl(p.price)}</TableCell>
-                <TableCell className="whitespace-nowrap text-right font-semibold text-profit">{brl(p.price * p.sold)}</TableCell>
+                <TableCell className="whitespace-nowrap text-right font-semibold text-profit">
+                  {brl(p.price * p.sold)}
+                </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end">
                     <RowActions
@@ -123,13 +136,13 @@ function Catalogo() {
                       }}
                       onSave={(v) =>
                         updateProduct(p.id, {
-                          name: v['name'] ?? p.name,
-                          category: v['category'] ?? p.category,
-                          weightG: Number(v['weightG']) || 0,
-                          hours: Number(v['hours']) || 0,
-                          price: Number(v['price']) || 0,
-                          sold: Number(v['sold']) || 0,
-                          imageUrl: v['imageUrl'] || null,
+                          name: v["name"] ?? p.name,
+                          category: v["category"] ?? p.category,
+                          weightG: Number(v["weightG"]) || 0,
+                          hours: Number(v["hours"]) || 0,
+                          price: Number(v["price"]) || 0,
+                          sold: Number(v["sold"]) || 0,
+                          imageUrl: v["imageUrl"] || null,
                         })
                       }
                       onDelete={() => deleteProduct(p.id)}

@@ -277,7 +277,7 @@ function Financeiro() {
     const periodLabel =
       filters.period === "custom"
         ? `${filters.from || "início"} até ${filters.to || "hoje"}`
-        : periodLabels[filters.period] ?? "Todo o período";
+        : (periodLabels[filters.period] ?? "Todo o período");
     const doc = buildFinanceReportPdf({
       company: settings.company,
       cnpj: settings.cnpj,
@@ -359,7 +359,12 @@ function Financeiro() {
 
         <TabsContent value="dre" className="mt-4">
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <StatCard label="Total recebido" value={brl(recebido)} icon={ArrowDownCircle} tone="profit" />
+            <StatCard
+              label="Total recebido"
+              value={brl(recebido)}
+              icon={ArrowDownCircle}
+              tone="profit"
+            />
             <StatCard label="Total pago" value={brl(pago)} icon={ArrowUpCircle} tone="danger" />
             <StatCard label="A receber (pendente)" value={brl(aReceber)} icon={Clock} tone="info" />
             <StatCard label="A pagar (pendente)" value={brl(aPagar)} icon={Clock} tone="warn" />
@@ -422,7 +427,8 @@ function Financeiro() {
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir lançamento?</AlertDialogTitle>
             <AlertDialogDescription>
-              {toDelete?.description} será removido definitivamente. Essa ação não pode ser desfeita.
+              {toDelete?.description} será removido definitivamente. Essa ação não pode ser
+              desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

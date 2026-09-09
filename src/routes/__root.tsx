@@ -82,7 +82,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "VisionFlow ERP" },
       {
         name: "description",
-        content: "ERP completo para farms de impressão 3D: pedidos, orçamentos, filamentos, impressoras e financeiro.",
+        content:
+          "ERP completo para farms de impressão 3D: pedidos, orçamentos, filamentos, impressoras e financeiro.",
       },
       { name: "author", content: "VisionFlow" },
       { property: "og:title", content: "VisionFlow ERP — Gestão & Produção" },

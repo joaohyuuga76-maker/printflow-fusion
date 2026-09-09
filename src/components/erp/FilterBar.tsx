@@ -69,7 +69,11 @@ export function useFilters() {
     const term = filters.q.trim().toLowerCase();
     return (...parts: (string | number | null | undefined)[]) => {
       if (!term) return true;
-      return parts.some((p) => String(p ?? "").toLowerCase().includes(term));
+      return parts.some((p) =>
+        String(p ?? "")
+          .toLowerCase()
+          .includes(term),
+      );
     };
   }, [filters.q]);
 

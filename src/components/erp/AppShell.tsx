@@ -2,7 +2,16 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { ThemeToggle } from "@/components/erp/ThemeToggle";
-import { AlertTriangle, Boxes, LogOut, Menu, PanelLeftClose, PanelLeftOpen, ShoppingCart, Zap } from "lucide-react";
+import {
+  AlertTriangle,
+  Boxes,
+  LogOut,
+  Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
+  ShoppingCart,
+  Zap,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
@@ -50,37 +59,37 @@ function NavList({ compact, onNavigate }: { compact?: boolean; onNavigate?: () =
         .map((section) => ({ ...section, items: section.items.filter((i) => allowed(i.to)) }))
         .filter((section) => section.items.length > 0)
         .map((section) => (
-        <div key={section.label}>
-          {!compact && (
-            <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-              {section.label}
-            </p>
-          )}
-          <div className="flex flex-col gap-1">
-            {section.items.map((item) => {
-              const active = pathname === item.to;
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  onClick={onNavigate}
-                  title={item.label}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                    active
-                      ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground shadow-[inset_2px_0_0_0_var(--color-primary)]"
-                      : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground",
-                    compact && "justify-center px-0",
-                  )}
-                >
-                  <item.icon className={cn("h-4 w-4 shrink-0", active && "text-primary")} />
-                  {!compact && <span className="truncate">{item.label}</span>}
-                </Link>
-              );
-            })}
+          <div key={section.label}>
+            {!compact && (
+              <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                {section.label}
+              </p>
+            )}
+            <div className="flex flex-col gap-1">
+              {section.items.map((item) => {
+                const active = pathname === item.to;
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={onNavigate}
+                    title={item.label}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                      active
+                        ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground shadow-[inset_2px_0_0_0_var(--color-primary)]"
+                        : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground",
+                      compact && "justify-center px-0",
+                    )}
+                  >
+                    <item.icon className={cn("h-4 w-4 shrink-0", active && "text-primary")} />
+                    {!compact && <span className="truncate">{item.label}</span>}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
     </nav>
   );
 }
@@ -134,7 +143,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             className="w-full justify-center text-muted-foreground"
             onClick={() => setCollapsed((c) => !c)}
           >
-            {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+            {collapsed ? (
+              <PanelLeftOpen className="h-4 w-4" />
+            ) : (
+              <PanelLeftClose className="h-4 w-4" />
+            )}
           </Button>
         </div>
       </aside>
@@ -202,21 +215,21 @@ export function AppShell({ children }: { children: ReactNode }) {
         {mobileNav
           .filter((item) => isAdmin || roleLoading || OPERATOR_ROUTES.includes(item.to))
           .map((item) => {
-          const active = pathname === item.to;
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              className={cn(
-                "flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] transition-colors",
-                active ? "text-primary" : "text-muted-foreground",
-              )}
-            >
-              <item.icon className="h-5 w-5" />
-              {item.label}
-            </Link>
-          );
-        })}
+            const active = pathname === item.to;
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={cn(
+                  "flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] transition-colors",
+                  active ? "text-primary" : "text-muted-foreground",
+                )}
+              >
+                <item.icon className="h-5 w-5" />
+                {item.label}
+              </Link>
+            );
+          })}
       </nav>
 
       <FailureModal />

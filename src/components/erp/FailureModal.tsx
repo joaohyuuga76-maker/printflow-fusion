@@ -70,10 +70,14 @@ export function FailureModal() {
           <div className="grid gap-2">
             <Label>Impressora</Label>
             <Select value={printerId} onValueChange={setPrinterId}>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
               <SelectContent>
                 {printers.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -82,7 +86,9 @@ export function FailureModal() {
           <div className="grid gap-2">
             <Label>Filamento utilizado</Label>
             <Select value={filamentId} onValueChange={setFilamentId}>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
               <SelectContent>
                 {filaments.map((f) => (
                   <SelectItem key={f.id} value={f.id}>
@@ -114,10 +120,14 @@ export function FailureModal() {
           <div className="grid gap-2">
             <Label>Motivo da falha</Label>
             <Select value={reason} onValueChange={setReason}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 {reasons.map((r) => (
-                  <SelectItem key={r} value={r}>{r}</SelectItem>
+                  <SelectItem key={r} value={r}>
+                    {r}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -135,8 +145,12 @@ export function FailureModal() {
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => setFailureOpen(false)}>Cancelar</Button>
-          <Button variant="destructive" onClick={save}>Salvar falha</Button>
+          <Button variant="outline" onClick={() => setFailureOpen(false)}>
+            Cancelar
+          </Button>
+          <Button variant="destructive" onClick={save}>
+            Salvar falha
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

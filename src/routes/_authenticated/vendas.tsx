@@ -12,9 +12,15 @@ export const Route = createFileRoute("/_authenticated/vendas")({
   head: () => ({
     meta: [
       { title: "Kanban de Vendas | VisionFlow ERP" },
-      { name: "description", content: "Acompanhe cada pedido do orçamento à entrega no quadro Kanban da sua farm 3D." },
+      {
+        name: "description",
+        content: "Acompanhe cada pedido do orçamento à entrega no quadro Kanban da sua farm 3D.",
+      },
       { property: "og:title", content: "Kanban de Vendas — VisionFlow ERP" },
-      { property: "og:description", content: "Pedidos de impressão 3D organizados por etapa de produção." },
+      {
+        property: "og:description",
+        content: "Pedidos de impressão 3D organizados por etapa de produção.",
+      },
     ],
   }),
   component: Vendas,
@@ -39,7 +45,10 @@ function Vendas() {
 
   return (
     <div>
-      <PageHeader title="Kanban de Vendas" subtitle="Arraste o pedido pelas etapas usando o botão de avanço" />
+      <PageHeader
+        title="Kanban de Vendas"
+        subtitle="Arraste o pedido pelas etapas usando o botão de avanço"
+      />
       <FilterBar
         filters={filters}
         onChange={setFilters}
@@ -51,7 +60,10 @@ function Vendas() {
             const list = visible.filter((o) => o.stage === stage.id);
             const total = list.reduce((s, o) => s + o.value, 0);
             return (
-              <div key={stage.id} className={`w-[270px] shrink-0 rounded-xl border border-t-2 border-border bg-card/60 p-3 ${stage.color}`}>
+              <div
+                key={stage.id}
+                className={`w-[270px] shrink-0 rounded-xl border border-t-2 border-border bg-card/60 p-3 ${stage.color}`}
+              >
                 <div className="flex items-center justify-between gap-2">
                   <p className="truncate text-sm font-semibold">{stage.label}</p>
                   <Badge variant="secondary">{list.length}</Badge>
@@ -59,10 +71,15 @@ function Vendas() {
                 <p className="mt-0.5 text-xs text-muted-foreground">{brl(total)}</p>
                 <div className="mt-3 space-y-2">
                   {list.map((o) => (
-                    <div key={o.id} className="rounded-lg border border-border bg-card p-3 transition-colors hover:border-primary/40">
+                    <div
+                      key={o.id}
+                      className="rounded-lg border border-border bg-card p-3 transition-colors hover:border-primary/40"
+                    >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <p className="truncate text-xs text-muted-foreground">{o.ref} · {o.date}</p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {o.ref} · {o.date}
+                          </p>
                           <p className="truncate text-sm font-medium">{o.title}</p>
                         </div>
                         <div className="flex shrink-0 items-center">
@@ -76,7 +93,11 @@ function Vendas() {
                               { key: "client", label: "Cliente" },
                               { key: "value", label: "Valor (R$)", numeric: true },
                               { key: "cost", label: "Custo (R$)", numeric: true },
-                              { key: "stage", label: "Etapa", options: stages.map((s) => ({ value: s.id, label: s.label })) },
+                              {
+                                key: "stage",
+                                label: "Etapa",
+                                options: stages.map((s) => ({ value: s.id, label: s.label })),
+                              },
                               {
                                 key: "priority",
                                 label: "Prioridade",
@@ -103,22 +124,24 @@ function Vendas() {
                             }}
                             onSave={(v) =>
                               updateOrder(o.id, {
-                                title: v['title'] ?? o.title,
-                                client: v['client'] ?? o.client,
-                                value: Number(v['value']) || 0,
-                                cost: Number(v['cost']) || 0,
-                                stage: (v['stage'] as OrderStage) ?? o.stage,
-                                priority: (v['priority'] as Order["priority"]) ?? o.priority,
-                                channel: v['channel'] ?? o.channel,
-                                weightG: Number(v['weightG']) || 0,
-                                hours: Number(v['hours']) || 0,
+                                title: v["title"] ?? o.title,
+                                client: v["client"] ?? o.client,
+                                value: Number(v["value"]) || 0,
+                                cost: Number(v["cost"]) || 0,
+                                stage: (v["stage"] as OrderStage) ?? o.stage,
+                                priority: (v["priority"] as Order["priority"]) ?? o.priority,
+                                channel: v["channel"] ?? o.channel,
+                                weightG: Number(v["weightG"]) || 0,
+                                hours: Number(v["hours"]) || 0,
                               })
                             }
                             onDelete={() => deleteOrder(o.id)}
                           />
                         </div>
                       </div>
-                      <p className="mt-1 truncate text-xs text-muted-foreground">{o.client} · {o.channel}</p>
+                      <p className="mt-1 truncate text-xs text-muted-foreground">
+                        {o.client} · {o.channel}
+                      </p>
                       <div className="mt-2 flex items-center justify-between gap-2">
                         <span className="text-sm font-semibold text-profit">{brl(o.value)}</span>
                         <Badge

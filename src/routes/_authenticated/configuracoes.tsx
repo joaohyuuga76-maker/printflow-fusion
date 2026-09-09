@@ -45,9 +45,12 @@ function Configuracoes() {
 
   useEffect(() => {
     // Sincroniza quando settings vem do storage / supabase (só se o usuário não estiver digitando algo diferente numericamente equivalente).
-    if (parseNum(energyRateStr) !== Number(settings.energyRate)) setEnergyRateStr(String(settings.energyRate ?? ""));
-    if (parseNum(defaultMarginStr) !== Number(settings.defaultMargin)) setDefaultMarginStr(String(settings.defaultMargin ?? ""));
-    if (parseNum(failureRateStr) !== Number(settings.failureRate)) setFailureRateStr(String(settings.failureRate ?? ""));
+    if (parseNum(energyRateStr) !== Number(settings.energyRate))
+      setEnergyRateStr(String(settings.energyRate ?? ""));
+    if (parseNum(defaultMarginStr) !== Number(settings.defaultMargin))
+      setDefaultMarginStr(String(settings.defaultMargin ?? ""));
+    if (parseNum(failureRateStr) !== Number(settings.failureRate))
+      setFailureRateStr(String(settings.failureRate ?? ""));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.energyRate, settings.defaultMargin, settings.failureRate]);
 
@@ -157,7 +160,8 @@ function Configuracoes() {
             </div>
           </div>
           <p className="mt-4 text-xs text-muted-foreground">
-            Esses valores alimentam automaticamente a calculadora de orçamentos e o cálculo de lucro.
+            Esses valores alimentam automaticamente a calculadora de orçamentos e o cálculo de
+            lucro.
           </p>
         </div>
       </div>

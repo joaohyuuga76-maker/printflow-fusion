@@ -24,7 +24,10 @@ export type ThemeConfig = {
   custom: Record<Mode, Adjust>;
 };
 
-export const PRESETS: Record<PresetId, { label: string; hint: string; palettes: Record<Mode, Palette> }> = {
+export const PRESETS: Record<
+  PresetId,
+  { label: string; hint: string; palettes: Record<Mode, Palette> }
+> = {
   polycraft: {
     label: "Polycraft 3D (Oficial)",
     hint: "Grafite profundo + azul metálico",
@@ -83,7 +86,13 @@ type HSL = { h: number; s: number; l: number };
 
 export function hexToHsl(hex: string): HSL {
   const m = hex.replace("#", "");
-  const full = m.length === 3 ? m.split("").map((c) => c + c).join("") : m;
+  const full =
+    m.length === 3
+      ? m
+          .split("")
+          .map((c) => c + c)
+          .join("")
+      : m;
   const r = parseInt(full.slice(0, 2), 16) / 255;
   const g = parseInt(full.slice(2, 4), 16) / 255;
   const b = parseInt(full.slice(4, 6), 16) / 255;
@@ -308,7 +317,10 @@ export function useAppearance(): Ctx {
       resetCustom: () =>
         commit({
           ...config,
-          custom: { dark: { ...DEFAULT_CONFIG.custom.dark }, light: { ...DEFAULT_CONFIG.custom.light } },
+          custom: {
+            dark: { ...DEFAULT_CONFIG.custom.dark },
+            light: { ...DEFAULT_CONFIG.custom.light },
+          },
         }),
       resetAll: () => {
         try {

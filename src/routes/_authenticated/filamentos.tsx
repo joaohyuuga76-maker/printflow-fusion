@@ -34,9 +34,16 @@ export const Route = createFileRoute("/_authenticated/filamentos")({
   head: () => ({
     meta: [
       { title: "Filamentos & Estoque | VisionFlow ERP" },
-      { name: "description", content: "Controle de carretéis PLA, PETG, ABS e TPU com peso restante em gramas e alerta de estoque baixo." },
+      {
+        name: "description",
+        content:
+          "Controle de carretéis PLA, PETG, ABS e TPU com peso restante em gramas e alerta de estoque baixo.",
+      },
       { property: "og:title", content: "Controle de Filamentos — VisionFlow ERP" },
-      { property: "og:description", content: "Estoque de carretéis com baixa automática por falhas e produção." },
+      {
+        property: "og:description",
+        content: "Estoque de carretéis com baixa automática por falhas e produção.",
+      },
     ],
   }),
   component: Filamentos,
@@ -67,39 +74,73 @@ function Filamentos() {
         action={
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4" /> Novo carretel</Button>
+              <Button>
+                <Plus className="h-4 w-4" /> Novo carretel
+              </Button>
             </DialogTrigger>
             <DialogContent className="max-h-[92dvh] overflow-y-auto">
-              <DialogHeader><DialogTitle>Adicionar carretel</DialogTitle></DialogHeader>
+              <DialogHeader>
+                <DialogTitle>Adicionar carretel</DialogTitle>
+              </DialogHeader>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="grid gap-2">
                   <Label>Marca</Label>
-                  <Input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} placeholder="Sunlu" />
+                  <Input
+                    value={form.brand}
+                    onChange={(e) => setForm({ ...form, brand: e.target.value })}
+                    placeholder="Sunlu"
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label>Tipo</Label>
-                  <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as Filament["type"] })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select
+                    value={form.type}
+                    onValueChange={(v) => setForm({ ...form, type: v as Filament["type"] })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
-                      {types.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                      {types.map((t) => (
+                        <SelectItem key={t} value={t}>
+                          {t}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="grid gap-2">
                   <Label>Cor</Label>
-                  <Input value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} placeholder="Azul" />
+                  <Input
+                    value={form.color}
+                    onChange={(e) => setForm({ ...form, color: e.target.value })}
+                    placeholder="Azul"
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label>Amostra da cor</Label>
-                  <Input type="color" value={form.hex} onChange={(e) => setForm({ ...form, hex: e.target.value })} className="h-9 p-1" />
+                  <Input
+                    type="color"
+                    value={form.hex}
+                    onChange={(e) => setForm({ ...form, hex: e.target.value })}
+                    className="h-9 p-1"
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label>Peso total (g)</Label>
-                  <Input inputMode="numeric" value={form.totalG} onChange={(e) => setForm({ ...form, totalG: e.target.value })} />
+                  <Input
+                    inputMode="numeric"
+                    value={form.totalG}
+                    onChange={(e) => setForm({ ...form, totalG: e.target.value })}
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label>Preço por kg (R$)</Label>
-                  <Input inputMode="decimal" value={form.pricePerKg} onChange={(e) => setForm({ ...form, pricePerKg: e.target.value })} />
+                  <Input
+                    inputMode="decimal"
+                    value={form.pricePerKg}
+                    onChange={(e) => setForm({ ...form, pricePerKg: e.target.value })}
+                  />
                 </div>
                 <div className="sm:col-span-2">
                   <ImageField
@@ -143,7 +184,11 @@ function Filamentos() {
       />
       {visible.length === 0 && (
         <EmptyState
-          text={filaments.length ? "Nenhum carretel encontrado para a busca." : "Nenhum carretel cadastrado ainda."}
+          text={
+            filaments.length
+              ? "Nenhum carretel encontrado para a busca."
+              : "Nenhum carretel cadastrado ainda."
+          }
         />
       )}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -151,7 +196,10 @@ function Filamentos() {
           const pct = (f.remainingG / f.totalG) * 100;
           const low = f.remainingG < 150;
           return (
-            <div key={f.id} className={`rounded-xl border bg-card p-4 ${low ? "border-danger/50" : "border-border"}`}>
+            <div
+              key={f.id}
+              className={`rounded-xl border bg-card p-4 ${low ? "border-danger/50" : "border-border"}`}
+            >
               <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
                 <div className="flex min-w-0 items-center gap-3">
                   {f.imageUrl ? (
@@ -161,18 +209,29 @@ function Filamentos() {
                       className="h-10 w-10 shrink-0 rounded-lg border border-border object-cover"
                     />
                   ) : (
-                    <span className="h-8 w-8 shrink-0 rounded-full border-2 border-border" style={{ background: f.hex }} />
+                    <span
+                      className="h-8 w-8 shrink-0 rounded-full border-2 border-border"
+                      style={{ background: f.hex }}
+                    />
                   )}
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold">{f.brand} {f.type}</p>
-                    <p className="truncate text-xs text-muted-foreground">{f.color} · {brl(f.pricePerKg)}/kg</p>
+                    <p className="truncate text-sm font-semibold">
+                      {f.brand} {f.type}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {f.color} · {brl(f.pricePerKg)}/kg
+                    </p>
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
                   {low ? (
-                    <Badge variant="destructive" className="shrink-0 gap-1"><AlertTriangle className="h-3 w-3" /> Crítico</Badge>
+                    <Badge variant="destructive" className="shrink-0 gap-1">
+                      <AlertTriangle className="h-3 w-3" /> Crítico
+                    </Badge>
                   ) : (
-                    <Badge variant="outline" className="shrink-0 border-profit/40 text-profit">OK</Badge>
+                    <Badge variant="outline" className="shrink-0 border-profit/40 text-profit">
+                      OK
+                    </Badge>
                   )}
                   <RowActions
                     compact
@@ -180,7 +239,11 @@ function Filamentos() {
                     deleteLabel={`${f.brand} ${f.type} ${f.color}`}
                     fields={[
                       { key: "brand", label: "Marca" },
-                      { key: "type", label: "Tipo", options: types.map((t) => ({ value: t, label: t })) },
+                      {
+                        key: "type",
+                        label: "Tipo",
+                        options: types.map((t) => ({ value: t, label: t })),
+                      },
                       { key: "color", label: "Cor" },
                       { key: "hex", label: "Amostra da cor", color: true },
                       { key: "remainingG", label: "Restante (g)", numeric: true },
@@ -200,14 +263,14 @@ function Filamentos() {
                     }}
                     onSave={(v) =>
                       updateFilament(f.id, {
-                        brand: v['brand'] ?? f.brand,
-                        type: (v['type'] as Filament["type"]) ?? f.type,
-                        color: v['color'] ?? f.color,
-                        hex: v['hex'] ?? f.hex,
-                        remainingG: Number(v['remainingG']) || 0,
-                        totalG: Number(v['totalG']) || f.totalG,
-                        pricePerKg: Number(v['pricePerKg']) || 0,
-                        imageUrl: v['imageUrl'] || null,
+                        brand: v["brand"] ?? f.brand,
+                        type: (v["type"] as Filament["type"]) ?? f.type,
+                        color: v["color"] ?? f.color,
+                        hex: v["hex"] ?? f.hex,
+                        remainingG: Number(v["remainingG"]) || 0,
+                        totalG: Number(v["totalG"]) || f.totalG,
+                        pricePerKg: Number(v["pricePerKg"]) || 0,
+                        imageUrl: v["imageUrl"] || null,
                       })
                     }
                     onDelete={() => deleteFilament(f.id)}
@@ -224,10 +287,24 @@ function Filamentos() {
               </div>
 
               <div className="mt-3 grid grid-cols-2 gap-2">
-                <Button size="sm" variant="outline" onClick={() => { consumeFilament(f.id, 50); toast(`50g baixados de ${f.type} ${f.color}`); }}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    consumeFilament(f.id, 50);
+                    toast(`50g baixados de ${f.type} ${f.color}`);
+                  }}
+                >
                   <Minus className="h-3.5 w-3.5" /> Baixa 50g
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => { consumeFilament(f.id, 100); toast(`100g baixados de ${f.type} ${f.color}`); }}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    consumeFilament(f.id, 100);
+                    toast(`100g baixados de ${f.type} ${f.color}`);
+                  }}
+                >
                   <Minus className="h-3.5 w-3.5" /> Baixa 100g
                 </Button>
               </div>

@@ -15,7 +15,11 @@ export const Route = createFileRoute("/_authenticated/farm")({
   head: () => ({
     meta: [
       { title: "Minha Farm | VisionFlow ERP" },
-      { name: "description", content: "Status em tempo real de cada impressora 3D: progresso, arquivo atual e manutenções." },
+      {
+        name: "description",
+        content:
+          "Status em tempo real de cada impressora 3D: progresso, arquivo atual e manutenções.",
+      },
       { property: "og:title", content: "Minha Farm — VisionFlow ERP" },
       { property: "og:description", content: "Gestão visual das impressoras da sua farm 3D." },
     ],
@@ -24,16 +28,30 @@ export const Route = createFileRoute("/_authenticated/farm")({
 });
 
 const statusMap: Record<PrinterStatus, { label: string; cls: string; dot: string }> = {
-  disponivel: { label: "Disponível", cls: "border-profit/40 bg-profit/10 text-profit", dot: "bg-profit" },
+  disponivel: {
+    label: "Disponível",
+    cls: "border-profit/40 bg-profit/10 text-profit",
+    dot: "bg-profit",
+  },
   imprimindo: { label: "Imprimindo", cls: "border-info/40 bg-info/10 text-info", dot: "bg-info" },
-  aguardando: { label: "Aguardando remoção", cls: "border-warn/40 bg-warn/10 text-warn", dot: "bg-warn" },
-  manutencao: { label: "Manutenção", cls: "border-danger/40 bg-danger/10 text-danger", dot: "bg-danger" },
+  aguardando: {
+    label: "Aguardando remoção",
+    cls: "border-warn/40 bg-warn/10 text-warn",
+    dot: "bg-warn",
+  },
+  manutencao: {
+    label: "Manutenção",
+    cls: "border-danger/40 bg-danger/10 text-danger",
+    dot: "bg-danger",
+  },
 };
 
 function Farm() {
   const { printers, setPrinterStatus, addPrinter, updatePrinter, deletePrinter } = useErp();
   const { filters, setFilters, matches } = useFilters();
-  const visible = printers.filter((p) => matches(p.name, p.model, p.currentFile, statusMap[p.status].label));
+  const visible = printers.filter((p) =>
+    matches(p.name, p.model, p.currentFile, statusMap[p.status].label),
+  );
 
   return (
     <div>
@@ -49,14 +67,19 @@ function Farm() {
               { key: "name", label: "Nome", placeholder: "Bambu Lab P1S" },
               { key: "model", label: "Modelo", placeholder: "P1S CoreXY" },
               { key: "watts", label: "Potência (W)", numeric: true, defaultValue: "300" },
-              { key: "dep", label: "Depreciação por hora (R$)", numeric: true, defaultValue: "1.00" },
+              {
+                key: "dep",
+                label: "Depreciação por hora (R$)",
+                numeric: true,
+                defaultValue: "1.00",
+              },
             ]}
             onSubmit={(v) =>
               addPrinter({
-                name: v['name'] || "Nova impressora",
-                model: v['model'] || "",
-                watts: Number(v['watts']) || 0,
-                depreciationPerHour: Number(v['dep']) || 0,
+                name: v["name"] || "Nova impressora",
+                model: v["model"] || "",
+                watts: Number(v["watts"]) || 0,
+                depreciationPerHour: Number(v["dep"]) || 0,
               })
             }
           />
@@ -71,7 +94,9 @@ function Farm() {
       {visible.length === 0 && printers.length > 0 && (
         <EmptyState text="Nenhuma impressora encontrada para a busca." />
       )}
-      {printers.length === 0 && <EmptyState text="Nenhuma impressora cadastrada ainda. Adicione a primeira máquina da sua farm." />}
+      {printers.length === 0 && (
+        <EmptyState text="Nenhuma impressora cadastrada ainda. Adicione a primeira máquina da sua farm." />
+      )}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {visible.map((p) => {
           const s = statusMap[p.status];
@@ -116,12 +141,12 @@ function Farm() {
                     }}
                     onSave={(v) =>
                       updatePrinter(p.id, {
-                        name: v['name'] ?? p.name,
-                        model: v['model'] ?? p.model,
-                        status: (v['status'] as PrinterStatus) ?? p.status,
-                        watts: Number(v['watts']) || 0,
-                        depreciationPerHour: Number(v['dep']) || 0,
-                        hoursRun: Number(v['hoursRun']) || 0,
+                        name: v["name"] ?? p.name,
+                        model: v["model"] ?? p.model,
+                        status: (v["status"] as PrinterStatus) ?? p.status,
+                        watts: Number(v["watts"]) || 0,
+                        depreciationPerHour: Number(v["dep"]) || 0,
+                        hoursRun: Number(v["hoursRun"]) || 0,
                       })
                     }
                     onDelete={() => deletePrinter(p.id)}
@@ -137,7 +162,8 @@ function Farm() {
                     <div className="mt-1.5 flex justify-between text-xs">
                       <span className="font-medium text-info">{p.progress}%</span>
                       <span className="text-muted-foreground">
-                        restam {Math.floor((p.remainingMin ?? 0) / 60)}h{String((p.remainingMin ?? 0) % 60).padStart(2, "0")}
+                        restam {Math.floor((p.remainingMin ?? 0) / 60)}h
+                        {String((p.remainingMin ?? 0) % 60).padStart(2, "0")}
                       </span>
                     </div>
                   </>
@@ -150,26 +176,57 @@ function Farm() {
                     Máquina parada — aguardando reparo técnico.
                   </p>
                 ) : (
-                  <p className="rounded-lg bg-profit/10 p-3 text-xs text-profit">Mesa livre e pronta para novo job.</p>
+                  <p className="rounded-lg bg-profit/10 p-3 text-xs text-profit">
+                    Mesa livre e pronta para novo job.
+                  </p>
                 )}
               </div>
 
               <div className="mt-3 flex justify-between border-t border-border pt-3 text-xs text-muted-foreground">
-                <span>{p.watts}W · {p.hoursRun}h rodadas</span>
+                <span>
+                  {p.watts}W · {p.hoursRun}h rodadas
+                </span>
                 <span className="text-danger">{p.failures} falhas</span>
               </div>
 
               <div className="mt-3 grid grid-cols-2 gap-2">
-                <Button size="sm" variant="outline" onClick={() => { setPrinterStatus(p.id, "imprimindo"); toast.success(`${p.name}: impressão iniciada`); }}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setPrinterStatus(p.id, "imprimindo");
+                    toast.success(`${p.name}: impressão iniciada`);
+                  }}
+                >
                   <Play className="h-3.5 w-3.5" /> Iniciar
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => { setPrinterStatus(p.id, "aguardando"); toast(`${p.name} pausada`); }}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setPrinterStatus(p.id, "aguardando");
+                    toast(`${p.name} pausada`);
+                  }}
+                >
                   <Pause className="h-3.5 w-3.5" /> Pausar
                 </Button>
-                <Button size="sm" onClick={() => { setPrinterStatus(p.id, "disponivel"); toast.success(`${p.name}: mesa liberada`); }}>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setPrinterStatus(p.id, "disponivel");
+                    toast.success(`${p.name}: mesa liberada`);
+                  }}
+                >
                   <CheckCircle2 className="h-3.5 w-3.5" /> Liberar mesa
                 </Button>
-                <Button size="sm" variant="destructive" onClick={() => { setPrinterStatus(p.id, "manutencao"); toast.error(`${p.name} em manutenção`); }}>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => {
+                    setPrinterStatus(p.id, "manutencao");
+                    toast.error(`${p.name} em manutenção`);
+                  }}
+                >
                   <Wrench className="h-3.5 w-3.5" /> Manutenção
                 </Button>
               </div>

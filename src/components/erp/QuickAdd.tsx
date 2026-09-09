@@ -58,7 +58,7 @@ export function QuickAdd({
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 sm:grid-cols-2">
-          {fields.map((f) => (
+          {fields.map((f) =>
             f.image ? (
               <div key={f.key} className="sm:col-span-2">
                 <ImageField
@@ -68,17 +68,17 @@ export function QuickAdd({
                 />
               </div>
             ) : (
-            <div key={f.key} className="grid gap-2">
-              <Label>{f.label}</Label>
-              <Input
-                {...(f.numeric ? { inputMode: "decimal" as const } : {})}
-                {...(f.placeholder ? { placeholder: f.placeholder } : {})}
-                value={values[f.key] ?? ""}
-                onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
-              />
-            </div>
-            )
-          ))}
+              <div key={f.key} className="grid gap-2">
+                <Label>{f.label}</Label>
+                <Input
+                  {...(f.numeric ? { inputMode: "decimal" as const } : {})}
+                  {...(f.placeholder ? { placeholder: f.placeholder } : {})}
+                  value={values[f.key] ?? ""}
+                  onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
+                />
+              </div>
+            ),
+          )}
         </div>
         <DialogFooter>
           <Button

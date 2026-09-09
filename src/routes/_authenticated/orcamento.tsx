@@ -44,7 +44,10 @@ export const Route = createFileRoute("/_authenticated/orcamento")({
           "Precificação comercial avançada: custo unitário, margem desejada, desconto progressivo por lote e lucro líquido real.",
       },
       { property: "og:title", content: "Calculadora Comercial 3D — VisionFlow ERP" },
-      { property: "og:description", content: "Preço por lote, lucro real e margem líquida em segundos." },
+      {
+        property: "og:description",
+        content: "Preço por lote, lucro real e margem líquida em segundos.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -307,7 +310,9 @@ Na entrega (50%): ${brl(c.entry)}`;
           <Select value={editingId ?? ""} onValueChange={loadOrder}>
             <SelectTrigger>
               <SelectValue
-                placeholder={editable.length ? "Selecione um orçamento" : "Nenhum orçamento salvo ainda"}
+                placeholder={
+                  editable.length ? "Selecione um orçamento" : "Nenhum orçamento salvo ainda"
+                }
               />
             </SelectTrigger>
             <SelectContent>
@@ -396,7 +401,9 @@ Na entrega (50%): ${brl(c.entry)}`;
                     className="text-center"
                     inputMode="numeric"
                     value={qty}
-                    onChange={(e) => setQty(Math.max(1, Number(e.target.value.replace(/\D/g, "")) || 1))}
+                    onChange={(e) =>
+                      setQty(Math.max(1, Number(e.target.value.replace(/\D/g, "")) || 1))
+                    }
                   />
                   <Button
                     data-testid="calc-qty-plus"
@@ -455,11 +462,41 @@ Na entrega (50%): ${brl(c.entry)}`;
                 </AccordionTrigger>
                 <AccordionContent>
                   <div className="grid gap-4 pb-2 sm:grid-cols-2 lg:grid-cols-3">
-                    <NumberField testId="calc-filament-kg" label="Filamento" suffix="R$/kg" value={filamentKg} onChange={setFilamentKg} />
-                    <NumberField testId="calc-energy-rate" label="Energia" suffix="R$/kWh" value={energyRate} onChange={setEnergyRate} />
-                    <NumberField testId="calc-watts" label="Potência" suffix="W" value={watts} onChange={setWatts} />
-                    <NumberField testId="calc-wear-hour" label="Desgaste da máquina" suffix="R$/h" value={wearPerHour} onChange={setWearPerHour} />
-                    <NumberField testId="calc-finishing" label="Acabamento" suffix="R$/peça" value={finishing} onChange={setFinishing} />
+                    <NumberField
+                      testId="calc-filament-kg"
+                      label="Filamento"
+                      suffix="R$/kg"
+                      value={filamentKg}
+                      onChange={setFilamentKg}
+                    />
+                    <NumberField
+                      testId="calc-energy-rate"
+                      label="Energia"
+                      suffix="R$/kWh"
+                      value={energyRate}
+                      onChange={setEnergyRate}
+                    />
+                    <NumberField
+                      testId="calc-watts"
+                      label="Potência"
+                      suffix="W"
+                      value={watts}
+                      onChange={setWatts}
+                    />
+                    <NumberField
+                      testId="calc-wear-hour"
+                      label="Desgaste da máquina"
+                      suffix="R$/h"
+                      value={wearPerHour}
+                      onChange={setWearPerHour}
+                    />
+                    <NumberField
+                      testId="calc-finishing"
+                      label="Acabamento"
+                      suffix="R$/peça"
+                      value={finishing}
+                      onChange={setFinishing}
+                    />
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -518,7 +555,10 @@ Na entrega (50%): ${brl(c.entry)}`;
               <span className="text-muted-foreground">Total do lote</span>
             </div>
             <div className="mt-2">
-              <Row label="Material (filamento)" value={`${brl(material)} · ${brl(material * units)}`} />
+              <Row
+                label="Material (filamento)"
+                value={`${brl(material)} · ${brl(material * units)}`}
+              />
               <Row label="Energia" value={`${brl(energy)} · ${brl(energy * units)}`} />
               <Row label="Desgaste da máquina" value={`${brl(wear)} · ${brl(wear * units)}`} />
               <Row label="Acabamento" value={`${brl(finish)} · ${brl(finish * units)}`} />
@@ -530,33 +570,51 @@ Na entrega (50%): ${brl(c.entry)}`;
             </div>
           </div>
 
-          <div data-testid="calc-final-price-card" className="rounded-xl border border-primary/30 bg-primary/10 p-4">
+          <div
+            data-testid="calc-final-price-card"
+            className="rounded-xl border border-primary/30 bg-primary/10 p-4"
+          >
             <div className="flex items-center justify-between">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Preço final unitário</p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                Preço final unitário
+              </p>
               {c.discount > 0 && (
-                <span data-testid="calc-discount-badge" className="rounded-full bg-profit/20 px-2 py-0.5 text-[11px] font-bold text-profit">
+                <span
+                  data-testid="calc-discount-badge"
+                  className="rounded-full bg-profit/20 px-2 py-0.5 text-[11px] font-bold text-profit"
+                >
                   {c.discount}% OFF
                 </span>
               )}
             </div>
-            <p data-testid="calc-unit-price" className="mt-1 text-3xl font-bold text-profit">{brl(c.unitPrice)}</p>
+            <p data-testid="calc-unit-price" className="mt-1 text-3xl font-bold text-profit">
+              {brl(c.unitPrice)}
+            </p>
             <p className="text-xs text-muted-foreground">
               {units} {units > 1 ? "peças" : "peça"} · base {brl(c.base)}
             </p>
             <div className="mt-4 grid gap-2 sm:grid-cols-3">
               <div className="rounded-lg border border-border/60 bg-background/40 p-2">
                 <p className="text-[11px] text-muted-foreground">Faturamento</p>
-                <p data-testid="calc-revenue" className="text-sm font-bold">{brl(c.revenue)}</p>
+                <p data-testid="calc-revenue" className="text-sm font-bold">
+                  {brl(c.revenue)}
+                </p>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/40 p-2">
                 <p className="text-[11px] text-muted-foreground">Lucro líquido real</p>
-                <p data-testid="calc-profit" className={`text-sm font-bold ${c.profit >= 0 ? "text-profit" : "text-danger"}`}>
+                <p
+                  data-testid="calc-profit"
+                  className={`text-sm font-bold ${c.profit >= 0 ? "text-profit" : "text-danger"}`}
+                >
                   {brl(c.profit)}
                 </p>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/40 p-2">
                 <p className="text-[11px] text-muted-foreground">Margem líquida real</p>
-                <p data-testid="calc-margin-real" className={`text-sm font-bold ${c.marginReal >= 0 ? "text-profit" : "text-danger"}`}>
+                <p
+                  data-testid="calc-margin-real"
+                  className={`text-sm font-bold ${c.marginReal >= 0 ? "text-profit" : "text-danger"}`}
+                >
                   {c.marginReal.toFixed(1)}%
                 </p>
               </div>
@@ -581,7 +639,11 @@ Na entrega (50%): ${brl(c.entry)}`;
             <Button data-testid="calc-generate-quote-btn" onClick={() => saveOrder(true)}>
               <FilePlus2 className="h-4 w-4" /> Gerar Orçamento deste Lote
             </Button>
-            <Button data-testid="calc-save-quote-btn" variant="outline" onClick={() => saveOrder(false)}>
+            <Button
+              data-testid="calc-save-quote-btn"
+              variant="outline"
+              onClick={() => saveOrder(false)}
+            >
               {editingId ? <Save className="h-4 w-4" /> : <FilePlus2 className="h-4 w-4" />}
               {editingId ? "Salvar alterações" : "Salvar sem sair"}
             </Button>

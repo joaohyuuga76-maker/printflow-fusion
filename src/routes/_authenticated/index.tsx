@@ -124,10 +124,14 @@ function StageList({
         {orders.slice(0, 3).map((o) => (
           <li key={o.ref} className="rounded-lg bg-background/60 p-2.5 text-xs">
             <div className="flex items-center justify-between gap-2">
-              <span className="truncate font-medium">{o.ref} · {o.client}</span>
+              <span className="truncate font-medium">
+                {o.ref} · {o.client}
+              </span>
               <span className="shrink-0 text-profit">{brl(o.value)}</span>
             </div>
-            <p className="mt-0.5 text-muted-foreground">{o.date} · {o.channel}</p>
+            <p className="mt-0.5 text-muted-foreground">
+              {o.date} · {o.channel}
+            </p>
           </li>
         ))}
         {orders.length === 0 && <li className="text-xs text-muted-foreground">Nada por aqui.</li>}
@@ -144,7 +148,9 @@ function Dashboard() {
   const costTotal = costSlices.reduce((s, c) => s + c.value, 0);
   const hasProfitData = profitSeries.some((p) => p.fat !== 0 || p.lucro !== 0);
 
-  const faturamento = orders.filter((o) => o.stage !== "orcamento").reduce((s, o) => s + o.value, 0);
+  const faturamento = orders
+    .filter((o) => o.stage !== "orcamento")
+    .reduce((s, o) => s + o.value, 0);
   const custo = orders.filter((o) => o.stage !== "orcamento").reduce((s, o) => s + o.cost, 0);
   const perdas = failures.reduce((s, f) => s + f.cost, 0);
   const lucro = faturamento - custo - perdas;
@@ -162,7 +168,9 @@ function Dashboard() {
         action={
           <div className="flex items-center gap-2">
             <Select defaultValue="2026-01">
-              <SelectTrigger className="w-[150px]"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-[150px]">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="2026-01">Janeiro de 2026</SelectItem>
                 <SelectItem value="2025-12">Dezembro de 2025</SelectItem>
@@ -177,52 +185,133 @@ function Dashboard() {
       />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Faturamento Total" value={brl(faturamento)} hint={`${orders.length} pedidos registrados`} icon={DollarSign} tone="profit" />
-        <StatCard label="Lucro Líquido" value={brl(lucro)} hint={faturamento > 0 ? `Margem ${((lucro / faturamento) * 100).toFixed(1)}%` : "Sem faturamento no período"} icon={TrendingUp} tone="profit" />
-        <StatCard label="Custo de Produção" value={brl(custo + perdas)} hint={`${brl(perdas)} em falhas`} icon={Activity} tone="danger" />
-        <StatCard label="Lotes Produzidos" value={String(lotes)} hint={`${orders.length} pedidos no total`} icon={Package} tone="production" />
+        <StatCard
+          label="Faturamento Total"
+          value={brl(faturamento)}
+          hint={`${orders.length} pedidos registrados`}
+          icon={DollarSign}
+          tone="profit"
+        />
+        <StatCard
+          label="Lucro Líquido"
+          value={brl(lucro)}
+          hint={
+            faturamento > 0
+              ? `Margem ${((lucro / faturamento) * 100).toFixed(1)}%`
+              : "Sem faturamento no período"
+          }
+          icon={TrendingUp}
+          tone="profit"
+        />
+        <StatCard
+          label="Custo de Produção"
+          value={brl(custo + perdas)}
+          hint={`${brl(perdas)} em falhas`}
+          icon={Activity}
+          tone="danger"
+        />
+        <StatCard
+          label="Lotes Produzidos"
+          value={String(lotes)}
+          hint={`${orders.length} pedidos no total`}
+          icon={Package}
+          tone="production"
+        />
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <StageList title="Orçamentos Pendentes" icon={ClipboardList} tone="text-warn" orders={orders.filter((o) => o.stage === "orcamento")} />
-        <StageList title="Na Fila (Produção)" icon={Timer} tone="text-production" orders={orders.filter((o) => o.stage === "fila" || o.stage === "impressao")} />
-        <StageList title="A Enviar" icon={Send} tone="text-info" orders={orders.filter((o) => o.stage === "pos")} />
-        <StageList title="Em Trânsito" icon={Truck} tone="text-profit" orders={orders.filter((o) => o.stage === "envio")} />
+        <StageList
+          title="Orçamentos Pendentes"
+          icon={ClipboardList}
+          tone="text-warn"
+          orders={orders.filter((o) => o.stage === "orcamento")}
+        />
+        <StageList
+          title="Na Fila (Produção)"
+          icon={Timer}
+          tone="text-production"
+          orders={orders.filter((o) => o.stage === "fila" || o.stage === "impressao")}
+        />
+        <StageList
+          title="A Enviar"
+          icon={Send}
+          tone="text-info"
+          orders={orders.filter((o) => o.stage === "pos")}
+        />
+        <StageList
+          title="Em Trânsito"
+          icon={Truck}
+          tone="text-profit"
+          orders={orders.filter((o) => o.stage === "envio")}
+        />
       </div>
 
       <div className="mt-4 grid gap-3 xl:grid-cols-3">
         <div className="rounded-xl border border-border bg-card p-4 xl:col-span-2">
           <p className="text-sm font-semibold">Evolução do Lucro</p>
-          <p className="text-xs text-muted-foreground">Faturamento x lucro líquido nos últimos 7 meses</p>
+          <p className="text-xs text-muted-foreground">
+            Faturamento x lucro líquido nos últimos 7 meses
+          </p>
           <div className="mt-4 h-[260px]">
             {!hasProfitData ? (
               <div className="grid h-full place-items-center text-sm text-muted-foreground">
                 Nenhum lançamento liquidado ainda
               </div>
             ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={profitSeries}>
-                <defs>
-                  <linearGradient id="gFat" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.5} />
-                    <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="gLuc" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#22c55e" stopOpacity={0.55} />
-                    <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
-                <XAxis dataKey="m" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} width={48} />
-                <RTooltip
-                  contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 12, color: "#f1f5f9" }}
-                  formatter={(v: number | string) => brl(Number(v))}
-                />
-                <Area type="monotone" dataKey="fat" name="Faturamento" stroke="#3b82f6" fill="url(#gFat)" strokeWidth={2} />
-                <Area type="monotone" dataKey="lucro" name="Lucro" stroke="#22c55e" fill="url(#gLuc)" strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={profitSeries}>
+                  <defs>
+                    <linearGradient id="gFat" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.5} />
+                      <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="gLuc" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#22c55e" stopOpacity={0.55} />
+                      <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                  <XAxis
+                    dataKey="m"
+                    stroke="#94a3b8"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    stroke="#94a3b8"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    width={48}
+                  />
+                  <RTooltip
+                    contentStyle={{
+                      background: "#1e293b",
+                      border: "1px solid #334155",
+                      borderRadius: 12,
+                      color: "#f1f5f9",
+                    }}
+                    formatter={(v: number | string) => brl(Number(v))}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="fat"
+                    name="Faturamento"
+                    stroke="#3b82f6"
+                    fill="url(#gFat)"
+                    strokeWidth={2}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="lucro"
+                    name="Lucro"
+                    stroke="#22c55e"
+                    fill="url(#gLuc)"
+                    strokeWidth={2}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
             )}
           </div>
         </div>
@@ -236,34 +325,46 @@ function Dashboard() {
             </p>
           ) : (
             <>
-          <div className="mt-2 h-[190px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={costSlices} dataKey="value" innerRadius={55} outerRadius={80} paddingAngle={3} stroke="none">
-                  {costSlices.map((s) => (
-                    <Cell key={s.name} fill={s.color} />
-                  ))}
-                </Pie>
-                <RTooltip
-                  contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 12, color: "#f1f5f9" }}
-                  formatter={(v: number | string) => brl(Number(v))}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <ul className="mt-2 space-y-1.5">
-            {costSlices.map((s) => (
-              <li key={s.name} className="flex items-center justify-between text-xs">
-                <span className="flex items-center gap-2 text-muted-foreground">
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ background: s.color }} />
-                  {s.name}
-                </span>
-                <span className="font-medium">
-                  {brl(s.value)} · {((s.value / costTotal) * 100).toFixed(0)}%
-                </span>
-              </li>
-            ))}
-          </ul>
+              <div className="mt-2 h-[190px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={costSlices}
+                      dataKey="value"
+                      innerRadius={55}
+                      outerRadius={80}
+                      paddingAngle={3}
+                      stroke="none"
+                    >
+                      {costSlices.map((s) => (
+                        <Cell key={s.name} fill={s.color} />
+                      ))}
+                    </Pie>
+                    <RTooltip
+                      contentStyle={{
+                        background: "#1e293b",
+                        border: "1px solid #334155",
+                        borderRadius: 12,
+                        color: "#f1f5f9",
+                      }}
+                      formatter={(v: number | string) => brl(Number(v))}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <ul className="mt-2 space-y-1.5">
+                {costSlices.map((s) => (
+                  <li key={s.name} className="flex items-center justify-between text-xs">
+                    <span className="flex items-center gap-2 text-muted-foreground">
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ background: s.color }} />
+                      {s.name}
+                    </span>
+                    <span className="font-medium">
+                      {brl(s.value)} · {((s.value / costTotal) * 100).toFixed(0)}%
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </>
           )}
         </div>
@@ -275,12 +376,16 @@ function Dashboard() {
           <ul className="mt-3 space-y-3">
             {topProducts.map((p, i) => (
               <li key={p.id} className="flex items-center gap-3">
-                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-md bg-secondary text-[11px] font-bold">{i + 1}</span>
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-md bg-secondary text-[11px] font-bold">
+                  {i + 1}
+                </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm">{p.name}</p>
                   <p className="text-xs text-muted-foreground">{p.sold} vendidos</p>
                 </div>
-                <span className="shrink-0 text-sm font-semibold text-profit">{brl(p.sold * p.price)}</span>
+                <span className="shrink-0 text-sm font-semibold text-profit">
+                  {brl(p.sold * p.price)}
+                </span>
               </li>
             ))}
           </ul>

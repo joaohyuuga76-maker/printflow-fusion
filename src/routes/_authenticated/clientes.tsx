@@ -11,9 +11,15 @@ export const Route = createFileRoute("/_authenticated/clientes")({
   head: () => ({
     meta: [
       { title: "Clientes (CRM) | VisionFlow ERP" },
-      { name: "description", content: "Cadastro de clientes da farm 3D com histórico de compras e ticket médio." },
+      {
+        name: "description",
+        content: "Cadastro de clientes da farm 3D com histórico de compras e ticket médio.",
+      },
       { property: "og:title", content: "CRM de Clientes — VisionFlow ERP" },
-      { property: "og:description", content: "Histórico de compras e relacionamento com clientes da impressão 3D." },
+      {
+        property: "og:description",
+        content: "Histórico de compras e relacionamento com clientes da impressão 3D.",
+      },
     ],
   }),
   component: Clientes,
@@ -39,7 +45,11 @@ function Clientes() {
               { key: "city", label: "Cidade / UF", placeholder: "São Paulo / SP" },
             ]}
             onSubmit={(v) =>
-              addClient({ name: v['name'] || "Sem nome", phone: v['phone'] || "", city: v['city'] || "" })
+              addClient({
+                name: v["name"] || "Sem nome",
+                phone: v["phone"] || "",
+                city: v["city"] || "",
+              })
             }
           />
         }
@@ -52,7 +62,11 @@ function Clientes() {
       />
       {visible.length === 0 && (
         <EmptyState
-          text={clients.length ? "Nenhum cliente encontrado para a busca." : "Nenhum cliente cadastrado ainda."}
+          text={
+            clients.length
+              ? "Nenhum cliente encontrado para a busca."
+              : "Nenhum cliente cadastrado ainda."
+          }
         />
       )}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -71,7 +85,11 @@ function Clientes() {
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
-                  {open > 0 && <Badge variant="outline" className="shrink-0 border-warn/40 text-warn">{open} em aberto</Badge>}
+                  {open > 0 && (
+                    <Badge variant="outline" className="shrink-0 border-warn/40 text-warn">
+                      {open} em aberto
+                    </Badge>
+                  )}
                   <RowActions
                     compact
                     title="cliente"
@@ -84,9 +102,9 @@ function Clientes() {
                     values={{ name: c.name, phone: c.phone, city: c.city }}
                     onSave={(v) =>
                       updateClient(c.id, {
-                        name: v['name'] ?? c.name,
-                        phone: v['phone'] ?? c.phone,
-                        city: v['city'] ?? c.city,
+                        name: v["name"] ?? c.name,
+                        phone: v["phone"] ?? c.phone,
+                        city: v["city"] ?? c.city,
                       })
                     }
                     onDelete={() => deleteClient(c.id)}
@@ -94,8 +112,12 @@ function Clientes() {
                 </div>
               </div>
               <div className="mt-4 space-y-1.5 text-xs text-muted-foreground">
-                <p className="flex items-center gap-2"><Phone className="h-3.5 w-3.5" /> {c.phone}</p>
-                <p className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5" /> {c.city}</p>
+                <p className="flex items-center gap-2">
+                  <Phone className="h-3.5 w-3.5" /> {c.phone}
+                </p>
+                <p className="flex items-center gap-2">
+                  <MapPin className="h-3.5 w-3.5" /> {c.city}
+                </p>
               </div>
               <div className="mt-4 flex items-baseline justify-between border-t border-border pt-3">
                 <span className="text-xs text-muted-foreground">Total comprado</span>

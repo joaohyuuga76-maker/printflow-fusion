@@ -13,7 +13,8 @@ export const Route = createFileRoute("/auth")({
       { title: "Entrar | VisionFlow ERP" },
       {
         name: "description",
-        content: "Acesse o VisionFlow ERP com seu usuário e senha para gerenciar produção, estoque e financeiro.",
+        content:
+          "Acesse o VisionFlow ERP com seu usuário e senha para gerenciar produção, estoque e financeiro.",
       },
       { property: "og:title", content: "Entrar no VisionFlow ERP" },
       { property: "og:description", content: "Sistema de Gestão & Produção." },

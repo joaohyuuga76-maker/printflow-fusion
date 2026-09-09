@@ -16,9 +16,16 @@ export const Route = createFileRoute("/_authenticated/maquinas")({
   head: () => ({
     meta: [
       { title: "Máquinas & Custos Extras | VisionFlow ERP" },
-      { name: "description", content: "Cadastro de impressoras com potência, depreciação por hora, tarifa de energia e insumos extras." },
+      {
+        name: "description",
+        content:
+          "Cadastro de impressoras com potência, depreciação por hora, tarifa de energia e insumos extras.",
+      },
       { property: "og:title", content: "Máquinas & Custos — VisionFlow ERP" },
-      { property: "og:description", content: "Parâmetros de custo que alimentam a calculadora de orçamentos." },
+      {
+        property: "og:description",
+        content: "Parâmetros de custo que alimentam a calculadora de orçamentos.",
+      },
     ],
   }),
   component: Maquinas,
@@ -45,19 +52,34 @@ function Maquinas() {
             ]}
             onSubmit={(v) =>
               addExtra({
-                name: v['name'] || "Insumo",
-                unit: v['unit'] || "un",
-                unitPrice: Number(v['unitPrice']) || 0,
+                name: v["name"] || "Insumo",
+                unit: v["unit"] || "un",
+                unitPrice: Number(v["unitPrice"]) || 0,
               })
             }
           />
         }
       />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Tarifa de energia" value={`${brl(settings.energyRate)}/kWh`} icon={Zap} tone="warn" />
+        <StatCard
+          label="Tarifa de energia"
+          value={`${brl(settings.energyRate)}/kWh`}
+          icon={Zap}
+          tone="warn"
+        />
         <StatCard label="Potência instalada" value={`${totalW} W`} icon={Zap} tone="info" />
-        <StatCard label="Máquinas ativas" value={String(printers.filter((p) => p.status !== "manutencao").length)} icon={Wrench} tone="profit" />
-        <StatCard label="Insumos extras" value={String(extras.length)} icon={Package} tone="production" />
+        <StatCard
+          label="Máquinas ativas"
+          value={String(printers.filter((p) => p.status !== "manutencao").length)}
+          icon={Wrench}
+          tone="profit"
+        />
+        <StatCard
+          label="Insumos extras"
+          value={String(extras.length)}
+          icon={Package}
+          tone="production"
+        />
       </div>
 
       <div className="mt-4 grid gap-3 xl:grid-cols-2">
@@ -76,7 +98,9 @@ function Maquinas() {
                 <TableRow key={p.id}>
                   <TableCell className="whitespace-nowrap font-medium">{p.name}</TableCell>
                   <TableCell>{p.watts} W</TableCell>
-                  <TableCell className="text-right text-production">{brl(p.depreciationPerHour)}</TableCell>
+                  <TableCell className="text-right text-production">
+                    {brl(p.depreciationPerHour)}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export interface AppUser {
@@ -9,7 +10,7 @@ export interface AppUser {
   createdAt: string;
 }
 
-async function assertAdmin(context: { supabase: any; userId: string }) {
+async function assertAdmin(context: { supabase: SupabaseClient; userId: string }) {
   // Checked with the caller's own (RLS-scoped) client: users may only read their own roles.
   const { data } = await context.supabase
     .from("user_roles")
@@ -43,7 +44,8 @@ export const listAppUsers = createServerFn({ method: "GET" })
         email: u.email ?? "",
         fullName:
           (profiles ?? []).find((p) => p.id === u.id)?.full_name ??
-          ((u.user_metadata?.["full_name"] as string | undefined) ?? ""),
+          (u.user_metadata?.["full_name"] as string | undefined) ??
+          "",
         role: userRoles.includes("admin") ? "admin" : "operador",
         createdAt: u.created_at,
       };
@@ -52,7 +54,10 @@ export const listAppUsers = createServerFn({ method: "GET" })
 
 export const createAppUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { email: string; password: string; fullName: string; role: "admin" | "operador" }) => input)
+  .inputValidator(
+    (input: { email: string; password: string; fullName: string; role: "admin" | "operador" }) =>
+      input,
+  )
   .handler(async ({ data, context }) => {
     await assertAdmin(context as never);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

@@ -10,7 +10,10 @@ export const Route = createFileRoute("/_authenticated/fila")({
   head: () => ({
     meta: [
       { title: "Fila de Impressão | VisionFlow ERP" },
-      { name: "description", content: "Peças prontas para rodar organizadas por prioridade, peso e tempo estimado." },
+      {
+        name: "description",
+        content: "Peças prontas para rodar organizadas por prioridade, peso e tempo estimado.",
+      },
       { property: "og:title", content: "Fila de Impressão — VisionFlow ERP" },
       { property: "og:description", content: "Priorize os jobs da sua farm 3D." },
     ],
@@ -28,11 +31,19 @@ function Fila() {
 
   return (
     <div>
-      <PageHeader title="Fila de Impressão" subtitle={`${queue.length} jobs aguardando máquina livre`} />
+      <PageHeader
+        title="Fila de Impressão"
+        subtitle={`${queue.length} jobs aguardando máquina livre`}
+      />
       <div className="space-y-3">
         {queue.map((o, i) => (
-          <div key={o.id} className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4 rounded-xl border border-border bg-card p-4 sm:flex sm:justify-between">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-secondary text-sm font-bold">{i + 1}</span>
+          <div
+            key={o.id}
+            className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4 rounded-xl border border-border bg-card p-4 sm:flex sm:justify-between"
+          >
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-secondary text-sm font-bold">
+              {i + 1}
+            </span>
             <div className="min-w-0 flex-1">
               <div className="flex min-w-0 items-center gap-2">
                 <p className="truncate font-medium">{o.title}</p>
@@ -56,7 +67,10 @@ function Fila() {
             <Button
               size="sm"
               className="col-span-2 sm:col-auto"
-              onClick={() => { moveOrder(o.id, "impressao"); toast.success(`${o.ref} enviado para impressão`); }}
+              onClick={() => {
+                moveOrder(o.id, "impressao");
+                toast.success(`${o.ref} enviado para impressão`);
+              }}
             >
               <Play className="h-3.5 w-3.5" /> Rodar agora
             </Button>

@@ -1,7 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Banknote, CreditCard, LockKeyhole, Plus, QrCode, ShoppingCart, Trash2, Unlock } from "lucide-react";
+import {
+  Banknote,
+  CreditCard,
+  LockKeyhole,
+  Plus,
+  QrCode,
+  ShoppingCart,
+  Trash2,
+  Unlock,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -169,8 +178,7 @@ function Pdv() {
     if (!p) return;
     setCart((prev) => {
       const found = prev.find((i) => i.productId === p.id);
-      if (found)
-        return prev.map((i) => (i.productId === p.id ? { ...i, qty: i.qty + 1 } : i));
+      if (found) return prev.map((i) => (i.productId === p.id ? { ...i, qty: i.qty + 1 } : i));
       return [
         ...prev,
         { key: crypto.randomUUID(), productId: p.id, name: p.name, qty: 1, unitPrice: p.price },
@@ -232,7 +240,10 @@ function Pdv() {
     });
     addFinance({
       kind: "receivable",
-      description: `Venda PDV · ${cart.map((i) => i.name).join(", ").slice(0, 60)}`,
+      description: `Venda PDV · ${cart
+        .map((i) => i.name)
+        .join(", ")
+        .slice(0, 60)}`,
       party: client || "Consumidor final",
       amount: cartTotal,
       dueDate: new Date().toISOString().slice(0, 10),
@@ -318,7 +329,10 @@ function Pdv() {
             ) : (
               <div className="divide-y divide-border">
                 {sales.map((s) => (
-                  <div key={s.id} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
+                  <div
+                    key={s.id}
+                    className="flex items-center justify-between gap-3 px-4 py-3 text-sm"
+                  >
                     <div className="min-w-0">
                       <p className="truncate font-medium">{s.client || "Consumidor final"}</p>
                       <p className="text-xs text-muted-foreground">

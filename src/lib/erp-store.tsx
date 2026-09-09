@@ -277,7 +277,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
               progress: patch.progress ?? undefined,
               remainingMin: patch.remaining_min,
               currentFile:
-                patch.current_file === null ? undefined : p.currentFile ?? "novo_job.gcode",
+                patch.current_file === null ? undefined : (p.currentFile ?? "novo_job.gcode"),
             }
           : p,
       ),
@@ -515,7 +515,9 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       ...(patch.name !== undefined ? { name: patch.name } : {}),
       ...(patch.model !== undefined ? { model: patch.model } : {}),
       ...(patch.watts !== undefined ? { watts: patch.watts } : {}),
-      ...(patch.depreciationPerHour !== undefined ? { depreciation_per_hour: patch.depreciationPerHour } : {}),
+      ...(patch.depreciationPerHour !== undefined
+        ? { depreciation_per_hour: patch.depreciationPerHour }
+        : {}),
       ...(patch.status !== undefined ? { status: patch.status } : {}),
       ...(patch.hoursRun !== undefined ? { hours_run: patch.hoursRun } : {}),
     };
@@ -644,7 +646,10 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       ...(patch.amount !== undefined ? { amount: patch.amount } : {}),
       ...(patch.dueDate !== undefined ? { due_date: patch.dueDate } : {}),
       ...(patch.status !== undefined
-        ? { status: patch.status, paid_at: patch.status === "pago" ? new Date().toISOString() : null }
+        ? {
+            status: patch.status,
+            paid_at: patch.status === "pago" ? new Date().toISOString() : null,
+          }
         : {}),
       ...(patch.category !== undefined ? { category: patch.category } : {}),
       ...(patch.invoiceNumber !== undefined ? { invoice_number: patch.invoiceNumber } : {}),
@@ -749,5 +754,4 @@ export function useErp() {
   return ctx;
 }
 
-export const brl = (v: number) =>
-  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+export const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });

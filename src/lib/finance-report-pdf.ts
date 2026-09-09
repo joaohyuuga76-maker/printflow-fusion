@@ -13,8 +13,7 @@ export interface FinanceReportData {
   costsByCategory: { name: string; value: number }[];
 }
 
-const brl = (n: number) =>
-  n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 export function buildFinanceReportPdf(data: FinanceReportData) {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
