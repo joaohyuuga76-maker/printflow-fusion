@@ -133,6 +133,25 @@ function Usuarios() {
     setRemoving(null);
   };
 
+  const startEdit = (u: AppUser) => {
+    setEditForm({ email: u.email, fullName: u.fullName, password: "", role: u.role });
+    setEditing(u);
+  };
+
+  const saveEdit = async () => {
+    if (!editing) return;
+    setSaving(true);
+    try {
+      await updateAppUser({ data: { userId: editing.id, ...editForm } });
+      toast.success("Usuário atualizado.");
+      setEditing(null);
+      await refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao atualizar usuário.");
+    }
+    setSaving(false);
+  };
+
   return (
     <div>
       <PageHeader
