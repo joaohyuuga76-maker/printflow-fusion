@@ -191,6 +191,9 @@ function Usuarios() {
                       <SelectItem value="operador">Operador / Atendente</SelectItem>
                     </SelectContent>
                   </Select>
+                  <Button variant="ghost" size="icon" onClick={() => startEdit(u)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
                   <Button variant="ghost" size="icon" onClick={() => setRemoving(u)}>
                     <Trash2 className="h-4 w-4 text-loss" />
                   </Button>
