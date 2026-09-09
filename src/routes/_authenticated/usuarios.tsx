@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Loader2, Trash2, UserPlus } from "lucide-react";
+import { Loader2, Pencil, Trash2, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,6 +37,7 @@ import {
   deleteAppUser,
   listAppUsers,
   setAppUserRole,
+  updateAppUser,
   type AppUser,
 } from "@/lib/users.functions";
 
@@ -68,6 +69,13 @@ function Usuarios() {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [removing, setRemoving] = useState<AppUser | null>(null);
+  const [editing, setEditing] = useState<AppUser | null>(null);
+  const [editForm, setEditForm] = useState({
+    email: "",
+    fullName: "",
+    password: "",
+    role: "operador" as AppUser["role"],
+  });
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -125,6 +133,25 @@ function Usuarios() {
     setRemoving(null);
   };
 
+  const startEdit = (u: AppUser) => {
+    setEditForm({ email: u.email, fullName: u.fullName, password: "", role: u.role });
+    setEditing(u);
+  };
+
+  const saveEdit = async () => {
+    if (!editing) return;
+    setSaving(true);
+    try {
+      await updateAppUser({ data: { userId: editing.id, ...editForm } });
+      toast.success("Usuário atualizado.");
+      setEditing(null);
+      await refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao atualizar usuário.");
+    }
+    setSaving(false);
+  };
+
   return (
     <div>
       <PageHeader
@@ -164,6 +191,9 @@ function Usuarios() {
                       <SelectItem value="operador">Operador / Atendente</SelectItem>
                     </SelectContent>
                   </Select>
+                  <Button variant="ghost" size="icon" onClick={() => startEdit(u)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
                   <Button variant="ghost" size="icon" onClick={() => setRemoving(u)}>
                     <Trash2 className="h-4 w-4 text-loss" />
                   </Button>
@@ -229,6 +259,66 @@ function Usuarios() {
             </Button>
             <Button disabled={saving} onClick={submit}>
               {saving && <Loader2 className="h-4 w-4 animate-spin" />} Cadastrar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar usuário</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-3">
+            <div className="grid gap-2">
+              <Label htmlFor="eu-name">Nome</Label>
+              <Input
+                id="eu-name"
+                value={editForm.fullName}
+                onChange={(e) => setEditForm((f) => ({ ...f, fullName: e.target.value }))}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="eu-email">Usuário (e-mail)</Label>
+              <Input
+                id="eu-email"
+                type="email"
+                value={editForm.email}
+                onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="eu-pass">Nova senha (opcional)</Label>
+              <Input
+                id="eu-pass"
+                type="password"
+                placeholder="Deixe em branco para manter a atual"
+                value={editForm.password}
+                onChange={(e) => setEditForm((f) => ({ ...f, password: e.target.value }))}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Perfil de acesso</Label>
+              <Select
+                value={editForm.role}
+                onValueChange={(v) => setEditForm((f) => ({ ...f, role: v as AppUser["role"] }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="operador">Operador / Atendente</SelectItem>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)}>
+              Cancelar
+            </Button>
+            <Button disabled={saving} onClick={saveEdit}>
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />} Salvar
             </Button>
           </DialogFooter>
         </DialogContent>
