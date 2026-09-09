@@ -68,12 +68,58 @@ export const createAppUser = createServerFn({ method: "POST" })
       user_metadata: { full_name: data.fullName },
     });
     if (error || !created.user) throw new Error(error?.message ?? "Falha ao criar usuário.");
+    await supabaseAdmin
+      .from("profiles")
+      .upsert({ id: created.user.id, full_name: data.fullName }, { onConflict: "id" });
     await supabaseAdmin.from("user_roles").delete().eq("user_id", created.user.id);
     const { error: roleError } = await supabaseAdmin
       .from("user_roles")
       .insert({ user_id: created.user.id, role: data.role });
     if (roleError) throw new Error(roleError.message);
     return { id: created.user.id };
+  });
+
+export const updateAppUser = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (input: {
+      userId: string;
+      email: string;
+      fullName: string;
+      role: "admin" | "operador";
+      password?: string;
+    }) => input,
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context as never);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const attrs: { email?: string; password?: string; user_metadata: { full_name: string } } = {
+      user_metadata: { full_name: data.fullName },
+    };
+    if (data.email.trim()) attrs.email = data.email.trim().toLowerCase();
+    if (data.password && data.password.length >= 4) attrs.password = data.password;
+
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(data.userId, {
+      ...attrs,
+      email_confirm: true,
+    });
+    if (error) throw new Error(error.message);
+
+    await supabaseAdmin
+      .from("profiles")
+      .upsert({ id: data.userId, full_name: data.fullName }, { onConflict: "id" });
+
+    const isSelf = data.userId === (context as { userId: string }).userId;
+    if (isSelf && data.role !== "admin") {
+      throw new Error("Você não pode remover o próprio acesso de administrador.");
+    }
+    await supabaseAdmin.from("user_roles").delete().eq("user_id", data.userId);
+    const { error: roleError } = await supabaseAdmin
+      .from("user_roles")
+      .insert({ user_id: data.userId, role: data.role });
+    if (roleError) throw new Error(roleError.message);
+    return { ok: true };
   });
 
 export const setAppUserRole = createServerFn({ method: "POST" })
