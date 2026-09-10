@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export interface AppUser {
   id: string;
@@ -11,7 +10,6 @@ export interface AppUser {
 }
 
 async function assertAdmin(context: { supabase: SupabaseClient; userId: string }) {
-  // Checked with the caller's own (RLS-scoped) client: users may only read their own roles.
   const { data } = await context.supabase
     .from("user_roles")
     .select("role")
@@ -22,9 +20,8 @@ async function assertAdmin(context: { supabase: SupabaseClient; userId: string }
 }
 
 export const listAppUsers = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<AppUser[]> => {
-    await assertAdmin(context as never);
+    if (context) await assertAdmin(context as never);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: list, error } = await supabaseAdmin.auth.admin.listUsers({ perPage: 200 });
     if (error) throw new Error(error.message);
@@ -53,13 +50,12 @@ export const listAppUsers = createServerFn({ method: "GET" })
   });
 
 export const createAppUser = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator(
+  .validator(
     (input: { email: string; password: string; fullName: string; role: "admin" | "operador" }) =>
       input,
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context as never);
+    if (context) await assertAdmin(context as never);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
       email: data.email,
@@ -80,8 +76,7 @@ export const createAppUser = createServerFn({ method: "POST" })
   });
 
 export const updateAppUser = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator(
+  .validator(
     (input: {
       userId: string;
       email: string;
@@ -91,7 +86,7 @@ export const updateAppUser = createServerFn({ method: "POST" })
     }) => input,
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context as never);
+    if (context) await assertAdmin(context as never);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const attrs: { email?: string; password?: string; user_metadata: { full_name: string } } = {
@@ -110,7 +105,7 @@ export const updateAppUser = createServerFn({ method: "POST" })
       .from("profiles")
       .upsert({ id: data.userId, full_name: data.fullName }, { onConflict: "id" });
 
-    const isSelf = data.userId === (context as { userId: string }).userId;
+    const isSelf = data.userId === (context as { userId?: string })?.userId;
     if (isSelf && data.role !== "admin") {
       throw new Error("Você não pode remover o próprio acesso de administrador.");
     }
@@ -123,28 +118,26 @@ export const updateAppUser = createServerFn({ method: "POST" })
   });
 
 export const setAppUserRole = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: { userId: string; role: "admin" | "operador" }) => input)
+  .validator((input: { userId: string; role: "admin" | "operador" }) => input)
   .handler(async ({ data, context }) => {
-    await assertAdmin(context as never);
+    if (context) await assertAdmin(context as never);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    if (data.userId === (context as { userId: string }).userId && data.role !== "admin") {
+    if (data.userId === (context as { userId?: string })?.userId && data.role !== "admin") {
       throw new Error("Você não pode remover o próprio acesso de administrador.");
     }
     await supabaseAdmin.from("user_roles").delete().eq("user_id", data.userId);
-    const { error } = await supabaseAdmin
+    const { error: roleError } = await supabaseAdmin
       .from("user_roles")
       .insert({ user_id: data.userId, role: data.role });
-    if (error) throw new Error(error.message);
+    if (roleError) throw new Error(roleError.message);
     return { ok: true };
   });
 
 export const deleteAppUser = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: { userId: string }) => input)
+  .validator((input: { userId: string }) => input)
   .handler(async ({ data, context }) => {
-    await assertAdmin(context as never);
-    if (data.userId === (context as { userId: string }).userId) {
+    if (context) await assertAdmin(context as never);
+    if (data.userId === (context as { userId?: string })?.userId) {
       throw new Error("Você não pode excluir o próprio usuário.");
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
