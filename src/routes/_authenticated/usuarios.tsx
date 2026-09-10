@@ -92,7 +92,13 @@ function Operadores() {
       .select("id, nome, usuario, pin, cargo, ativo")
       .order("created_at");
     if (error) toast.error("Falha ao carregar operadores.");
-    setList((data ?? []) as Operador[]);
+    const rows = (data ?? []).map((o) => ({
+      ...(o as Operador),
+      cargo: (String((o as { cargo?: string }).cargo ?? "").trim().toLowerCase() === "admin"
+        ? "admin"
+        : "operador") as Cargo,
+    }));
+    setList(rows);
     setLoading(false);
   }, []);
 

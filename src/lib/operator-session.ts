@@ -61,11 +61,12 @@ export async function loginOperator(
   if (error) throw error;
   if (!data) return null;
 
+  const cargoNorm = String(data.cargo ?? "").trim().toLowerCase();
   const session: OperatorSession = {
     id: data.id as string,
     nome: data.nome as string,
     usuario: data.usuario as string,
-    cargo: (data.cargo as Cargo) ?? "operador",
+    cargo: cargoNorm === "admin" ? "admin" : "operador",
   };
   setOperator(session);
   return session;

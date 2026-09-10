@@ -1,15 +1,17 @@
 # Credenciais de Teste — PrintFlow ERP (PDV / Operadores)
 
-Autenticação por tabela pública `operadores` (Supabase), sem `supabase.auth`.
-Sessão do operador salva em `localStorage` (`printflow:operador`).
+Projeto Supabase atual: `stjbixmtazojeufvfrar`.
+Autenticação por tabela pública `operadores` (sem `supabase.auth`).
+Sessão do operador em `localStorage` (`printflow:operador`).
 
-> IMPORTANTE: os logins abaixo só funcionam DEPOIS de rodar a migração
-> `supabase/migrations/20260601000000_operadores_pdv_auth.sql` no SQL Editor do Supabase.
+> A tabela `operadores` já existe no projeto e o login funciona.
+> As tabelas de DADOS do ERP ainda NÃO existem nesse projeto — rode
+> `supabase/migrations/20260601010000_full_erp_schema_new_project.sql` no SQL Editor.
 
-## Operador padrão (admin)
+## Operador padrão (admin) — VERIFICADO
 - Usuário: `flow`
 - PIN: `9999`
-- Cargo: `admin` (acesso total)
+- Cargo: admin (comparação case-insensitive)
 
 ## Tela de login
 - Rota: `/auth`
