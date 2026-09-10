@@ -3,5 +3,9 @@ import { createRoot } from "react-dom/client";
 import { getRouter } from "./router";
 
 const router = getRouter();
-const root = createRoot(document.body);
-root.render(<RouterProvider router={router} />);
+const rootElement = document.getElementById("root");
+
+if (rootElement && !rootElement.innerHTML) {
+  const root = createRoot(rootElement);
+  root.render(<RouterProvider router={router} />);
+}
