@@ -26,6 +26,9 @@ Converter a autenticação do ERP para o formato PDV / Operadores internos:
 - Storage `notas-fiscais`: política ajustada para a pasta do workspace.
 
 ## Implementado (2026-06)
+- FIX Vercel SSR 500 (`TypeError: createCsrfMiddleware`): removido `createCsrfMiddleware` de `src/start.ts`
+  (app não usa server functions; requestMiddleware=[errorMiddleware]). Verificado pelo testing agent (100%,
+  SSR 200 em /, /auth, /usuarios, /pdv; login/guard/CRUD OK).
 - `src/lib/operator-session.ts` (novo): WORKSPACE_ID, get/set/clear sessão, `loginOperator()`.
 - `src/routes/auth.tsx`: login Usuário + PIN.
 - `src/routes/_authenticated/route.tsx`: guarda via localStorage (getOperator).

@@ -1,0 +1,23 @@
+{
+  "summary": "Frontend-only regression after removal of createCsrfMiddleware from src/start.ts. All 5 requested checks passed against preview URL https://operador-login.preview.emergentagent.com. SSR responds 200 for /, /auth, /usuarios, /pdv (no 500). Login with flow/9999 authenticates via Supabase table 'operadores' and stores session in localStorage under 'printflow:operador'. /usuarios shows 'Novo operador' button and operador-row-flow. Guard correctly redirects /pdv -> /auth when session removed.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Removal of createCsrfMiddleware in src/start.ts is safe: app has no server functions so CSRF middleware protected nothing. requestMiddleware=[errorMiddleware], functionMiddleware=[attachSupabaseAuth] works fine.",
+    "Auth model stores PIN comparison in browser via public 'operadores' table (no supabase.auth). This is intentional per PDV design but note: PIN check is client-side against publicly-readable data — security relies entirely on Supabase RLS. Ensure RLS on 'operadores' prevents anon SELECT of pin_hash column in production."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "100%"},
+  "test_credentials": "usuario=flow, PIN=9999 (admin) — worked",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "SSR no-500 regression confirmed after createCsrfMiddleware removal. Console shows many 404s from Supabase for missing ERP tables (settings, printers, filaments, orders, sales, etc.) — expected per main agent's note, NOT a bug. Preview URL: https://operador-login.preview.emergentagent.com. App is TanStack Start on port 3000, no FastAPI backend.",
+  "rca of the issue": "Original Vercel 500 was caused by createCsrfMiddleware being registered in start.ts but the exported symbol not being available in the TanStack Start runtime the SSR bundle ran against (TypeError: createCsrfMiddleware). Since the app uses no server functions, removing the middleware is a valid fix. Post-fix validation: SSR HTTP 200 on /, /auth, /usuarios, /pdv; login flow, guard, and admin panel all working."
+}
