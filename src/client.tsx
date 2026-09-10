@@ -1,7 +1,7 @@
 import { RouterProvider } from "@tanstack/react-router";
-import { hydrateRoot } from "react-dom/client";
+import { createRoot } from "react-dom/client";
 import { getRouter } from "./router";
 
 const router = getRouter();
-
-hydrateRoot(document, <RouterProvider router={router} />);
+const root = createRoot(document.body);
+root.render(<RouterProvider router={router} />);
