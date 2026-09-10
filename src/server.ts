@@ -14,6 +14,7 @@ export default {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>VisionFlow ERP</title>
     <link rel="stylesheet" href="/assets/styles-DoI73Nos.css" />
+    <script type="module" src="/assets/rolldown-runtime-hePW80VL.js"></script>
     <script type="module" src="/assets/client-Dbczfehc.js"></script>
   </head>
   <body>
