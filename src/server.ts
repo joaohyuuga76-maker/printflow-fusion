@@ -16,9 +16,24 @@ export default eventHandler(async (event) => {
     <link rel="stylesheet" href="/assets/styles-DoI73Nos.css" />
   </head>
   <body class="bg-background text-foreground">
+    <div id="root"></div>
     <script type="module">
       import "/assets/rolldown-runtime-hePW80VL.js";
-      import "/assets/client-Dbczfehc.js";
+      import { getRouter } from "/assets/client-Dbczfehc.js";
+      import { createRoot } from "https://esm.sh/react-dom@18/client";
+      import { RouterProvider } from "https://esm.sh/@tanstack/react-router";
+
+      try {
+        const router = getRouter();
+        const rootElement = document.getElementById("root");
+        if (rootElement) {
+          createRoot(rootElement).render(
+            window.React ? window.React.createElement(RouterProvider, { router }) : null
+          );
+        }
+      } catch (err) {
+        console.error("Erro na inicializacao:", err);
+      }
     </script>
   </body>
 </html>`;
