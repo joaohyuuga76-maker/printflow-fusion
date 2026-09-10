@@ -22,4 +22,21 @@ export default defineConfig({
       allowedHosts: true,
     },
   },
+  // Pin the nitro preset and output layout explicitly. Without this, nitro only writes to
+  // dist/client + dist/server inside the Lovable sandbox; on Netlify's own build servers it
+  // has no explicit preset, so it auto-detects a "netlify" preset from the CI environment and
+  // writes somewhere else, which leaves the Netlify UI's configured "dist/client" publish
+  // directory empty and fails the deploy.
+  nitro: {
+    preset: "cloudflare-module",
+    output: {
+      dir: "dist",
+      serverDir: "dist/server",
+      publicDir: "dist/client",
+    },
+    cloudflare: {
+      nodeCompat: true,
+      deployConfig: true,
+    },
+  },
 });
