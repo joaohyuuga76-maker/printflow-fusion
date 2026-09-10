@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
+import { getOperator } from "@/lib/operator-session";
 
 export type AppRole = "admin" | "operador";
 
@@ -22,19 +22,9 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
-    let active = true;
-    void (async () => {
-      const { data: auth } = await supabase.auth.getUser();
-      if (!auth.user) return;
-      const { data } = await supabase.from("user_roles").select("role").eq("user_id", auth.user.id);
-      if (!active) return;
-      const roles = (data ?? []).map((r) => r.role as AppRole);
-      setRole(roles.includes("admin") ? "admin" : (roles[0] ?? "operador"));
-      setLoading(false);
-    })();
-    return () => {
-      active = false;
-    };
+    const op = getOperator();
+    setRole(op?.cargo === "admin" ? "admin" : "operador");
+    setLoading(false);
   }, []);
 
   useEffect(() => {

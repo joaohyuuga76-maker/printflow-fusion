@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { WORKSPACE_ID } from "./operator-session";
 import type {
   Client,
   ExtraCost,
@@ -104,8 +105,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let active = true;
     (async () => {
-      const { data: auth } = await supabase.auth.getUser();
-      const uid = auth.user?.id ?? null;
+      const uid = WORKSPACE_ID;
       if (!active) return;
       setUserId(uid);
       if (!uid) {

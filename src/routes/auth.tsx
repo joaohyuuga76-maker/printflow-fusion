@@ -1,23 +1,23 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Loader2, Zap } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { Loader2, LockKeyhole, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getOperator, loginOperator } from "@/lib/operator-session";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Entrar | VisionFlow ERP" },
+      { title: "Entrar | PrintFlow ERP" },
       {
         name: "description",
         content:
-          "Acesse o VisionFlow ERP com seu usuário e senha para gerenciar produção, estoque e financeiro.",
+          "Acesse o PrintFlow ERP com seu usuário e PIN de operador para gerenciar produção, estoque e financeiro.",
       },
-      { property: "og:title", content: "Entrar no VisionFlow ERP" },
+      { property: "og:title", content: "Entrar no PrintFlow ERP" },
       { property: "og:description", content: "Sistema de Gestão & Produção." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -29,55 +29,33 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState("");
-  const [password, setPassword] = useState("");
+  const [usuario, setUsuario] = useState("");
+  const [pin, setPin] = useState("");
 
   useEffect(() => {
-    void supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/", replace: true });
-    });
+    if (getOperator()) navigate({ to: "/", replace: true });
   }, [navigate]);
-
-  // Usuário simples (sem @) é convertido para o e-mail interno do sistema.
-  const toLogin = (v: string) => {
-    const t = v.trim().toLowerCase();
-    return t.includes("@") ? t : `${t.replace(/\s+/g, "")}@printflow.app`;
-  };
-
-  const friendlyError = (message: string) => {
-    const m = message.toLowerCase();
-    if (m.includes("invalid login credentials")) return "E-mail ou senha incorretos.";
-    if (m.includes("email not confirmed")) return "Este acesso ainda não foi confirmado.";
-    if (m.includes("user not found")) return "Usuário não encontrado.";
-    if (m.includes("too many") || m.includes("rate limit"))
-      return "Muitas tentativas. Aguarde alguns instantes e tente novamente.";
-    if (m.includes("network") || m.includes("fetch"))
-      return "Sem conexão com o servidor. Verifique sua internet.";
-    return "Não foi possível entrar. Tente novamente.";
-  };
 
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user.trim() || !password) {
-      toast.error("Informe usuário e senha.");
+    if (!usuario.trim() || !pin.trim()) {
+      toast.error("Informe o usuário e o PIN.");
       return;
     }
     setLoading(true);
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: toLogin(user),
-      password,
-    });
-    setLoading(false);
-    if (error) {
-      toast.error(friendlyError(error.message));
-      return;
+    try {
+      const op = await loginOperator(usuario, pin);
+      if (!op) {
+        toast.error("Usuário ou PIN incorretos, ou operador inativo.");
+        return;
+      }
+      toast.success(`Bem-vindo, ${op.nome || op.usuario}!`);
+      navigate({ to: "/", replace: true });
+    } catch {
+      toast.error("Não foi possível entrar. Verifique sua conexão e tente novamente.");
+    } finally {
+      setLoading(false);
     }
-    if (!data.session) {
-      toast.error("Sessão não pôde ser iniciada. Tente novamente.");
-      return;
-    }
-    toast.success("Bem-vindo de volta!");
-    navigate({ to: "/", replace: true });
   };
 
   return (
@@ -88,42 +66,59 @@ function AuthPage() {
             <Zap className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-lg font-bold tracking-tight">VisionFlow ERP</h1>
-            <p className="text-xs text-muted-foreground">Sistema de Gestão &amp; Produção</p>
+            <h1 className="text-lg font-bold tracking-tight">PrintFlow ERP</h1>
+            <p className="text-xs text-muted-foreground">Frente de Caixa &amp; Produção</p>
           </div>
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-5">
+          <div className="mb-4 flex items-center gap-2 text-sm font-semibold">
+            <LockKeyhole className="h-4 w-4 text-primary" />
+            Acesso do Operador
+          </div>
           <form onSubmit={signIn} className="grid gap-3">
             <div className="grid gap-2">
               <Label htmlFor="login-user">Usuário</Label>
               <Input
                 id="login-user"
+                data-testid="login-usuario-input"
                 required
                 autoComplete="username"
-                placeholder="seu usuário"
-                value={user}
-                onChange={(e) => setUser(e.target.value)}
+                autoFocus
+                placeholder="ex.: flow"
+                value={usuario}
+                onChange={(e) => setUsuario(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="login-pass">Senha</Label>
+              <Label htmlFor="login-pin">PIN / Senha</Label>
               <Input
-                id="login-pass"
+                id="login-pin"
+                data-testid="login-pin-input"
                 type="password"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                minLength={4}
+                maxLength={6}
                 required
                 autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                placeholder="4 a 6 números"
+                value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
               />
             </div>
-            <Button type="submit" disabled={loading} className="mt-1">
+            <Button
+              type="submit"
+              data-testid="login-submit-button"
+              disabled={loading}
+              className="mt-1"
+            >
               {loading && <Loader2 className="h-4 w-4 animate-spin" />} Entrar
             </Button>
           </form>
 
           <p className="mt-4 text-center text-[11px] text-muted-foreground">
-            Novos acessos são criados pelo administrador em Usuários &amp; Permissões.
+            Novos operadores são cadastrados pelo administrador em Operadores &amp; Acessos.
           </p>
         </div>
       </div>

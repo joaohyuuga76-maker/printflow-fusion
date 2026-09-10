@@ -18,8 +18,8 @@ import { cn } from "@/lib/utils";
 import { mobileNav, navSections } from "./nav";
 import { useErp } from "@/lib/erp-store";
 import { FailureModal } from "./FailureModal";
-import { supabase } from "@/integrations/supabase/client";
 import { OPERATOR_ROUTES, useRole } from "@/lib/acl";
+import { clearOperator, getOperator } from "@/lib/operator-session";
 
 function Brand({ compact }: { compact?: boolean }) {
   const { settings } = useErp();
@@ -106,13 +106,14 @@ export function AppShell({ children }: { children: ReactNode }) {
   const lowStock = filaments.filter((f) => f.remainingG < 150).length;
 
   useEffect(() => {
-    void supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
+    const op = getOperator();
+    setEmail(op ? op.nome || op.usuario : null);
   }, []);
 
   const signOut = async () => {
     await queryClient.cancelQueries();
     queryClient.clear();
-    await supabase.auth.signOut();
+    clearOperator();
     navigate({ to: "/auth", replace: true });
   };
 

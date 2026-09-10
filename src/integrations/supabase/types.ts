@@ -14,6 +14,40 @@ export type Database = {
   }
   public: {
     Tables: {
+      operadores: {
+        Row: {
+          ativo: boolean
+          cargo: string
+          created_at: string
+          id: string
+          nome: string
+          pin: string
+          updated_at: string
+          usuario: string
+        }
+        Insert: {
+          ativo?: boolean
+          cargo?: string
+          created_at?: string
+          id?: string
+          nome: string
+          pin: string
+          updated_at?: string
+          usuario: string
+        }
+        Update: {
+          ativo?: boolean
+          cargo?: string
+          created_at?: string
+          id?: string
+          nome?: string
+          pin?: string
+          updated_at?: string
+          usuario?: string
+        }
+        Relationships: []
+      }
+
       cash_sessions: {
         Row: {
           closed_at: string | null

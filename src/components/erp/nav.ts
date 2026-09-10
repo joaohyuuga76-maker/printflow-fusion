@@ -52,7 +52,7 @@ export const navSections = [
     label: "Financeiro & Sistema",
     items: [
       { to: "/financeiro", label: "Financeiro", icon: Wallet },
-      { to: "/usuarios", label: "Usuários & Permissões", icon: ShieldCheck },
+      { to: "/usuarios", label: "Operadores & Acessos", icon: ShieldCheck },
       { to: "/aparencia", label: "Aparência e Cores", icon: Palette },
       { to: "/configuracoes", label: "Configurações", icon: Cog },
     ],

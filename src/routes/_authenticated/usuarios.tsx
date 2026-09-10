@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Loader2, Pencil, Trash2, UserPlus } from "lucide-react";
+import { Loader2, Pencil, Power, Trash2, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -32,63 +33,66 @@ import {
 } from "@/components/ui/select";
 import { PageHeader } from "@/components/erp/ui-bits";
 import { AdminOnly } from "@/lib/acl";
-import {
-  createAppUser,
-  deleteAppUser,
-  listAppUsers,
-  setAppUserRole,
-  updateAppUser,
-  type AppUser,
-} from "@/lib/users.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { getOperator, type Cargo } from "@/lib/operator-session";
 
 export const Route = createFileRoute("/_authenticated/usuarios")({
   head: () => ({
     meta: [
-      { title: "Usuários & Permissões | VisionFlow ERP" },
+      { title: "Operadores & Acessos | PrintFlow ERP" },
       {
         name: "description",
         content:
-          "Cadastre operadores e administradores e defina o nível de acesso de cada usuário do ERP.",
+          "Cadastre operadores do PDV com usuário e PIN, defina o cargo e ative ou desative o acesso.",
       },
-      { property: "og:title", content: "Usuários & Permissões — VisionFlow ERP" },
-      { property: "og:description", content: "Controle de perfis de acesso do ERP 3D." },
+      { property: "og:title", content: "Operadores & Acessos — PrintFlow ERP" },
+      { property: "og:description", content: "Controle de operadores do PDV." },
     ],
   }),
   component: () => (
     <AdminOnly>
-      <Usuarios />
+      <Operadores />
     </AdminOnly>
   ),
 });
 
-const roleLabel = { admin: "Administrador", operador: "Operador / Atendente" } as const;
+interface Operador {
+  id: string;
+  nome: string;
+  usuario: string;
+  pin: string;
+  cargo: Cargo;
+  ativo: boolean;
+}
 
-function Usuarios() {
-  const [users, setUsers] = useState<AppUser[]>([]);
+const cargoLabel: Record<Cargo, string> = {
+  admin: "Administrador",
+  operador: "Operador / Atendente",
+};
+
+const blankForm = { nome: "", usuario: "", pin: "", cargo: "operador" as Cargo };
+
+const validPin = (pin: string) => /^\d{4,6}$/.test(pin.trim());
+const normUser = (u: string) => u.trim().toLowerCase();
+
+function Operadores() {
+  const currentId = getOperator()?.id ?? null;
+  const [list, setList] = useState<Operador[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [removing, setRemoving] = useState<AppUser | null>(null);
-  const [editing, setEditing] = useState<AppUser | null>(null);
-  const [editForm, setEditForm] = useState({
-    email: "",
-    fullName: "",
-    password: "",
-    role: "operador" as AppUser["role"],
-  });
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-    fullName: "",
-    role: "operador" as AppUser["role"],
-  });
+  const [removing, setRemoving] = useState<Operador | null>(null);
+  const [editing, setEditing] = useState<Operador | null>(null);
+  const [form, setForm] = useState(blankForm);
+  const [editForm, setEditForm] = useState({ ...blankForm });
 
   const refresh = useCallback(async () => {
-    try {
-      setUsers(await listAppUsers());
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Falha ao carregar usuários.");
-    }
+    const { data, error } = await supabase
+      .from("operadores")
+      .select("id, nome, usuario, pin, cargo, ativo")
+      .order("created_at");
+    if (error) toast.error("Falha ao carregar operadores.");
+    setList((data ?? []) as Operador[]);
     setLoading(false);
   }, []);
 
@@ -97,104 +101,172 @@ function Usuarios() {
   }, [refresh]);
 
   const submit = async () => {
+    if (!form.nome.trim() || !form.usuario.trim()) {
+      toast.error("Informe o nome e o usuário.");
+      return;
+    }
+    if (!validPin(form.pin)) {
+      toast.error("O PIN deve ter de 4 a 6 números.");
+      return;
+    }
     setSaving(true);
-    try {
-      await createAppUser({ data: form });
-      toast.success("Usuário cadastrado.");
-      setOpen(false);
-      setForm({ email: "", password: "", fullName: "", role: "operador" });
-      await refresh();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Falha ao criar usuário.");
-    }
+    const { error } = await supabase.from("operadores").insert({
+      nome: form.nome.trim(),
+      usuario: normUser(form.usuario),
+      pin: form.pin.trim(),
+      cargo: form.cargo,
+      ativo: true,
+    });
     setSaving(false);
-  };
-
-  const changeRole = async (user: AppUser, role: AppUser["role"]) => {
-    setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, role } : u)));
-    try {
-      await setAppUserRole({ data: { userId: user.id, role } });
-      toast.success(`${user.email} agora é ${roleLabel[role]}.`);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Falha ao alterar permissão.");
-      await refresh();
+    if (error) {
+      toast.error(
+        error.code === "23505"
+          ? "Já existe um operador com esse usuário."
+          : "Falha ao cadastrar operador.",
+      );
+      return;
     }
+    toast.success("Operador cadastrado.");
+    setOpen(false);
+    setForm(blankForm);
+    await refresh();
   };
 
-  const remove = async () => {
-    if (!removing) return;
-    try {
-      await deleteAppUser({ data: { userId: removing.id } });
-      setUsers((prev) => prev.filter((u) => u.id !== removing.id));
-      toast.success("Usuário excluído.");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Falha ao excluir usuário.");
-    }
-    setRemoving(null);
-  };
-
-  const startEdit = (u: AppUser) => {
-    setEditForm({ email: u.email, fullName: u.fullName, password: "", role: u.role });
-    setEditing(u);
+  const startEdit = (o: Operador) => {
+    setEditForm({ nome: o.nome, usuario: o.usuario, pin: "", cargo: o.cargo });
+    setEditing(o);
   };
 
   const saveEdit = async () => {
     if (!editing) return;
-    setSaving(true);
-    try {
-      await updateAppUser({ data: { userId: editing.id, ...editForm } });
-      toast.success("Usuário atualizado.");
-      setEditing(null);
-      await refresh();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Falha ao atualizar usuário.");
+    if (!editForm.nome.trim() || !editForm.usuario.trim()) {
+      toast.error("Informe o nome e o usuário.");
+      return;
     }
+    if (editForm.pin.trim() && !validPin(editForm.pin)) {
+      toast.error("O PIN deve ter de 4 a 6 números.");
+      return;
+    }
+    setSaving(true);
+    const patch: Record<string, unknown> = {
+      nome: editForm.nome.trim(),
+      usuario: normUser(editForm.usuario),
+      cargo: editForm.cargo,
+    };
+    if (editForm.pin.trim()) patch.pin = editForm.pin.trim();
+    const { error } = await supabase.from("operadores").update(patch).eq("id", editing.id);
     setSaving(false);
+    if (error) {
+      toast.error(
+        error.code === "23505"
+          ? "Já existe um operador com esse usuário."
+          : "Falha ao atualizar operador.",
+      );
+      return;
+    }
+    toast.success("Operador atualizado.");
+    setEditing(null);
+    await refresh();
+  };
+
+  const toggleAtivo = async (o: Operador) => {
+    if (o.id === currentId && o.ativo) {
+      toast.error("Você não pode desativar o próprio acesso.");
+      return;
+    }
+    setList((prev) => prev.map((x) => (x.id === o.id ? { ...x, ativo: !o.ativo } : x)));
+    const { error } = await supabase
+      .from("operadores")
+      .update({ ativo: !o.ativo })
+      .eq("id", o.id);
+    if (error) {
+      toast.error("Falha ao alterar o status.");
+      await refresh();
+      return;
+    }
+    toast.success(!o.ativo ? "Operador ativado." : "Operador desativado.");
+  };
+
+  const remove = async () => {
+    if (!removing) return;
+    if (removing.id === currentId) {
+      toast.error("Você não pode excluir o próprio operador.");
+      setRemoving(null);
+      return;
+    }
+    const { error } = await supabase.from("operadores").delete().eq("id", removing.id);
+    if (error) {
+      toast.error("Falha ao excluir operador.");
+    } else {
+      setList((prev) => prev.filter((x) => x.id !== removing.id));
+      toast.success("Operador excluído.");
+    }
+    setRemoving(null);
   };
 
   return (
     <div>
       <PageHeader
-        title="Usuários & Permissões"
+        title="Operadores & Acessos"
         subtitle="Administrador tem acesso total. Operador acessa apenas o PDV e o Kanban de vendas."
         action={
-          <Button onClick={() => setOpen(true)}>
-            <UserPlus className="h-4 w-4" /> Novo usuário
+          <Button data-testid="novo-operador-button" onClick={() => setOpen(true)}>
+            <UserPlus className="h-4 w-4" /> Novo operador
           </Button>
         }
       />
 
       {loading ? (
-        <p className="text-sm text-muted-foreground">Carregando usuários…</p>
+        <p className="text-sm text-muted-foreground">Carregando operadores…</p>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div
+          data-testid="operadores-list"
+          className="overflow-hidden rounded-2xl border border-border bg-card"
+        >
           <div className="divide-y divide-border">
-            {users.map((u) => (
+            {list.map((o) => (
               <div
-                key={u.id}
+                key={o.id}
+                data-testid={`operador-row-${o.usuario}`}
                 className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{u.fullName || u.email}</p>
-                  <p className="truncate text-xs text-muted-foreground">{u.email}</p>
+                  <p className="truncate text-sm font-medium">
+                    {o.nome}
+                    {!o.ativo && (
+                      <span className="ml-2 text-xs font-normal text-muted-foreground">
+                        (inativo)
+                      </span>
+                    )}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">@{o.usuario}</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant={u.role === "admin" ? "default" : "outline"}>
-                    {roleLabel[u.role]}
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant={o.cargo === "admin" ? "default" : "outline"}>
+                    {cargoLabel[o.cargo]}
                   </Badge>
-                  <Select value={u.role} onValueChange={(v) => changeRole(u, v as AppUser["role"])}>
-                    <SelectTrigger className="w-[190px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">Administrador</SelectItem>
-                      <SelectItem value="operador">Operador / Atendente</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button variant="ghost" size="icon" onClick={() => startEdit(u)}>
+                  <div className="flex items-center gap-1.5">
+                    <Switch
+                      data-testid={`operador-ativo-switch-${o.usuario}`}
+                      checked={o.ativo}
+                      onCheckedChange={() => void toggleAtivo(o)}
+                    />
+                    <Power className="h-3.5 w-3.5 text-muted-foreground" />
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    data-testid={`operador-edit-${o.usuario}`}
+                    onClick={() => startEdit(o)}
+                  >
                     <Pencil className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => setRemoving(u)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    data-testid={`operador-delete-${o.usuario}`}
+                    onClick={() => setRemoving(o)}
+                  >
                     <Trash2 className="h-4 w-4 text-loss" />
                   </Button>
                 </div>
@@ -204,46 +276,53 @@ function Usuarios() {
         </div>
       )}
 
+      {/* Cadastrar */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Cadastrar usuário</DialogTitle>
+            <DialogTitle>Cadastrar operador</DialogTitle>
           </DialogHeader>
           <div className="grid gap-3">
             <div className="grid gap-2">
               <Label htmlFor="nu-name">Nome</Label>
               <Input
                 id="nu-name"
-                value={form.fullName}
-                onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
+                data-testid="operador-nome-input"
+                value={form.nome}
+                onChange={(e) => setForm((f) => ({ ...f, nome: e.target.value }))}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="nu-email">Usuário (e-mail)</Label>
+              <Label htmlFor="nu-user">Usuário</Label>
               <Input
-                id="nu-email"
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                id="nu-user"
+                data-testid="operador-usuario-input"
+                placeholder="ex.: joao"
+                value={form.usuario}
+                onChange={(e) => setForm((f) => ({ ...f, usuario: e.target.value }))}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="nu-pass">Senha</Label>
+              <Label htmlFor="nu-pin">PIN (4 a 6 números)</Label>
               <Input
-                id="nu-pass"
-                type="password"
-                minLength={6}
-                value={form.password}
-                onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+                id="nu-pin"
+                data-testid="operador-pin-input"
+                inputMode="numeric"
+                maxLength={6}
+                placeholder="ex.: 1234"
+                value={form.pin}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, pin: e.target.value.replace(/\D/g, "").slice(0, 6) }))
+                }
               />
             </div>
             <div className="grid gap-2">
-              <Label>Perfil de acesso</Label>
+              <Label>Cargo</Label>
               <Select
-                value={form.role}
-                onValueChange={(v) => setForm((f) => ({ ...f, role: v as AppUser["role"] }))}
+                value={form.cargo}
+                onValueChange={(v) => setForm((f) => ({ ...f, cargo: v as Cargo }))}
               >
-                <SelectTrigger>
+                <SelectTrigger data-testid="operador-cargo-select">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -257,53 +336,59 @@ function Usuarios() {
             <Button variant="outline" onClick={() => setOpen(false)}>
               Cancelar
             </Button>
-            <Button disabled={saving} onClick={submit}>
+            <Button data-testid="operador-salvar-button" disabled={saving} onClick={submit}>
               {saving && <Loader2 className="h-4 w-4 animate-spin" />} Cadastrar
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
+      {/* Editar */}
       <Dialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Editar usuário</DialogTitle>
+            <DialogTitle>Editar operador</DialogTitle>
           </DialogHeader>
           <div className="grid gap-3">
             <div className="grid gap-2">
               <Label htmlFor="eu-name">Nome</Label>
               <Input
                 id="eu-name"
-                value={editForm.fullName}
-                onChange={(e) => setEditForm((f) => ({ ...f, fullName: e.target.value }))}
+                data-testid="operador-edit-nome-input"
+                value={editForm.nome}
+                onChange={(e) => setEditForm((f) => ({ ...f, nome: e.target.value }))}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="eu-email">Usuário (e-mail)</Label>
+              <Label htmlFor="eu-user">Usuário</Label>
               <Input
-                id="eu-email"
-                type="email"
-                value={editForm.email}
-                onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
+                id="eu-user"
+                data-testid="operador-edit-usuario-input"
+                value={editForm.usuario}
+                onChange={(e) => setEditForm((f) => ({ ...f, usuario: e.target.value }))}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="eu-pass">Nova senha (opcional)</Label>
+              <Label htmlFor="eu-pin">Novo PIN (opcional)</Label>
               <Input
-                id="eu-pass"
-                type="password"
-                placeholder="Deixe em branco para manter a atual"
-                value={editForm.password}
-                onChange={(e) => setEditForm((f) => ({ ...f, password: e.target.value }))}
+                id="eu-pin"
+                data-testid="operador-edit-pin-input"
+                inputMode="numeric"
+                maxLength={6}
+                placeholder="Deixe em branco para manter o atual"
+                value={editForm.pin}
+                onChange={(e) =>
+                  setEditForm((f) => ({ ...f, pin: e.target.value.replace(/\D/g, "").slice(0, 6) }))
+                }
               />
             </div>
             <div className="grid gap-2">
-              <Label>Perfil de acesso</Label>
+              <Label>Cargo</Label>
               <Select
-                value={editForm.role}
-                onValueChange={(v) => setEditForm((f) => ({ ...f, role: v as AppUser["role"] }))}
+                value={editForm.cargo}
+                onValueChange={(v) => setEditForm((f) => ({ ...f, cargo: v as Cargo }))}
               >
-                <SelectTrigger>
+                <SelectTrigger data-testid="operador-edit-cargo-select">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -317,7 +402,7 @@ function Usuarios() {
             <Button variant="outline" onClick={() => setEditing(null)}>
               Cancelar
             </Button>
-            <Button disabled={saving} onClick={saveEdit}>
+            <Button data-testid="operador-edit-salvar-button" disabled={saving} onClick={saveEdit}>
               {saving && <Loader2 className="h-4 w-4 animate-spin" />} Salvar
             </Button>
           </DialogFooter>
@@ -327,14 +412,17 @@ function Usuarios() {
       <AlertDialog open={!!removing} onOpenChange={(v) => !v && setRemoving(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir usuário?</AlertDialogTitle>
+            <AlertDialogTitle>Excluir operador?</AlertDialogTitle>
             <AlertDialogDescription>
-              {removing?.email} perderá o acesso ao sistema permanentemente.
+              {removing?.nome} (@{removing?.usuario}) perderá o acesso ao sistema permanentemente.
+              Para manter o histórico, prefira desativar.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={remove}>Excluir</AlertDialogAction>
+            <AlertDialogAction data-testid="operador-confirmar-exclusao" onClick={remove}>
+              Excluir
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
