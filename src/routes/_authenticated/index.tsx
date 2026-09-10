@@ -38,6 +38,7 @@ import { brl, useErp } from "@/lib/erp-store";
 import type { FinanceEntry } from "@/lib/erp-types";
 
 export const Route = createFileRoute("/_authenticated/")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Dashboard | VisionFlow ERP" },
