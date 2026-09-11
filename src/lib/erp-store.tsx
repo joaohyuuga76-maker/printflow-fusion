@@ -494,7 +494,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
               company: next.company,
               cnpj: next.cnpj,
               energy_rate: next.energyRate,
-              default_margin: next.defaultMargin,
+              defaultMargin: next.defaultMargin,
               failure_rate: next.failureRate,
               phone: next.phone,
               pix_key: next.pixKey,
