@@ -21,13 +21,6 @@ import type {
   Product,
   Settings,
 } from "./erp-types";
-import {
-  readLocalImages,
-  readLocalSettings,
-  removeLocalImage,
-  saveLocalImage,
-  writeLocalSettings,
-} from "./local-cache";
 
 const defaultSettings: Settings = {
   company: "Minha Farm 3D",
@@ -96,169 +89,176 @@ export function ErpProvider({ children }: { children: ReactNode }) {
   const [failures, setFailures] = useState<Failure[]>([]);
   const [extras, setExtras] = useState<ExtraCost[]>([]);
   const [finance, setFinance] = useState<FinanceEntry[]>([]);
-  const [settings, setSettings] = useState<Settings>(() => ({
-    ...defaultSettings,
-    ...readLocalSettings<Settings>(),
-  }));
+  const [settings, setSettings] = useState<Settings>(defaultSettings);
   const [failureOpen, setFailureOpen] = useState(false);
 
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      const uid = WORKSPACE_ID;
-      if (!active) return;
-      setUserId(uid);
-      if (!uid) {
-        setLoading(false);
-        return;
-      }
-
-      const [pr, fi, or_, pd, cl, fa, ex, st, fn] = await Promise.all([
-        supabase.from("printers").select("*").order("created_at"),
-        supabase.from("filaments").select("*").order("created_at"),
-        supabase.from("orders").select("*").order("created_at", { ascending: false }),
-        supabase.from("products").select("*").order("created_at"),
-        supabase.from("clients").select("*").order("created_at"),
-        supabase.from("failures").select("*").order("created_at", { ascending: false }),
-        supabase.from("extra_costs").select("*").order("created_at"),
-        supabase.from("settings").select("*").maybeSingle(),
-        supabase.from("finance_entries").select("*").order("due_date"),
-      ]);
-      if (!active) return;
-
-      setFinance(
-        (fn.data ?? []).map((e) => ({
-          id: e.id,
-          kind: e.kind as FinanceEntry["kind"],
-          description: e.description,
-          party: e.party,
-          amount: Number(e.amount),
-          dueDate: e.due_date,
-          status: e.status as FinanceEntry["status"],
-          category: e.category,
-          invoiceNumber: e.invoice_number ?? "",
-          invoiceSeries: e.invoice_series ?? "",
-          invoicePath: e.invoice_path ?? null,
-          invoiceName: e.invoice_name ?? null,
-        })),
-      );
-
-      setPrinters(
-        (pr.data ?? []).map((p) => ({
-          id: p.id,
-          name: p.name,
-          model: p.model,
-          watts: Number(p.watts),
-          depreciationPerHour: Number(p.depreciation_per_hour),
-          status: p.status as Printer["status"],
-          currentFile: p.current_file ?? undefined,
-          progress: p.progress === null ? undefined : Number(p.progress),
-          remainingMin: p.remaining_min === null ? undefined : Number(p.remaining_min),
-          hoursRun: Number(p.hours_run),
-          failures: p.failures,
-        })),
-      );
-      const localFilamentImages = readLocalImages("filaments");
-      const localProductImages = readLocalImages("products");
-      setFilaments(
-        (fi.data ?? []).map((f) => ({
-          id: f.id,
-          brand: f.brand,
-          type: f.type as Filament["type"],
-          color: f.color,
-          hex: f.hex,
-          totalG: Number(f.total_g),
-          remainingG: Number(f.remaining_g),
-          pricePerKg: Number(f.price_per_kg),
-          imageUrl:
-            (f as { image_url?: string | null }).image_url ?? localFilamentImages[f.id] ?? null,
-        })),
-      );
-      setOrders(
-        (or_.data ?? []).map((o) => ({
-          id: o.id,
-          ref: o.ref,
-          client: o.client,
-          title: o.title,
-          value: Number(o.value),
-          cost: Number(o.cost),
-        setProducts(
-        (pd.data ?? []).map((p) => ({
-          id: p.id,
-          name: p.name,
-          category: p.category,
-          weightG: Number(p.weight_g),
-          hours: Number(p.hours),
-          price: Number(p.price),
-          sold: p.sold,
-          imageUrl:
-            (p as { image_url?: string | null }).image_url ?? localProductImages[p.id] ?? null,
-        }))
-      );
-      const orderRows = or_.data ?? [];
-      setClients(
-        (cl.data ?? []).map((c) => {
-          const own = orderRows.filter((o) => o.client === c.name);
-          return {
-            id: c.id,
-            name: c.name,
-            phone: c.phone,
-            city: c.city,
-            orders: own.length,
-            total: own.reduce((s, o) => s + Number(o.value), 0),
-          };
-        })
-      );
-            name: c.name,
-            phone: c.phone,
-            city: c.city,
-            orders: own.length,
-            total: own.reduce((s, o) => s + Number(o.value), 0),
-          };
-        })
-      );
-        (fa.data ?? []).map((f) => ({
-          id: f.id,
-          printerId: f.printer_id ?? "",
-          filamentId: f.filament_id ?? "",
-          lostG: Number(f.lost_g),
-          reason: f.reason,
-          notes: f.notes,
-          date: shortDate(f.created_at),
-          cost: Number(f.cost),
-        })),
-      );
-      setExtras(
-        (ex.data ?? []).map((e) => ({
-          id: e.id,
-          name: e.name,
-          unitPrice: Number(e.unit_price),
-          unit: e.unit,
-        })),
-      );
-      const localSettings = readLocalSettings<Settings>();
-      if (st.data) {
-        setSettings({
-          company: st.data.company,
-          cnpj: st.data.cnpj,
-          energyRate: Number(st.data.energy_rate),
-          defaultMargin: Number(st.data.default_margin),
-          failureRate: Number(st.data.failure_rate),
-          phone: (st.data as { phone?: string }).phone ?? "",
-          pixKey: (st.data as { pix_key?: string }).pix_key ?? "",
-          logoUrl: (st.data as { logo_url?: string | null }).logo_url ?? null,
-          ...localSettings,
-        });
-      } else {
-        setSettings((prev) => ({ ...prev, ...localSettings }));
-      }
-
+  const loadData = useCallback(async () => {
+    const uid = WORKSPACE_ID;
+    setUserId(uid);
+    if (!uid) {
       setLoading(false);
-    })();
-    return () => {
-      active = false;
-    };
+      return;
+    }
+
+    const [pr, fi, or_, pd, cl, fa, ex, st, fn] = await Promise.all([
+      supabase.from("printers").select("*").order("created_at"),
+      supabase.from("filaments").select("*").order("created_at"),
+      supabase.from("orders").select("*").order("created_at", { ascending: false }),
+      supabase.from("products").select("*").order("created_at"),
+      supabase.from("clients").select("*").order("created_at"),
+      supabase.from("failures").select("*").order("created_at", { ascending: false }),
+      supabase.from("extra_costs").select("*").order("created_at"),
+      supabase.from("settings").select("*").maybeSingle(),
+      supabase.from("finance_entries").select("*").order("due_date"),
+    ]);
+
+    setFinance(
+      (fn.data ?? []).map((e) => ({
+        id: e.id,
+        kind: e.kind as FinanceEntry["kind"],
+        description: e.description,
+        party: e.party,
+        amount: Number(e.amount),
+        dueDate: e.due_date,
+        status: e.status as FinanceEntry["status"],
+        category: e.category,
+        invoiceNumber: e.invoice_number ?? "",
+        invoiceSeries: e.invoice_series ?? "",
+        invoicePath: e.invoice_path ?? null,
+        invoiceName: e.invoice_name ?? null,
+      }))
+    );
+
+    setPrinters(
+      (pr.data ?? []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        model: p.model,
+        watts: Number(p.watts),
+        depreciationPerHour: Number(p.depreciation_per_hour),
+        status: p.status as Printer["status"],
+        currentFile: p.current_file ?? undefined,
+        progress: p.progress === null ? undefined : Number(p.progress),
+        remainingMin: p.remaining_min === null ? undefined : Number(p.remaining_min),
+        hoursRun: Number(p.hours_run),
+        failures: p.failures,
+      }))
+    );
+
+    setFilaments(
+      (fi.data ?? []).map((f) => ({
+        id: f.id,
+        brand: f.brand,
+        type: f.type as Filament["type"],
+        color: f.color,
+        hex: f.hex,
+        totalG: Number(f.total_g),
+        remainingG: Number(f.remaining_g),
+        pricePerKg: Number(f.price_per_kg),
+        imageUrl: (f as { image_url?: string | null }).image_url ?? null,
+      }))
+    );
+
+    const orderRows = (or_.data ?? []).map((o) => ({
+      id: o.id,
+      ref: o.ref,
+      client: o.client,
+      title: o.title,
+      value: Number(o.value),
+      cost: Number(o.cost),
+      stage: o.stage as OrderStage,
+      date: shortDate(o.created_at),
+      channel: o.channel,
+      priority: o.priority,
+      weightG: Number(o.weight_g ?? 0),
+      hours: Number(o.hours ?? 0),
+    }));
+    setOrders(orderRows);
+
+    setProducts(
+      (pd.data ?? []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        category: p.category,
+        weightG: Number(p.weight_g),
+        hours: Number(p.hours),
+        price: Number(p.price),
+        sold: p.sold,
+        imageUrl: (p as { image_url?: string | null }).image_url ?? null,
+      }))
+    );
+
+    setClients(
+      (cl.data ?? []).map((c) => {
+        const own = orderRows.filter((o) => o.client === c.name);
+        return {
+          id: c.id,
+          name: c.name,
+          phone: c.phone,
+          city: c.city,
+          orders: own.length,
+          total: own.reduce((s, o) => s + Number(o.value), 0),
+        };
+      })
+    );
+
+    setFailures(
+      (fa.data ?? []).map((f) => ({
+        id: f.id,
+        printerId: f.printer_id ?? "",
+        filamentId: f.filament_id ?? "",
+        lostG: Number(f.lost_g),
+        reason: f.reason,
+        notes: f.notes,
+        date: shortDate(f.created_at),
+        cost: Number(f.cost),
+      }))
+    );
+
+    setExtras(
+      (ex.data ?? []).map((e) => ({
+        id: e.id,
+        name: e.name,
+        unitPrice: Number(e.unit_price),
+        unit: e.unit,
+      }))
+    );
+
+    if (st.data) {
+      setSettings({
+        company: st.data.company,
+        cnpj: st.data.cnpj,
+        energyRate: Number(st.data.energy_rate),
+        defaultMargin: Number(st.data.default_margin),
+        failureRate: Number(st.data.failure_rate),
+        phone: (st.data as { phone?: string }).phone ?? "",
+        pixKey: (st.data as { pix_key?: string }).pix_key ?? "",
+        logoUrl: (st.data as { logo_url?: string | null }).logo_url ?? null,
+      });
+    }
+
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    void loadData();
+
+    // Sincronização em tempo real entre dispositivos
+    const channel = supabase
+      .channel("erp-realtime-sync")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public" },
+        () => {
+          void loadData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [loadData]);
 
   const setPrinterStatus = useCallback<Store["setPrinterStatus"]>((id, status) => {
     const patch = {
@@ -278,8 +278,8 @@ export function ErpProvider({ children }: { children: ReactNode }) {
               currentFile:
                 patch.current_file === null ? undefined : (p.currentFile ?? "novo_job.gcode"),
             }
-          : p,
-      ),
+          : p
+      )
     );
     void supabase.from("printers").update(patch).eq("id", id);
   }, []);
@@ -314,7 +314,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
         if (data) setOrders((prev) => [{ ...o, id: data.id }, ...prev]);
       })();
     },
-    [userId],
+    [userId]
   );
 
   const addPrinter = useCallback<Store["addPrinter"]>(
@@ -339,7 +339,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           ]);
       })();
     },
-    [userId],
+    [userId]
   );
 
   const addFilament = useCallback<Store["addFilament"]>(
@@ -362,12 +362,11 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           .select()
           .single();
         if (data) {
-          saveLocalImage("filaments", data.id, f.imageUrl ?? null);
           setFilaments((prev) => [...prev, { ...f, id: data.id }]);
         }
       })();
     },
-    [userId],
+    [userId]
   );
 
   const addProduct = useCallback<Store["addProduct"]>(
@@ -388,12 +387,11 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           .select()
           .single();
         if (data) {
-          saveLocalImage("products", data.id, p.imageUrl ?? null);
           setProducts((prev) => [...prev, { ...p, id: data.id, sold: 0 }]);
         }
       })();
     },
-    [userId],
+    [userId]
   );
 
   const addClient = useCallback<Store["addClient"]>(
@@ -408,7 +406,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
         if (data) setClients((prev) => [...prev, { ...c, id: data.id, orders: 0, total: 0 }]);
       })();
     },
-    [userId],
+    [userId]
   );
 
   const addExtra = useCallback<Store["addExtra"]>(
@@ -423,7 +421,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
         if (data) setExtras((prev) => [...prev, { ...e, id: data.id }]);
       })();
     },
-    [userId],
+    [userId]
   );
 
   const consumeFilament = useCallback<Store["consumeFilament"]>(
@@ -434,7 +432,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       setFilaments((prev) => prev.map((f) => (f.id === id ? { ...f, remainingG: remaining } : f)));
       void supabase.from("filaments").update({ remaining_g: remaining }).eq("id", id);
     },
-    [filaments],
+    [filaments]
   );
 
   const addFailure = useCallback<Store["addFailure"]>(
@@ -465,27 +463,26 @@ export function ErpProvider({ children }: { children: ReactNode }) {
         if (fil) {
           const remaining = Math.max(0, fil.remainingG - f.lostG);
           setFilaments((prev) =>
-            prev.map((x) => (x.id === fil.id ? { ...x, remainingG: remaining } : x)),
+            prev.map((x) => (x.id === fil.id ? { ...x, remainingG: remaining } : x))
           );
           await supabase.from("filaments").update({ remaining_g: remaining }).eq("id", fil.id);
         }
         if (printer) {
           const count = printer.failures + 1;
           setPrinters((prev) =>
-            prev.map((p) => (p.id === printer.id ? { ...p, failures: count } : p)),
+            prev.map((p) => (p.id === printer.id ? { ...p, failures: count } : p))
           );
           await supabase.from("printers").update({ failures: count }).eq("id", printer.id);
         }
       })();
     },
-    [userId, filaments, printers],
+    [userId, filaments, printers]
   );
 
   const updateSettings = useCallback<Store["updateSettings"]>(
     (s) => {
       setSettings((prev) => {
         const next = { ...prev, ...s };
-        writeLocalSettings(next);
         if (userId) {
           void supabase.from("settings").upsert(
             {
@@ -493,19 +490,19 @@ export function ErpProvider({ children }: { children: ReactNode }) {
               company: next.company,
               cnpj: next.cnpj,
               energy_rate: next.energyRate,
-              defaultMargin: next.defaultMargin,
+              default_margin: next.defaultMargin,
               failure_rate: next.failureRate,
               phone: next.phone,
               pix_key: next.pixKey,
               logo_url: next.logoUrl,
             },
-            { onConflict: "user_id" },
+            { onConflict: "user_id" }
           );
         }
         return next;
       });
     },
-    [userId],
+    [userId]
   );
 
   const updatePrinter = useCallback<Store["updatePrinter"]>((id, patch) => {
@@ -529,7 +526,6 @@ export function ErpProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const updateFilament = useCallback<Store["updateFilament"]>((id, patch) => {
-    if (patch.imageUrl !== undefined) saveLocalImage("filaments", id, patch.imageUrl ?? null);
     setFilaments((prev) => prev.map((f) => (f.id === id ? { ...f, ...patch } : f)));
     const row = {
       ...(patch.brand !== undefined ? { brand: patch.brand } : {}),
@@ -545,7 +541,6 @@ export function ErpProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const deleteFilament = useCallback<Store["deleteFilament"]>((id) => {
-    removeLocalImage("filaments", id);
     setFilaments((prev) => prev.filter((f) => f.id !== id));
     void supabase.from("filaments").delete().eq("id", id);
   }, []);
@@ -588,7 +583,6 @@ export function ErpProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const updateProduct = useCallback<Store["updateProduct"]>((id, patch) => {
-    if (patch.imageUrl !== undefined) saveLocalImage("products", id, patch.imageUrl ?? null);
     setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
     const row = {
       ...(patch.name !== undefined ? { name: patch.name } : {}),
@@ -603,7 +597,6 @@ export function ErpProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const deleteProduct = useCallback<Store["deleteProduct"]>((id) => {
-    removeLocalImage("products", id);
     setProducts((prev) => prev.filter((p) => p.id !== id));
     void supabase.from("products").delete().eq("id", id);
   }, []);
@@ -633,7 +626,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
         if (data) setFinance((prev) => [...prev, { ...e, id: data.id }]);
       })();
     },
-    [userId],
+    [userId]
   );
 
   const updateFinance = useCallback<Store["updateFinance"]>((id, patch) => {
@@ -741,7 +734,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       addFailure,
       updateSettings,
       failureOpen,
-    ],
+    ]
   );
 
   return <ErpContext.Provider value={value}>{children}</ErpContext.Provider>;
