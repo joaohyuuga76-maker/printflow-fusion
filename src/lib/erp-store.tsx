@@ -197,13 +197,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           category: p.category,
           weightG: Number(p.weight_g),
           hours: Number(p.hours),
-          price: Number(p.price),
-          sold: p.sold,
-          imageUrl:
-            (p as { image_url?: string | null }).image_url ?? localProductImages[p.id] ?? null,
-        })),
-      );
-      const orderRows = or_.data ?? [];
+         const orderRows = or_.data ?? [];
       setClients(
         (cl.data ?? []).map((c) => {
           const own = orderRows.filter((o) => o.client === c.name);
@@ -215,9 +209,8 @@ export function ErpProvider({ children }: { children: ReactNode }) {
             orders: own.length,
             total: own.reduce((s, o) => s + Number(o.value), 0),
           };
-        })),
+        })
       );
-      setFailures(
         (fa.data ?? []).map((f) => ({
           id: f.id,
           printerId: f.printer_id ?? "",
