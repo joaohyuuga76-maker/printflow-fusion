@@ -215,7 +215,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
             orders: own.length,
             total: own.reduce((s, o) => s + Number(o.value), 0),
           };
-        }),
+        })),
       );
       setFailures(
         (fa.data ?? []).map((f) => ({
@@ -524,9 +524,10 @@ export function ErpProvider({ children }: { children: ReactNode }) {
     void supabase.from("printers").update(row).eq("id", id);
   }, []);
 
-  const deletePrinter = useCallback<Store["deletePrinter"]>((id) => {
+  const deletePrinter = useCallback<Store["deletePrinter"]>(async (id) => {
     setPrinters((prev) => prev.filter((p) => p.id !== id));
-    void supabase.from("printers").delete().eq("id", id);
+    const { error } = await supabase.from("printers").delete().eq("id", id);
+    if (error) console.error("Erro ao excluir impressora:", error);
   }, []);
 
   const updateFilament = useCallback<Store["updateFilament"]>((id, patch) => {
@@ -545,10 +546,11 @@ export function ErpProvider({ children }: { children: ReactNode }) {
     void supabase.from("filaments").update(row).eq("id", id);
   }, []);
 
-  const deleteFilament = useCallback<Store["deleteFilament"]>((id) => {
+  const deleteFilament = useCallback<Store["deleteFilament"]>(async (id) => {
     removeLocalImage("filaments", id);
     setFilaments((prev) => prev.filter((f) => f.id !== id));
-    void supabase.from("filaments").delete().eq("id", id);
+    const { error } = await supabase.from("filaments").delete().eq("id", id);
+    if (error) console.error("Erro ao excluir filamento:", error);
   }, []);
 
   const updateOrder = useCallback<Store["updateOrder"]>((id, patch) => {
@@ -568,9 +570,10 @@ export function ErpProvider({ children }: { children: ReactNode }) {
     void supabase.from("orders").update(row).eq("id", id);
   }, []);
 
-  const deleteOrder = useCallback<Store["deleteOrder"]>((id) => {
+  const deleteOrder = useCallback<Store["deleteOrder"]>(async (id) => {
     setOrders((prev) => prev.filter((o) => o.id !== id));
-    void supabase.from("orders").delete().eq("id", id);
+    const { error } = await supabase.from("orders").delete().eq("id", id);
+    if (error) console.error("Erro ao excluir pedido:", error);
   }, []);
 
   const updateClient = useCallback<Store["updateClient"]>((id, patch) => {
@@ -583,9 +586,10 @@ export function ErpProvider({ children }: { children: ReactNode }) {
     void supabase.from("clients").update(row).eq("id", id);
   }, []);
 
-  const deleteClient = useCallback<Store["deleteClient"]>((id) => {
+  const deleteClient = useCallback<Store["deleteClient"]>(async (id) => {
     setClients((prev) => prev.filter((c) => c.id !== id));
-    void supabase.from("clients").delete().eq("id", id);
+    const { error } = await supabase.from("clients").delete().eq("id", id);
+    if (error) console.error("Erro ao excluir cliente:", error);
   }, []);
 
   const updateProduct = useCallback<Store["updateProduct"]>((id, patch) => {
@@ -603,10 +607,11 @@ export function ErpProvider({ children }: { children: ReactNode }) {
     void supabase.from("products").update(row).eq("id", id);
   }, []);
 
-  const deleteProduct = useCallback<Store["deleteProduct"]>((id) => {
+  const deleteProduct = useCallback<Store["deleteProduct"]>(async (id) => {
     removeLocalImage("products", id);
     setProducts((prev) => prev.filter((p) => p.id !== id));
-    void supabase.from("products").delete().eq("id", id);
+    const { error } = await supabase.from("products").delete().eq("id", id);
+    if (error) console.error("Erro ao excluir produto:", error);
   }, []);
 
   const addFinance = useCallback<Store["addFinance"]>(
@@ -660,9 +665,10 @@ export function ErpProvider({ children }: { children: ReactNode }) {
     void supabase.from("finance_entries").update(row).eq("id", id);
   }, []);
 
-  const deleteFinance = useCallback<Store["deleteFinance"]>((id) => {
+  const deleteFinance = useCallback<Store["deleteFinance"]>(async (id) => {
     setFinance((prev) => prev.filter((e) => e.id !== id));
-    void supabase.from("finance_entries").delete().eq("id", id);
+    const { error } = await supabase.from("finance_entries").delete().eq("id", id);
+    if (error) console.error("Erro ao excluir financeiro:", error);
   }, []);
 
   const value = useMemo(
