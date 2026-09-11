@@ -80,7 +80,7 @@ const ErpContext = createContext<Store | null>(null);
 
 export function ErpProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(WORKSPACE_ID);
+  const [userId] = useState<string | null>(WORKSPACE_ID);
   const [printers, setPrinters] = useState<Printer[]>([]);
   const [filaments, setFilaments] = useState<Filament[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -100,15 +100,15 @@ export function ErpProvider({ children }: { children: ReactNode }) {
     }
 
     const [pr, fi, or_, pd, cl, fa, ex, st, fn] = await Promise.all([
-      supabase.from("printers").select("*").eq("user_id", uid).order("created_at"),
+      supabase.from("printers").select("*").eq("user_id", uid),
       supabase.from("filaments").select("*").eq("user_id", uid),
-      supabase.from("orders").select("*").eq("user_id", uid).order("created_at", { ascending: false }),
-      supabase.from("products").select("*").eq("user_id", uid).order("created_at"),
-      supabase.from("clients").select("*").eq("user_id", uid).order("created_at"),
-      supabase.from("failures").select("*").eq("user_id", uid).order("created_at", { ascending: false }),
-      supabase.from("extra_costs").select("*").eq("user_id", uid).order("created_at"),
+      supabase.from("orders").select("*").eq("user_id", uid),
+      supabase.from("products").select("*").eq("user_id", uid),
+      supabase.from("clients").select("*").eq("user_id", uid),
+      supabase.from("failures").select("*").eq("user_id", uid),
+      supabase.from("extra_costs").select("*").eq("user_id", uid),
       supabase.from("settings").select("*").eq("user_id", uid).maybeSingle(),
-      supabase.from("finance_entries").select("*").eq("user_id", uid).order("due_date"),
+      supabase.from("finance_entries").select("*").eq("user_id", uid),
     ]);
 
     setFinance(
@@ -166,7 +166,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       value: Number(o.value),
       cost: Number(o.cost),
       stage: o.stage as OrderStage,
-      date: shortDate(o.created_at),
+      date: shortDate(o.created_at || new Date().toISOString()),
       channel: o.channel,
       priority: o.priority,
       weightG: Number(o.weight_g ?? 0),
@@ -209,7 +209,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
         lostG: Number(f.lost_g),
         reason: f.reason,
         notes: f.notes,
-        date: shortDate(f.created_at),
+        date: shortDate(f.created_at || new Date().toISOString()),
         cost: Number(f.cost),
       }))
     );
@@ -264,155 +264,145 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           : p
       )
     );
-    void supabase.from("printers").update(patch).eq("id", id);
+    void supabase.from("printers").update(patch).eq("id", id).eq("user_id", WORKSPACE_ID);
   }, []);
 
   const moveOrder = useCallback<Store["moveOrder"]>((id, stage) => {
     setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, stage } : o)));
-    void supabase.from("orders").update({ stage }).eq("id", id);
+    void supabase.from("orders").update({ stage }).eq("id", id).eq("user_id", WORKSPACE_ID);
   }, []);
 
-  const addOrder = useCallback<Store["addOrder"]>(
-    (o) => {
-      const uid = WORKSPACE_ID;
-      if (!uid) return;
-      void (async () => {
-        const { data } = await supabase
-          .from("orders")
-          .insert({
-            user_id: uid,
-            ref: o.ref,
-            client: o.client,
-            title: o.title,
-            value: o.value,
-            cost: o.cost,
-            stage: o.stage,
-            date: o.date,
-            channel: o.channel,
-            priority: o.priority,
-            weight_g: o.weightG,
-            hours: o.hours,
-          })
-          .select()
-          .single();
-        if (data) setOrders((prev) => [{ ...o, id: data.id }, ...prev]);
-      })();
-    },
-    []
-  );
+  const addOrder = useCallback<Store["addOrder"]>((o) => {
+    const uid = WORKSPACE_ID;
+    if (!uid) return;
+    void (async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .insert({
+          user_id: uid,
+          ref: o.ref,
+          client: o.client,
+          title: o.title,
+          value: o.value,
+          cost: o.cost,
+          stage: o.stage,
+          date: o.date,
+          channel: o.channel,
+          priority: o.priority,
+          weight_g: o.weightG,
+          hours: o.hours,
+        })
+        .select()
+        .single();
+      if (error) console.error("Erro addOrder:", error);
+      if (data) setOrders((prev) => [{ ...o, id: data.id }, ...prev]);
+    })();
+  }, []);
 
-  const addPrinter = useCallback<Store["addPrinter"]>(
-    (p) => {
-      const uid = WORKSPACE_ID;
-      if (!uid) return;
-      void (async () => {
-        const { data } = await supabase
-          .from("printers")
-          .insert({
-            user_id: uid,
-            name: p.name,
-            model: p.model,
-            watts: p.watts,
-            depreciation_per_hour: p.depreciationPerHour,
-          })
-          .select()
-          .single();
-        if (data)
-          setPrinters((prev) => [
-            ...prev,
-            { ...p, id: data.id, status: "disponivel", hoursRun: 0, failures: 0 },
-          ]);
-      })();
-    },
-    []
-  );
+  const addPrinter = useCallback<Store["addPrinter"]>((p) => {
+    const uid = WORKSPACE_ID;
+    if (!uid) return;
+    void (async () => {
+      const { data, error } = await supabase
+        .from("printers")
+        .insert({
+          user_id: uid,
+          name: p.name,
+          model: p.model,
+          watts: p.watts,
+          depreciation_per_hour: p.depreciationPerHour,
+        })
+        .select()
+        .single();
+      if (error) console.error("Erro addPrinter:", error);
+      if (data)
+        setPrinters((prev) => [
+          ...prev,
+          { ...p, id: data.id, status: "disponivel", hoursRun: 0, failures: 0 },
+        ]);
+    })();
+  }, []);
 
-  const addFilament = useCallback<Store["addFilament"]>(
-    (f) => {
-      const uid = WORKSPACE_ID;
-      if (!uid) return;
-      void (async () => {
-        const { data, error } = await supabase
-          .from("filaments")
-          .insert({
-            user_id: uid,
-            brand: f.brand,
-            type: f.type,
-            color: f.color,
-            hex: f.hex,
-            total_g: f.totalG,
-            remaining_g: f.remainingG,
-            price_per_kg: f.pricePerKg,
-            image_url: f.imageUrl ?? null,
-          })
-          .select()
-          .single();
-        if (error) console.error("Erro ao salvar filamento:", error);
-        if (data) {
-          setFilaments((prev) => [...prev, { ...f, id: data.id }]);
-        }
-      })();
-    },
-    []
-  );
+  const addFilament = useCallback<Store["addFilament"]>((f) => {
+    const uid = WORKSPACE_ID;
+    if (!uid) return;
+    void (async () => {
+      const { data, error } = await supabase
+        .from("filaments")
+        .insert({
+          user_id: uid,
+          brand: f.brand,
+          type: f.type,
+          color: f.color,
+          hex: f.hex,
+          total_g: f.totalG,
+          remaining_g: f.remainingG,
+          price_per_kg: f.pricePerKg,
+          image_url: f.imageUrl ?? null,
+        })
+        .select()
+        .single();
+      if (error) {
+        console.error("ERRO AO SALVAR FILAMENTO:", error);
+        return;
+      }
+      if (data) {
+        setFilaments((prev) => [...prev, { ...f, id: data.id }]);
+      }
+    })();
+  }, []);
 
-  const addProduct = useCallback<Store["addProduct"]>(
-    (p) => {
-      const uid = WORKSPACE_ID;
-      if (!uid) return;
-      void (async () => {
-        const { data } = await supabase
-          .from("products")
-          .insert({
-            user_id: uid,
-            name: p.name,
-            category: p.category,
-            weight_g: p.weightG,
-            hours: p.hours,
-            price: p.price,
-            image_url: p.imageUrl ?? null,
-          })
-          .select()
-          .single();
-        if (data) {
-          setProducts((prev) => [...prev, { ...p, id: data.id, sold: 0 }]);
-        }
-      })();
-    },
-    []
-  );
+  const addProduct = useCallback<Store["addProduct"]>((p) => {
+    const uid = WORKSPACE_ID;
+    if (!uid) return;
+    void (async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .insert({
+          user_id: uid,
+          name: p.name,
+          category: p.category,
+          weight_g: p.weightG,
+          hours: p.hours,
+          price: p.price,
+          image_url: p.imageUrl ?? null,
+        })
+        .select()
+        .single();
+      if (error) console.error("Erro addProduct:", error);
+      if (data) {
+        setProducts((prev) => [...prev, { ...p, id: data.id, sold: 0 }]);
+      }
+    })();
+  }, []);
 
-  const addClient = useCallback<Store["addClient"]>(
-    (c) => {
-      const uid = WORKSPACE_ID;
-      if (!uid) return;
-      void (async () => {
-        const { data } = await supabase
-          .from("clients")
-          .insert({ user_id: uid, name: c.name, phone: c.phone, city: c.city })
-          .select()
-          .single();
-        if (data) setClients((prev) => [...prev, { ...c, id: data.id, orders: 0, total: 0 }]);
-      })();
-    },
-    []
-  );
+  const addClient = useCallback<Store["addClient"]>((c) => {
+    const uid = WORKSPACE_ID;
+    if (!uid) return;
+    void (async () => {
+      const { data, error } = await supabase
+        .from("clients")
+        .insert({ user_id: uid, name: c.name, phone: c.phone, city: c.city })
+        .select()
+        .single();
+      if (error) console.error("Erro addClient:", error);
+      if (data) setClients((prev) => [...prev, { ...c, id: data.id, orders: 0, total: 0 }]);
+    })();
+  }, []);
 
-  const addExtra = useCallback<Store["addExtra"]>(
-    (e) => {
-      const uid = WORKSPACE_ID;
-      if (!uid) return;
-      void (async () => {
-        const { data } = await supabase
-          .from("extra_costs")
-          .insert({ user_id: uid, name: e.name, unit_price: e.unitPrice, unit: e.unit })
-          .select()
-          .single();
-        if (data) setExtras((prev) => [...prev, { ...e, id: data.id }]);
-      })();
-    },
-    []
-  );
+  const addExtra = useCallback<Store["addExtra"]>((e) => {
+    const uid = WORKSPACE_ID;
+    if (!uid) return;
+    void (async () => {
+      const { data, error } = await supabase
+        .from("extra_costs")
+        .insert({ user_id: uid, name: e.name, unit_price: e.unitPrice, unit: e.unit })
+        .select()
+        .single();
+      if (error) console.error("Erro addExtra:", error);
+      if (data) setExtras((prev) => [...prev, { ...e, id: data.id }]);
+    })();
+  }, []);
 
   const consumeFilament = useCallback<Store["consumeFilament"]>(
     (id, grams) => {
@@ -420,7 +410,11 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       if (!current) return;
       const remaining = Math.max(0, current.remainingG - grams);
       setFilaments((prev) => prev.map((f) => (f.id === id ? { ...f, remainingG: remaining } : f)));
-      void supabase.from("filaments").update({ remaining_g: remaining }).eq("id", id);
+      void supabase
+        .from("filaments")
+        .update({ remaining_g: remaining })
+        .eq("id", id)
+        .eq("user_id", WORKSPACE_ID);
     },
     [filaments]
   );
@@ -433,7 +427,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       const printer = printers.find((x) => x.id === f.printerId);
       const cost = fil ? (f.lostG / 1000) * fil.pricePerKg : 0;
       void (async () => {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("failures")
           .insert({
             user_id: uid,
@@ -446,9 +440,9 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           })
           .select()
           .single();
-        if (!data) return;
+        if (error || !data) return;
         setFailures((prev) => [
-          { ...f, id: data.id, cost, date: shortDate(data.created_at) },
+          { ...f, id: data.id, cost, date: shortDate(data.created_at || new Date().toISOString()) },
           ...prev,
         ]);
         if (fil) {
@@ -456,46 +450,51 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           setFilaments((prev) =>
             prev.map((x) => (x.id === fil.id ? { ...x, remainingG: remaining } : x))
           );
-          await supabase.from("filaments").update({ remaining_g: remaining }).eq("id", fil.id);
+          await supabase
+            .from("filaments")
+            .update({ remaining_g: remaining })
+            .eq("id", fil.id)
+            .eq("user_id", uid);
         }
         if (printer) {
           const count = printer.failures + 1;
           setPrinters((prev) =>
             prev.map((p) => (p.id === printer.id ? { ...p, failures: count } : p))
           );
-          await supabase.from("printers").update({ failures: count }).eq("id", printer.id);
+          await supabase
+            .from("printers")
+            .update({ failures: count })
+            .eq("id", printer.id)
+            .eq("user_id", uid);
         }
       })();
     },
     [filaments, printers]
   );
 
-  const updateSettings = useCallback<Store["updateSettings"]>(
-    (s) => {
-      const uid = WORKSPACE_ID;
-      setSettings((prev) => {
-        const next = { ...prev, ...s };
-        if (uid) {
-          void supabase.from("settings").upsert(
-            {
-              user_id: uid,
-              company: next.company,
-              cnpj: next.cnpj,
-              energy_rate: next.energyRate,
-              default_margin: next.defaultMargin,
-              failure_rate: next.failureRate,
-              phone: next.phone,
-              pix_key: next.pixKey,
-              logo_url: next.logoUrl,
-            },
-            { onConflict: "user_id" }
-          );
-        }
-        return next;
-      });
-    },
-    []
-  );
+  const updateSettings = useCallback<Store["updateSettings"]>((s) => {
+    const uid = WORKSPACE_ID;
+    setSettings((prev) => {
+      const next = { ...prev, ...s };
+      if (uid) {
+        void supabase.from("settings").upsert(
+          {
+            user_id: uid,
+            company: next.company,
+            cnpj: next.cnpj,
+            energy_rate: next.energyRate,
+            default_margin: next.defaultMargin,
+            failure_rate: next.failureRate,
+            phone: next.phone,
+            pix_key: next.pixKey,
+            logo_url: next.logoUrl,
+          },
+          { onConflict: "user_id" }
+        );
+      }
+      return next;
+    });
+  }, []);
 
   const updatePrinter = useCallback<Store["updatePrinter"]>((id, patch) => {
     setPrinters((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
@@ -509,12 +508,12 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       ...(patch.status !== undefined ? { status: patch.status } : {}),
       ...(patch.hoursRun !== undefined ? { hours_run: patch.hoursRun } : {}),
     };
-    void supabase.from("printers").update(row).eq("id", id);
+    void supabase.from("printers").update(row).eq("id", id).eq("user_id", WORKSPACE_ID);
   }, []);
 
   const deletePrinter = useCallback<Store["deletePrinter"]>((id) => {
     setPrinters((prev) => prev.filter((p) => p.id !== id));
-    void supabase.from("printers").delete().eq("id", id);
+    void supabase.from("printers").delete().eq("id", id).eq("user_id", WORKSPACE_ID);
   }, []);
 
   const updateFilament = useCallback<Store["updateFilament"]>((id, patch) => {
@@ -529,12 +528,32 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       ...(patch.pricePerKg !== undefined ? { price_per_kg: patch.pricePerKg } : {}),
       ...(patch.imageUrl !== undefined ? { image_url: patch.imageUrl } : {}),
     };
-    void supabase.from("filaments").update(row).eq("id", id);
+    void (async () => {
+      const { error } = await supabase
+        .from("filaments")
+        .update(row)
+        .eq("id", id)
+        .eq("user_id", WORKSPACE_ID);
+      if (error) console.error("ERRO UPDATE FILAMENTO:", error);
+    })();
   }, []);
 
   const deleteFilament = useCallback<Store["deleteFilament"]>((id) => {
+    // 1. Remove da tela imediatamente
     setFilaments((prev) => prev.filter((f) => f.id !== id));
-    void supabase.from("filaments").delete().eq("id", id);
+    // 2. Garante a exclusão no Supabase com log claro
+    void (async () => {
+      const { error } = await supabase
+        .from("filaments")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", WORKSPACE_ID);
+      if (error) {
+        console.error("ERRO AO EXCLUIR FILAMENTO NO SUPABASE:", error);
+      } else {
+        console.log("Filamento excluído com sucesso do Supabase:", id);
+      }
+    })();
   }, []);
 
   const updateOrder = useCallback<Store["updateOrder"]>((id, patch) => {
@@ -551,12 +570,12 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       ...(patch.weightG !== undefined ? { weight_g: patch.weightG } : {}),
       ...(patch.hours !== undefined ? { hours: patch.hours } : {}),
     };
-    void supabase.from("orders").update(row).eq("id", id);
+    void supabase.from("orders").update(row).eq("id", id).eq("user_id", WORKSPACE_ID);
   }, []);
 
   const deleteOrder = useCallback<Store["deleteOrder"]>((id) => {
     setOrders((prev) => prev.filter((o) => o.id !== id));
-    void supabase.from("orders").delete().eq("id", id);
+    void supabase.from("orders").delete().eq("id", id).eq("user_id", WORKSPACE_ID);
   }, []);
 
   const updateClient = useCallback<Store["updateClient"]>((id, patch) => {
@@ -566,12 +585,12 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       ...(patch.phone !== undefined ? { phone: patch.phone } : {}),
       ...(patch.city !== undefined ? { city: patch.city } : {}),
     };
-    void supabase.from("clients").update(row).eq("id", id);
+    void supabase.from("clients").update(row).eq("id", id).eq("user_id", WORKSPACE_ID);
   }, []);
 
   const deleteClient = useCallback<Store["deleteClient"]>((id) => {
     setClients((prev) => prev.filter((c) => c.id !== id));
-    void supabase.from("clients").delete().eq("id", id);
+    void supabase.from("clients").delete().eq("id", id).eq("user_id", WORKSPACE_ID);
   }, []);
 
   const updateProduct = useCallback<Store["updateProduct"]>((id, patch) => {
@@ -585,42 +604,40 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       ...(patch.sold !== undefined ? { sold: patch.sold } : {}),
       ...(patch.imageUrl !== undefined ? { image_url: patch.imageUrl } : {}),
     };
-    void supabase.from("products").update(row).eq("id", id);
+    void supabase.from("products").update(row).eq("id", id).eq("user_id", WORKSPACE_ID);
   }, []);
 
   const deleteProduct = useCallback<Store["deleteProduct"]>((id) => {
     setProducts((prev) => prev.filter((p) => p.id !== id));
-    void supabase.from("products").delete().eq("id", id);
+    void supabase.from("products").delete().eq("id", id).eq("user_id", WORKSPACE_ID);
   }, []);
 
-  const addFinance = useCallback<Store["addFinance"]>(
-    (e) => {
-      const uid = WORKSPACE_ID;
-      if (!uid) return;
-      void (async () => {
-        const { data } = await supabase
-          .from("finance_entries")
-          .insert({
-            user_id: uid,
-            kind: e.kind,
-            description: e.description,
-            party: e.party,
-            amount: e.amount,
-            due_date: e.dueDate,
-            status: e.status,
-            category: e.category,
-            invoice_number: e.invoiceNumber,
-            invoice_series: e.invoiceSeries,
-            invoice_path: e.invoicePath,
-            invoice_name: e.invoiceName,
-          })
-          .select()
-          .single();
-        if (data) setFinance((prev) => [...prev, { ...e, id: data.id }]);
-      })();
-    },
-    []
-  );
+  const addFinance = useCallback<Store["addFinance"]>((e) => {
+    const uid = WORKSPACE_ID;
+    if (!uid) return;
+    void (async () => {
+      const { data, error } = await supabase
+        .from("finance_entries")
+        .insert({
+          user_id: uid,
+          kind: e.kind,
+          description: e.description,
+          party: e.party,
+          amount: e.amount,
+          due_date: e.dueDate,
+          status: e.status,
+          category: e.category,
+          invoice_number: e.invoiceNumber,
+          invoice_series: e.invoiceSeries,
+          invoice_path: e.invoicePath,
+          invoice_name: e.invoiceName,
+        })
+        .select()
+        .single();
+      if (error) console.error("Erro addFinance:", error);
+      if (data) setFinance((prev) => [...prev, { ...e, id: data.id }]);
+    })();
+  }, []);
 
   const updateFinance = useCallback<Store["updateFinance"]>((id, patch) => {
     setFinance((prev) => prev.map((e) => (e.id === id ? { ...e, ...patch } : e)));
@@ -642,12 +659,12 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       ...(patch.invoicePath !== undefined ? { invoice_path: patch.invoicePath } : {}),
       ...(patch.invoiceName !== undefined ? { invoice_name: patch.invoiceName } : {}),
     };
-    void supabase.from("finance_entries").update(row).eq("id", id);
+    void supabase.from("finance_entries").update(row).eq("id", id).eq("user_id", WORKSPACE_ID);
   }, []);
 
   const deleteFinance = useCallback<Store["deleteFinance"]>((id) => {
     setFinance((prev) => prev.filter((e) => e.id !== id));
-    void supabase.from("finance_entries").delete().eq("id", id);
+    void supabase.from("finance_entries").delete().eq("id", id).eq("user_id", WORKSPACE_ID);
   }, []);
 
   const value = useMemo(
