@@ -264,12 +264,26 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           : p
       )
     );
-    void supabase.from("printers").update(patch).eq("id", id).eq("user_id", WORKSPACE_ID);
+    void (async () => {
+      const { error } = await supabase
+        .from("printers")
+        .update(patch)
+        .eq("id", id)
+        .eq("user_id", WORKSPACE_ID);
+      if (error) console.error("Erro status printer:", error);
+    })();
   }, []);
 
   const moveOrder = useCallback<Store["moveOrder"]>((id, stage) => {
     setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, stage } : o)));
-    void supabase.from("orders").update({ stage }).eq("id", id).eq("user_id", WORKSPACE_ID);
+    void (async () => {
+      const { error } = await supabase
+        .from("orders")
+        .update({ stage })
+        .eq("id", id)
+        .eq("user_id", WORKSPACE_ID);
+      if (error) console.error("Erro mover pedido:", error);
+    })();
   }, []);
 
   const addOrder = useCallback<Store["addOrder"]>((o) => {
@@ -294,8 +308,47 @@ export function ErpProvider({ children }: { children: ReactNode }) {
         })
         .select()
         .single();
-      if (error) console.error("Erro addOrder:", error);
+      if (error) {
+        console.error("ERRO AO SALVAR PEDIDO/ORÇAMENTO:", error);
+        return;
+      }
       if (data) setOrders((prev) => [{ ...o, id: data.id }, ...prev]);
+    })();
+  }, []);
+
+  const updateOrder = useCallback<Store["updateOrder"]>((id, patch) => {
+    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, ...patch } : o)));
+    const row = {
+      ...(patch.ref !== undefined ? { ref: patch.ref } : {}),
+      ...(patch.client !== undefined ? { client: patch.client } : {}),
+      ...(patch.title !== undefined ? { title: patch.title } : {}),
+      ...(patch.value !== undefined ? { value: patch.value } : {}),
+      ...(patch.cost !== undefined ? { cost: patch.cost } : {}),
+      ...(patch.stage !== undefined ? { stage: patch.stage } : {}),
+      ...(patch.channel !== undefined ? { channel: patch.channel } : {}),
+      ...(patch.priority !== undefined ? { priority: patch.priority } : {}),
+      ...(patch.weightG !== undefined ? { weight_g: patch.weightG } : {}),
+      ...(patch.hours !== undefined ? { hours: patch.hours } : {}),
+    };
+    void (async () => {
+      const { error } = await supabase
+        .from("orders")
+        .update(row)
+        .eq("id", id)
+        .eq("user_id", WORKSPACE_ID);
+      if (error) console.error("ERRO AO ATUALIZAR PEDIDO:", error);
+    })();
+  }, []);
+
+  const deleteOrder = useCallback<Store["deleteOrder"]>((id) => {
+    setOrders((prev) => prev.filter((o) => o.id !== id));
+    void (async () => {
+      const { error } = await supabase
+        .from("orders")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", WORKSPACE_ID);
+      if (error) console.error("ERRO AO EXCLUIR PEDIDO:", error);
     })();
   }, []);
 
@@ -314,12 +367,49 @@ export function ErpProvider({ children }: { children: ReactNode }) {
         })
         .select()
         .single();
-      if (error) console.error("Erro addPrinter:", error);
+      if (error) {
+        console.error("ERRO AO SALVAR IMPRESSORA:", error);
+        return;
+      }
       if (data)
         setPrinters((prev) => [
           ...prev,
           { ...p, id: data.id, status: "disponivel", hoursRun: 0, failures: 0 },
         ]);
+    })();
+  }, []);
+
+  const updatePrinter = useCallback<Store["updatePrinter"]>((id, patch) => {
+    setPrinters((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+    const row = {
+      ...(patch.name !== undefined ? { name: patch.name } : {}),
+      ...(patch.model !== undefined ? { model: patch.model } : {}),
+      ...(patch.watts !== undefined ? { watts: patch.watts } : {}),
+      ...(patch.depreciationPerHour !== undefined
+        ? { depreciation_per_hour: patch.depreciationPerHour }
+        : {}),
+      ...(patch.status !== undefined ? { status: patch.status } : {}),
+      ...(patch.hoursRun !== undefined ? { hours_run: patch.hoursRun } : {}),
+    };
+    void (async () => {
+      const { error } = await supabase
+        .from("printers")
+        .update(row)
+        .eq("id", id)
+        .eq("user_id", WORKSPACE_ID);
+      if (error) console.error("ERRO AO ATUALIZAR IMPRESSORA:", error);
+    })();
+  }, []);
+
+  const deletePrinter = useCallback<Store["deletePrinter"]>((id) => {
+    setPrinters((prev) => prev.filter((p) => p.id !== id));
+    void (async () => {
+      const { error } = await supabase
+        .from("printers")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", WORKSPACE_ID);
+      if (error) console.error("ERRO AO EXCLUIR IMPRESSORA:", error);
     })();
   }, []);
 
@@ -346,9 +436,41 @@ export function ErpProvider({ children }: { children: ReactNode }) {
         console.error("ERRO AO SALVAR FILAMENTO:", error);
         return;
       }
-      if (data) {
-        setFilaments((prev) => [...prev, { ...f, id: data.id }]);
-      }
+      if (data) setFilaments((prev) => [...prev, { ...f, id: data.id }]);
+    })();
+  }, []);
+
+  const updateFilament = useCallback<Store["updateFilament"]>((id, patch) => {
+    setFilaments((prev) => prev.map((f) => (f.id === id ? { ...f, ...patch } : f)));
+    const row = {
+      ...(patch.brand !== undefined ? { brand: patch.brand } : {}),
+      ...(patch.type !== undefined ? { type: patch.type } : {}),
+      ...(patch.color !== undefined ? { color: patch.color } : {}),
+      ...(patch.hex !== undefined ? { hex: patch.hex } : {}),
+      ...(patch.totalG !== undefined ? { total_g: patch.totalG } : {}),
+      ...(patch.remainingG !== undefined ? { remaining_g: patch.remainingG } : {}),
+      ...(patch.pricePerKg !== undefined ? { price_per_kg: patch.pricePerKg } : {}),
+      ...(patch.imageUrl !== undefined ? { image_url: patch.imageUrl } : {}),
+    };
+    void (async () => {
+      const { error } = await supabase
+        .from("filaments")
+        .update(row)
+        .eq("id", id)
+        .eq("user_id", WORKSPACE_ID);
+      if (error) console.error("ERRO UPDATE FILAMENTO:", error);
+    })();
+  }, []);
+
+  const deleteFilament = useCallback<Store["deleteFilament"]>((id) => {
+    setFilaments((prev) => prev.filter((f) => f.id !== id));
+    void (async () => {
+      const { error } = await supabase
+        .from("filaments")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", WORKSPACE_ID);
+      if (error) console.error("ERRO AO EXCLUIR FILAMENTO NO SUPABASE:", error);
     })();
   }, []);
 
@@ -369,10 +491,44 @@ export function ErpProvider({ children }: { children: ReactNode }) {
         })
         .select()
         .single();
-      if (error) console.error("Erro addProduct:", error);
-      if (data) {
-        setProducts((prev) => [...prev, { ...p, id: data.id, sold: 0 }]);
+      if (error) {
+        console.error("ERRO AO SALVAR PRODUTO:", error);
+        return;
       }
+      if (data) setProducts((prev) => [...prev, { ...p, id: data.id, sold: 0 }]);
+    })();
+  }, []);
+
+  const updateProduct = useCallback<Store["updateProduct"]>((id, patch) => {
+    setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+    const row = {
+      ...(patch.name !== undefined ? { name: patch.name } : {}),
+      ...(patch.category !== undefined ? { category: patch.category } : {}),
+      ...(patch.weightG !== undefined ? { weight_g: patch.weightG } : {}),
+      ...(patch.hours !== undefined ? { hours: patch.hours } : {}),
+      ...(patch.price !== undefined ? { price: patch.price } : {}),
+      ...(patch.sold !== undefined ? { sold: patch.sold } : {}),
+      ...(patch.imageUrl !== undefined ? { image_url: patch.imageUrl } : {}),
+    };
+    void (async () => {
+      const { error } = await supabase
+        .from("products")
+        .update(row)
+        .eq("id", id)
+        .eq("user_id", WORKSPACE_ID);
+      if (error) console.error("ERRO AO ATUALIZAR PRODUTO:", error);
+    })();
+  }, []);
+
+  const deleteProduct = useCallback<Store["deleteProduct"]>((id) => {
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+    void (async () => {
+      const { error } = await supabase
+        .from("products")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", WORKSPACE_ID);
+      if (error) console.error("ERRO AO EXCLUIR PRODUTO:", error);
     })();
   }, []);
 
@@ -385,8 +541,40 @@ export function ErpProvider({ children }: { children: ReactNode }) {
         .insert({ user_id: uid, name: c.name, phone: c.phone, city: c.city })
         .select()
         .single();
-      if (error) console.error("Erro addClient:", error);
+      if (error) {
+        console.error("ERRO AO SALVAR CLIENTE:", error);
+        return;
+      }
       if (data) setClients((prev) => [...prev, { ...c, id: data.id, orders: 0, total: 0 }]);
+    })();
+  }, []);
+
+  const updateClient = useCallback<Store["updateClient"]>((id, patch) => {
+    setClients((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+    const row = {
+      ...(patch.name !== undefined ? { name: patch.name } : {}),
+      ...(patch.phone !== undefined ? { phone: patch.phone } : {}),
+      ...(patch.city !== undefined ? { city: patch.city } : {}),
+    };
+    void (async () => {
+      const { error } = await supabase
+        .from("clients")
+        .update(row)
+        .eq("id", id)
+        .eq("user_id", WORKSPACE_ID);
+      if (error) console.error("ERRO AO ATUALIZAR CLIENTE:", error);
+    })();
+  }, []);
+
+  const deleteClient = useCallback<Store["deleteClient"]>((id) => {
+    setClients((prev) => prev.filter((c) => c.id !== id));
+    void (async () => {
+      const { error } = await supabase
+        .from("clients")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", WORKSPACE_ID);
+      if (error) console.error("ERRO AO EXCLUIR CLIENTE:", error);
     })();
   }, []);
 
@@ -399,8 +587,83 @@ export function ErpProvider({ children }: { children: ReactNode }) {
         .insert({ user_id: uid, name: e.name, unit_price: e.unitPrice, unit: e.unit })
         .select()
         .single();
-      if (error) console.error("Erro addExtra:", error);
+      if (error) {
+        console.error("ERRO AO SALVAR CUSTO EXTRA:", error);
+        return;
+      }
       if (data) setExtras((prev) => [...prev, { ...e, id: data.id }]);
+    })();
+  }, []);
+
+  const addFinance = useCallback<Store["addFinance"]>((e) => {
+    const uid = WORKSPACE_ID;
+    if (!uid) return;
+    void (async () => {
+      const { data, error } = await supabase
+        .from("finance_entries")
+        .insert({
+          user_id: uid,
+          kind: e.kind,
+          description: e.description,
+          party: e.party,
+          amount: e.amount,
+          due_date: e.dueDate,
+          status: e.status,
+          category: e.category,
+          invoice_number: e.invoiceNumber,
+          invoice_series: e.invoiceSeries,
+          invoice_path: e.invoicePath,
+          invoice_name: e.invoiceName,
+        })
+        .select()
+        .single();
+      if (error) {
+        console.error("ERRO AO SALVAR FINANCEIRO:", error);
+        return;
+      }
+      if (data) setFinance((prev) => [...prev, { ...e, id: data.id }]);
+    })();
+  }, []);
+
+  const updateFinance = useCallback<Store["updateFinance"]>((id, patch) => {
+    setFinance((prev) => prev.map((e) => (e.id === id ? { ...e, ...patch } : e)));
+    const row = {
+      ...(patch.kind !== undefined ? { kind: patch.kind } : {}),
+      ...(patch.description !== undefined ? { description: patch.description } : {}),
+      ...(patch.party !== undefined ? { party: patch.party } : {}),
+      ...(patch.amount !== undefined ? { amount: patch.amount } : {}),
+      ...(patch.dueDate !== undefined ? { due_date: patch.dueDate } : {}),
+      ...(patch.status !== undefined
+        ? {
+            status: patch.status,
+            paid_at: patch.status === "pago" ? new Date().toISOString() : null,
+          }
+        : {}),
+      ...(patch.category !== undefined ? { category: patch.category } : {}),
+      ...(patch.invoiceNumber !== undefined ? { invoice_number: patch.invoiceNumber } : {}),
+      ...(patch.invoiceSeries !== undefined ? { invoice_series: patch.invoiceSeries } : {}),
+      ...(patch.invoicePath !== undefined ? { invoice_path: patch.invoicePath } : {}),
+      ...(patch.invoiceName !== undefined ? { invoice_name: patch.invoiceName } : {}),
+    };
+    void (async () => {
+      const { error } = await supabase
+        .from("finance_entries")
+        .update(row)
+        .eq("id", id)
+        .eq("user_id", WORKSPACE_ID);
+      if (error) console.error("ERRO AO ATUALIZAR FINANCEIRO:", error);
+    })();
+  }, []);
+
+  const deleteFinance = useCallback<Store["deleteFinance"]>((id) => {
+    setFinance((prev) => prev.filter((e) => e.id !== id));
+    void (async () => {
+      const { error } = await supabase
+        .from("finance_entries")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", WORKSPACE_ID);
+      if (error) console.error("ERRO AO EXCLUIR FINANCEIRO:", error);
     })();
   }, []);
 
@@ -410,11 +673,14 @@ export function ErpProvider({ children }: { children: ReactNode }) {
       if (!current) return;
       const remaining = Math.max(0, current.remainingG - grams);
       setFilaments((prev) => prev.map((f) => (f.id === id ? { ...f, remainingG: remaining } : f)));
-      void supabase
-        .from("filaments")
-        .update({ remaining_g: remaining })
-        .eq("id", id)
-        .eq("user_id", WORKSPACE_ID);
+      void (async () => {
+        const { error } = await supabase
+          .from("filaments")
+          .update({ remaining_g: remaining })
+          .eq("id", id)
+          .eq("user_id", WORKSPACE_ID);
+        if (error) console.error("ERRO AO CONSUMIR FILAMENTO:", error);
+      })();
     },
     [filaments]
   );
@@ -440,7 +706,10 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           })
           .select()
           .single();
-        if (error || !data) return;
+        if (error || !data) {
+          console.error("ERRO AO REGISTRAR FALHA:", error);
+          return;
+        }
         setFailures((prev) => [
           { ...f, id: data.id, cost, date: shortDate(data.created_at || new Date().toISOString()) },
           ...prev,
@@ -477,194 +746,26 @@ export function ErpProvider({ children }: { children: ReactNode }) {
     setSettings((prev) => {
       const next = { ...prev, ...s };
       if (uid) {
-        void supabase.from("settings").upsert(
-          {
-            user_id: uid,
-            company: next.company,
-            cnpj: next.cnpj,
-            energy_rate: next.energyRate,
-            default_margin: next.defaultMargin,
-            failure_rate: next.failureRate,
-            phone: next.phone,
-            pix_key: next.pixKey,
-            logo_url: next.logoUrl,
-          },
-          { onConflict: "user_id" }
-        );
+        void (async () => {
+          const { error } = await supabase.from("settings").upsert(
+            {
+              user_id: uid,
+              company: next.company,
+              cnpj: next.cnpj,
+              energy_rate: next.energyRate,
+              default_margin: next.defaultMargin,
+              failure_rate: next.failureRate,
+              phone: next.phone,
+              pix_key: next.pixKey,
+              logo_url: next.logoUrl,
+            },
+            { onConflict: "user_id" }
+          );
+          if (error) console.error("ERRO AO SALVAR SETTINGS:", error);
+        })();
       }
       return next;
     });
-  }, []);
-
-  const updatePrinter = useCallback<Store["updatePrinter"]>((id, patch) => {
-    setPrinters((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
-    const row = {
-      ...(patch.name !== undefined ? { name: patch.name } : {}),
-      ...(patch.model !== undefined ? { model: patch.model } : {}),
-      ...(patch.watts !== undefined ? { watts: patch.watts } : {}),
-      ...(patch.depreciationPerHour !== undefined
-        ? { depreciation_per_hour: patch.depreciationPerHour }
-        : {}),
-      ...(patch.status !== undefined ? { status: patch.status } : {}),
-      ...(patch.hoursRun !== undefined ? { hours_run: patch.hoursRun } : {}),
-    };
-    void supabase.from("printers").update(row).eq("id", id).eq("user_id", WORKSPACE_ID);
-  }, []);
-
-  const deletePrinter = useCallback<Store["deletePrinter"]>((id) => {
-    setPrinters((prev) => prev.filter((p) => p.id !== id));
-    void supabase.from("printers").delete().eq("id", id).eq("user_id", WORKSPACE_ID);
-  }, []);
-
-  const updateFilament = useCallback<Store["updateFilament"]>((id, patch) => {
-    setFilaments((prev) => prev.map((f) => (f.id === id ? { ...f, ...patch } : f)));
-    const row = {
-      ...(patch.brand !== undefined ? { brand: patch.brand } : {}),
-      ...(patch.type !== undefined ? { type: patch.type } : {}),
-      ...(patch.color !== undefined ? { color: patch.color } : {}),
-      ...(patch.hex !== undefined ? { hex: patch.hex } : {}),
-      ...(patch.totalG !== undefined ? { total_g: patch.totalG } : {}),
-      ...(patch.remainingG !== undefined ? { remaining_g: patch.remainingG } : {}),
-      ...(patch.pricePerKg !== undefined ? { price_per_kg: patch.pricePerKg } : {}),
-      ...(patch.imageUrl !== undefined ? { image_url: patch.imageUrl } : {}),
-    };
-    void (async () => {
-      const { error } = await supabase
-        .from("filaments")
-        .update(row)
-        .eq("id", id)
-        .eq("user_id", WORKSPACE_ID);
-      if (error) console.error("ERRO UPDATE FILAMENTO:", error);
-    })();
-  }, []);
-
-  const deleteFilament = useCallback<Store["deleteFilament"]>((id) => {
-    // 1. Remove da tela imediatamente
-    setFilaments((prev) => prev.filter((f) => f.id !== id));
-    // 2. Garante a exclusão no Supabase com log claro
-    void (async () => {
-      const { error } = await supabase
-        .from("filaments")
-        .delete()
-        .eq("id", id)
-        .eq("user_id", WORKSPACE_ID);
-      if (error) {
-        console.error("ERRO AO EXCLUIR FILAMENTO NO SUPABASE:", error);
-      } else {
-        console.log("Filamento excluído com sucesso do Supabase:", id);
-      }
-    })();
-  }, []);
-
-  const updateOrder = useCallback<Store["updateOrder"]>((id, patch) => {
-    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, ...patch } : o)));
-    const row = {
-      ...(patch.ref !== undefined ? { ref: patch.ref } : {}),
-      ...(patch.client !== undefined ? { client: patch.client } : {}),
-      ...(patch.title !== undefined ? { title: patch.title } : {}),
-      ...(patch.value !== undefined ? { value: patch.value } : {}),
-      ...(patch.cost !== undefined ? { cost: patch.cost } : {}),
-      ...(patch.stage !== undefined ? { stage: patch.stage } : {}),
-      ...(patch.channel !== undefined ? { channel: patch.channel } : {}),
-      ...(patch.priority !== undefined ? { priority: patch.priority } : {}),
-      ...(patch.weightG !== undefined ? { weight_g: patch.weightG } : {}),
-      ...(patch.hours !== undefined ? { hours: patch.hours } : {}),
-    };
-    void supabase.from("orders").update(row).eq("id", id).eq("user_id", WORKSPACE_ID);
-  }, []);
-
-  const deleteOrder = useCallback<Store["deleteOrder"]>((id) => {
-    setOrders((prev) => prev.filter((o) => o.id !== id));
-    void supabase.from("orders").delete().eq("id", id).eq("user_id", WORKSPACE_ID);
-  }, []);
-
-  const updateClient = useCallback<Store["updateClient"]>((id, patch) => {
-    setClients((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
-    const row = {
-      ...(patch.name !== undefined ? { name: patch.name } : {}),
-      ...(patch.phone !== undefined ? { phone: patch.phone } : {}),
-      ...(patch.city !== undefined ? { city: patch.city } : {}),
-    };
-    void supabase.from("clients").update(row).eq("id", id).eq("user_id", WORKSPACE_ID);
-  }, []);
-
-  const deleteClient = useCallback<Store["deleteClient"]>((id) => {
-    setClients((prev) => prev.filter((c) => c.id !== id));
-    void supabase.from("clients").delete().eq("id", id).eq("user_id", WORKSPACE_ID);
-  }, []);
-
-  const updateProduct = useCallback<Store["updateProduct"]>((id, patch) => {
-    setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
-    const row = {
-      ...(patch.name !== undefined ? { name: patch.name } : {}),
-      ...(patch.category !== undefined ? { category: patch.category } : {}),
-      ...(patch.weightG !== undefined ? { weight_g: patch.weightG } : {}),
-      ...(patch.hours !== undefined ? { hours: patch.hours } : {}),
-      ...(patch.price !== undefined ? { price: patch.price } : {}),
-      ...(patch.sold !== undefined ? { sold: patch.sold } : {}),
-      ...(patch.imageUrl !== undefined ? { image_url: patch.imageUrl } : {}),
-    };
-    void supabase.from("products").update(row).eq("id", id).eq("user_id", WORKSPACE_ID);
-  }, []);
-
-  const deleteProduct = useCallback<Store["deleteProduct"]>((id) => {
-    setProducts((prev) => prev.filter((p) => p.id !== id));
-    void supabase.from("products").delete().eq("id", id).eq("user_id", WORKSPACE_ID);
-  }, []);
-
-  const addFinance = useCallback<Store["addFinance"]>((e) => {
-    const uid = WORKSPACE_ID;
-    if (!uid) return;
-    void (async () => {
-      const { data, error } = await supabase
-        .from("finance_entries")
-        .insert({
-          user_id: uid,
-          kind: e.kind,
-          description: e.description,
-          party: e.party,
-          amount: e.amount,
-          due_date: e.dueDate,
-          status: e.status,
-          category: e.category,
-          invoice_number: e.invoiceNumber,
-          invoice_series: e.invoiceSeries,
-          invoice_path: e.invoicePath,
-          invoice_name: e.invoiceName,
-        })
-        .select()
-        .single();
-      if (error) console.error("Erro addFinance:", error);
-      if (data) setFinance((prev) => [...prev, { ...e, id: data.id }]);
-    })();
-  }, []);
-
-  const updateFinance = useCallback<Store["updateFinance"]>((id, patch) => {
-    setFinance((prev) => prev.map((e) => (e.id === id ? { ...e, ...patch } : e)));
-    const row = {
-      ...(patch.kind !== undefined ? { kind: patch.kind } : {}),
-      ...(patch.description !== undefined ? { description: patch.description } : {}),
-      ...(patch.party !== undefined ? { party: patch.party } : {}),
-      ...(patch.amount !== undefined ? { amount: patch.amount } : {}),
-      ...(patch.dueDate !== undefined ? { due_date: patch.dueDate } : {}),
-      ...(patch.status !== undefined
-        ? {
-            status: patch.status,
-            paid_at: patch.status === "pago" ? new Date().toISOString() : null,
-          }
-        : {}),
-      ...(patch.category !== undefined ? { category: patch.category } : {}),
-      ...(patch.invoiceNumber !== undefined ? { invoice_number: patch.invoiceNumber } : {}),
-      ...(patch.invoiceSeries !== undefined ? { invoice_series: patch.invoiceSeries } : {}),
-      ...(patch.invoicePath !== undefined ? { invoice_path: patch.invoicePath } : {}),
-      ...(patch.invoiceName !== undefined ? { invoice_name: patch.invoiceName } : {}),
-    };
-    void supabase.from("finance_entries").update(row).eq("id", id).eq("user_id", WORKSPACE_ID);
-  }, []);
-
-  const deleteFinance = useCallback<Store["deleteFinance"]>((id) => {
-    setFinance((prev) => prev.filter((e) => e.id !== id));
-    void supabase.from("finance_entries").delete().eq("id", id).eq("user_id", WORKSPACE_ID);
   }, []);
 
   const value = useMemo(
