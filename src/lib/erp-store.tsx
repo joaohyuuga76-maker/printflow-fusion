@@ -182,27 +182,33 @@ export function ErpProvider({ children }: { children: ReactNode }) {
           title: o.title,
           value: Number(o.value),
           cost: Number(o.cost),
-          stage: o.stage as OrderStage,
-          date: o.date || shortDate(o.created_at),
-          channel: o.channel,
-          priority: o.priority as Order["priority"],
-          weightG: Number(o.weight_g),
-          hours: Number(o.hours),
-        })),
-      );
-      setProducts(
+        setProducts(
         (pd.data ?? []).map((p) => ({
           id: p.id,
           name: p.name,
           category: p.category,
           weightG: Number(p.weight_g),
           hours: Number(p.hours),
-         const orderRows = or_.data ?? [];
+          price: Number(p.price),
+          sold: p.sold,
+          imageUrl:
+            (p as { image_url?: string | null }).image_url ?? localProductImages[p.id] ?? null,
+        }))
+      );
+      const orderRows = or_.data ?? [];
       setClients(
         (cl.data ?? []).map((c) => {
           const own = orderRows.filter((o) => o.client === c.name);
           return {
             id: c.id,
+            name: c.name,
+            phone: c.phone,
+            city: c.city,
+            orders: own.length,
+            total: own.reduce((s, o) => s + Number(o.value), 0),
+          };
+        })
+      );
             name: c.name,
             phone: c.phone,
             city: c.city,
