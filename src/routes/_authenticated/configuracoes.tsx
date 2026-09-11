@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Save, Store } from "lucide-react";
+import { Save, Store, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/erp/ui-bits";
 import { ImageField } from "@/components/erp/ImageField";
 import { useErp } from "@/lib/erp-store";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
   head: () => ({
@@ -27,7 +28,6 @@ export const Route = createFileRoute("/_authenticated/configuracoes")({
   component: Configuracoes,
 });
 
-/** Parse flexível: aceita "," ou "." e nunca reseta o input durante digitação. */
 const parseNum = (v: string) => {
   const cleaned = v.trim().replace(",", ".");
   if (cleaned === "" || cleaned === "-" || cleaned === "." || cleaned === "-.") return 0;
@@ -37,22 +37,84 @@ const parseNum = (v: string) => {
 
 function Configuracoes() {
   const { settings, updateSettings } = useErp();
+  const [loading, setLoading] = useState(false);
 
-  // Estados-string locais para permitir digitar "0.", "1,5" sem reset imediato do input.
   const [energyRateStr, setEnergyRateStr] = useState(String(settings.energyRate ?? ""));
   const [defaultMarginStr, setDefaultMarginStr] = useState(String(settings.defaultMargin ?? ""));
   const [failureRateStr, setFailureRateStr] = useState(String(settings.failureRate ?? ""));
 
+  // Carrega do Supabase na inicialização
   useEffect(() => {
-    // Sincroniza quando settings vem do storage / supabase (só se o usuário não estiver digitando algo diferente numericamente equivalente).
+    async function loadFromDb() {
+      try {
+        const { data, error } = await supabase
+          .from("store_settings")
+          .select("*")
+          .eq("id", "default")
+          .single();
+
+        if (data && !error) {
+          updateSettings({
+            company: data.company_name ?? settings.company,
+            phone: data.phone ?? settings.phone,
+            cnpj: data.cnpj ?? settings.cnpj,
+            pixKey: data.pix_key ?? settings.pixKey,
+            logoUrl: data.logo_url ?? settings.logoUrl,
+            energyRate: Number(data.energy_cost ?? settings.energyRate),
+            failureRate: Number(data.failure_rate ?? settings.failureRate),
+            defaultMargin: Number(data.default_margin ?? settings.defaultMargin),
+          });
+          setEnergyRateStr(String(data.energy_cost ?? settings.energyRate));
+          setDefaultMarginStr(String(data.default_margin ?? settings.defaultMargin));
+          setFailureRateStr(String(data.failure_rate ?? settings.failureRate));
+        }
+      } catch (err) {
+        console.warn("Erro ao buscar configurações no Supabase, usando local:", err);
+      }
+    }
+    loadFromDb();
+  }, []);
+
+  useEffect(() => {
     if (parseNum(energyRateStr) !== Number(settings.energyRate))
       setEnergyRateStr(String(settings.energyRate ?? ""));
     if (parseNum(defaultMarginStr) !== Number(settings.defaultMargin))
       setDefaultMarginStr(String(settings.defaultMargin ?? ""));
     if (parseNum(failureRateStr) !== Number(settings.failureRate))
       setFailureRateStr(String(settings.failureRate ?? ""));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.energyRate, settings.defaultMargin, settings.failureRate]);
+
+  // Salva no Supabase e na store
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      const payload = {
+        id: "default",
+        company_name: settings.company,
+        phone: settings.phone,
+        cnpj: settings.cnpj,
+        pix_key: settings.pixKey,
+        logo_url: settings.logoUrl,
+        energy_cost: parseNum(energyRateStr),
+        failure_rate: parseNum(failureRateStr),
+        default_margin: parseNum(defaultMarginStr),
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase
+        .from("store_settings")
+        .upsert(payload, { onConflict: "id" });
+
+      if (error) throw error;
+
+      toast.success("Configurações salvas no banco com sucesso!");
+    } catch (err: any) {
+      console.error("Falha ao salvar no banco:", err);
+      toast.success("Configurações salvas localmente!");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div>
@@ -113,9 +175,11 @@ function Configuracoes() {
           <Button
             data-testid="settings-save-btn"
             className="mt-4"
-            onClick={() => toast.success("Configurações da loja salvas!")}
+            disabled={loading}
+            onClick={handleSave}
           >
-            <Save className="h-4 w-4" /> Salvar
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {loading ? "Salvando..." : "Salvar"}
           </Button>
         </div>
 
