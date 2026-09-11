@@ -101,7 +101,7 @@ export function ErpProvider({ children }: { children: ReactNode }) {
 
     const [pr, fi, or_, pd, cl, fa, ex, st, fn] = await Promise.all([
       supabase.from("printers").select("*").eq("user_id", uid).order("created_at"),
-      supabase.from("filaments").select("*").eq("user_id", uid).order("created_at"),
+      supabase.from("filaments").select("*").eq("user_id", uid),
       supabase.from("orders").select("*").eq("user_id", uid).order("created_at", { ascending: false }),
       supabase.from("products").select("*").eq("user_id", uid).order("created_at"),
       supabase.from("clients").select("*").eq("user_id", uid).order("created_at"),
