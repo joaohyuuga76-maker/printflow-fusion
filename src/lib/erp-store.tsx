@@ -545,10 +545,13 @@ export function ErpProvider({ children }: { children: ReactNode }) {
     void supabase.from("filaments").update(row).eq("id", id);
   }, []);
 
-  const deleteFilament = useCallback<Store["deleteFilament"]>((id) => {
+ const deleteFilament = useCallback<Store["deleteFilament"]>(async (id) => {
     removeLocalImage("filaments", id);
     setFilaments((prev) => prev.filter((f) => f.id !== id));
-    void supabase.from("filaments").delete().eq("id", id);
+    const { error } = await supabase.from("filaments").delete().eq("id", id);
+    if (error) {
+      console.error("Erro ao excluir filamento:", error);
+    }
   }, []);
 
   const updateOrder = useCallback<Store["updateOrder"]>((id, patch) => {
@@ -660,9 +663,12 @@ export function ErpProvider({ children }: { children: ReactNode }) {
     void supabase.from("finance_entries").update(row).eq("id", id);
   }, []);
 
-  const deleteFinance = useCallback<Store["deleteFinance"]>((id) => {
+  const deleteFinance = useCallback<Store["deleteFinance"]>(async (id) => {
     setFinance((prev) => prev.filter((e) => e.id !== id));
-    void supabase.from("finance_entries").delete().eq("id", id);
+    const { error } = await supabase.from("finance_entries").delete().eq("id", id);
+    if (error) {
+      console.error("Erro ao excluir financeiro:", error);
+    }
   }, []);
 
   const value = useMemo(
