@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/erp/ui-bits";
 import { ImageField } from "@/components/erp/ImageField";
 import { useErp } from "@/lib/erp-store";
-import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
   head: () => ({
@@ -42,38 +41,23 @@ function Configuracoes() {
   const [energyRateStr, setEnergyRateStr] = useState(String(settings.energyRate ?? ""));
   const [defaultMarginStr, setDefaultMarginStr] = useState(String(settings.defaultMargin ?? ""));
   const [failureRateStr, setFailureRateStr] = useState(String(settings.failureRate ?? ""));
+  const [minimumMarginStr, setMinimumMarginStr] = useState(String(settings.minimumMargin ?? 20));
+  const [batchDiscounts, setBatchDiscounts] = useState(
+    settings.batchDiscounts ?? [
+      { minQuantity: 1, discountPercent: 0 },
+      { minQuantity: 3, discountPercent: 10 },
+      { minQuantity: 5, discountPercent: 16.7 },
+      { minQuantity: 10, discountPercent: 23.3 },
+      { minQuantity: 20, discountPercent: 30 },
+    ],
+  );
 
-  // Carrega do Supabase na inicialização
   useEffect(() => {
-    async function loadFromDb() {
-      try {
-        const { data, error } = await supabase
-          .from("store_settings")
-          .select("*")
-          .eq("id", "default")
-          .single();
+    setMinimumMarginStr(String(settings.minimumMargin ?? 20));
+    if (settings.batchDiscounts?.length) setBatchDiscounts(settings.batchDiscounts);
+  }, [settings.minimumMargin, settings.batchDiscounts]);
 
-        if (data && !error) {
-          updateSettings({
-            company: data.company_name ?? settings.company,
-            phone: data.phone ?? settings.phone,
-            cnpj: data.cnpj ?? settings.cnpj,
-            pixKey: data.pix_key ?? settings.pixKey,
-            logoUrl: data.logo_url ?? settings.logoUrl,
-            energyRate: Number(data.energy_cost ?? settings.energyRate),
-            failureRate: Number(data.failure_rate ?? settings.failureRate),
-            defaultMargin: Number(data.default_margin ?? settings.defaultMargin),
-          });
-          setEnergyRateStr(String(data.energy_cost ?? settings.energyRate));
-          setDefaultMarginStr(String(data.default_margin ?? settings.defaultMargin));
-          setFailureRateStr(String(data.failure_rate ?? settings.failureRate));
-        }
-      } catch (err) {
-        console.warn("Erro ao buscar configurações no Supabase, usando local:", err);
-      }
-    }
-    loadFromDb();
-  }, []);
+
 
   useEffect(() => {
     if (parseNum(energyRateStr) !== Number(settings.energyRate))
@@ -84,33 +68,28 @@ function Configuracoes() {
       setFailureRateStr(String(settings.failureRate ?? ""));
   }, [settings.energyRate, settings.defaultMargin, settings.failureRate]);
 
-  // Salva no Supabase e na store
   const handleSave = async () => {
     setLoading(true);
     try {
-      const payload = {
-        id: "default",
-        company_name: settings.company,
-        phone: settings.phone,
-        cnpj: settings.cnpj,
-        pix_key: settings.pixKey,
-        logo_url: settings.logoUrl,
-        energy_cost: parseNum(energyRateStr),
-        failure_rate: parseNum(failureRateStr),
-        default_margin: parseNum(defaultMarginStr),
-        updated_at: new Date().toISOString(),
-      };
-
-      const { error } = await supabase
-        .from("store_settings")
-        .upsert(payload, { onConflict: "id" });
-
-      if (error) throw error;
-
-      toast.success("Configurações salvas no banco com sucesso!");
-    } catch (err: any) {
-      console.error("Falha ao salvar no banco:", err);
-      toast.success("Configurações salvas localmente!");
+      const saved = await updateSettings({
+        energyRate: parseNum(energyRateStr),
+        defaultMargin: parseNum(defaultMarginStr),
+        failureRate: parseNum(failureRateStr),
+        minimumMargin: Math.min(90, Math.max(0, parseNum(minimumMarginStr))),
+        batchDiscounts: batchDiscounts
+          .map((tier) => ({
+            minQuantity: Math.max(1, Math.floor(tier.minQuantity)),
+            discountPercent: Math.min(100, Math.max(0, tier.discountPercent)),
+          }))
+          .sort((a, b) => a.minQuantity - b.minQuantity),
+      });
+      if (!saved) {
+        toast.error("Não foi possível salvar as configurações no Supabase.");
+        return;
+      }
+      toast.success("Configurações salvas no Supabase.");
+    } catch {
+      toast.error("Não foi possível salvar as configurações no Supabase.");
     } finally {
       setLoading(false);
     }
@@ -184,7 +163,7 @@ function Configuracoes() {
         </div>
 
         <div className="rounded-xl border border-border bg-card p-4">
-          <p className="text-sm font-semibold">Parâmetros de custo</p>
+          <p className="text-sm font-semibold">Parâmetros de custo e proteção de margem</p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label>Tarifa de energia (R$/kWh)</Label>
@@ -211,6 +190,15 @@ function Configuracoes() {
               />
             </div>
             <div className="grid gap-2">
+              <Label>Piso de margem líquida (%)</Label>
+              <Input
+                data-testid="settings-minimum-margin"
+                inputMode="decimal"
+                value={minimumMarginStr}
+                onChange={(e) => setMinimumMarginStr(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
               <Label>Taxa de falha padrão (%)</Label>
               <Input
                 data-testid="settings-failure-rate"
@@ -223,9 +211,40 @@ function Configuracoes() {
               />
             </div>
           </div>
+          <div className="mt-4 border-t border-border pt-4">
+            <p className="text-sm font-semibold">Desconto por quantidade</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Defina o mínimo de peças e o desconto máximo de cada faixa. A calculadora limita o desconto para preservar o piso de margem.
+            </p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {batchDiscounts.map((tier, index) => (
+                <div key={index} className="grid grid-cols-2 gap-2">
+                  <div className="grid gap-1">
+                    <Label className="text-xs">A partir de (un.)</Label>
+                    <Input
+                      inputMode="numeric"
+                      value={tier.minQuantity}
+                      onChange={(e) => setBatchDiscounts((prev) => prev.map((item, i) =>
+                        i === index ? { ...item, minQuantity: Math.max(1, Math.floor(Number(e.target.value) || 1)) } : item
+                      ))}
+                    />
+                  </div>
+                  <div className="grid gap-1">
+                    <Label className="text-xs">Desconto (%)</Label>
+                    <Input
+                      inputMode="decimal"
+                      value={tier.discountPercent}
+                      onChange={(e) => setBatchDiscounts((prev) => prev.map((item, i) =>
+                        i === index ? { ...item, discountPercent: Math.min(100, Math.max(0, parseNum(e.target.value))) } : item
+                      ))}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
           <p className="mt-4 text-xs text-muted-foreground">
-            Esses valores alimentam automaticamente a calculadora de orçamentos e o cálculo de
-            lucro.
+            Esses valores alimentam a calculadora de orçamentos. O markup padrão é diferente da margem líquida mínima.
           </p>
         </div>
       </div>
