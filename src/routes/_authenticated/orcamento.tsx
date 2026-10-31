@@ -177,7 +177,8 @@ function Orcamento() {
     ? settings.batchDiscounts
     : DEFAULT_BATCH_DISCOUNTS;
   const minimumMargin = Math.min(90, Math.max(0, Number(settings.minimumMargin) || 0));
-  const minimumUnitPrice = unitCost / (1 - minimumMargin / 100);
+  const rawMinimumUnitPrice = unitCost / (1 - minimumMargin / 100);
+  const minimumUnitPrice = Math.ceil(rawMinimumUnitPrice * 100 - 1e-8) / 100;
 
   // Preenche o preço base automaticamente enquanto o usuário não editar à mão
   useEffect(() => {
@@ -185,13 +186,15 @@ function Orcamento() {
   }, [suggestedBase, manualBase]);
 
   const c = useMemo(() => {
-    const base = Number(String(basePrice).replace(",", ".")) || 0;
+    const baseInput = Number(String(basePrice).replace(",", ".")) || 0;
+    const base = Number(baseInput.toFixed(2));
     const requestedDiscount = discountFor(units, batchDiscounts);
-    const maxDiscount = base > 0
-      ? Math.max(0, Math.min(100, (1 - minimumUnitPrice / base) * 100))
-      : 0;
-    const discount = Math.min(requestedDiscount, maxDiscount);
-    const unitPrice = base * (1 - discount / 100);
+    const maxDiscount =
+      base > 0 ? Math.max(0, Math.min(100, (1 - minimumUnitPrice / base) * 100)) : 0;
+    const plannedDiscount = Math.min(requestedDiscount, maxDiscount);
+    const unitPrice = Number((base * (1 - plannedDiscount / 100)).toFixed(2));
+    const discount =
+      base > 0 ? Number(((1 - unitPrice / base) * 100).toFixed(4)) : 0;
     const revenue = unitPrice * units;
     const totalCost = unitCost * units;
     const profit = revenue - totalCost;
