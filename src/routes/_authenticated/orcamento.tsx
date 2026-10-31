@@ -41,7 +41,7 @@ export const Route = createFileRoute("/_authenticated/orcamento")({
       {
         name: "description",
         content:
-          "Precificação comercial avançada: custo unitário, margem desejada, desconto progressivo por lote e lucro líquido real.",
+          "Precificação comercial avançada: custo unitário, margem desejada, desconto de lote e margem estimada sobre os custos informados.",
       },
       { property: "og:title", content: "Calculadora Comercial 3D — VisionFlow ERP" },
       {
@@ -332,7 +332,7 @@ Na entrega (50%): ${brl(c.entry)}`;
     <div>
       <PageHeader
         title="Calculadora Comercial"
-        subtitle="Custo real, margem desejada, desconto progressivo por lote e lucro líquido do pedido"
+        subtitle="Custos informados, descontos por lote protegidos e margem estimada do pedido"
       />
 
       <div className="mb-4 flex flex-col gap-3 rounded-xl border border-border bg-card/70 p-3 backdrop-blur sm:flex-row sm:items-end">
@@ -637,7 +637,7 @@ Na entrega (50%): ${brl(c.entry)}`;
                 </p>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/40 p-2">
-                <p className="text-[11px] text-muted-foreground">Lucro líquido real</p>
+                <p className="text-[11px] text-muted-foreground">Lucro estimado</p>
                 <p
                   data-testid="calc-profit"
                   className={`text-sm font-bold ${c.profit >= 0 ? "text-profit" : "text-danger"}`}
@@ -646,7 +646,7 @@ Na entrega (50%): ${brl(c.entry)}`;
                 </p>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/40 p-2">
-                <p className="text-[11px] text-muted-foreground">Margem líquida real</p>
+                <p className="text-[11px] text-muted-foreground">Margem estimada</p>
                 <p
                   data-testid="calc-margin-real"
                   className={`text-sm font-bold ${c.marginReal >= 0 ? "text-profit" : "text-danger"}`}
