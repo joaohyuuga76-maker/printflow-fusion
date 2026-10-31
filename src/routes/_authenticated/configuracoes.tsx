@@ -71,17 +71,22 @@ function Configuracoes() {
   const handleSave = async () => {
     setLoading(true);
     try {
+      const normalizedDiscounts = batchDiscounts
+        .map((tier) => ({
+          minQuantity: Math.max(1, Math.floor(tier.minQuantity)),
+          discountPercent: Math.min(100, Math.max(0, tier.discountPercent)),
+        }))
+        .sort((a, b) => a.minQuantity - b.minQuantity);
+      if (new Set(normalizedDiscounts.map((tier) => tier.minQuantity)).size !== normalizedDiscounts.length) {
+        toast.error("Cada faixa precisa ter uma quantidade mínima diferente.");
+        return;
+      }
       const saved = await updateSettings({
         energyRate: parseNum(energyRateStr),
         defaultMargin: parseNum(defaultMarginStr),
         failureRate: parseNum(failureRateStr),
         minimumMargin: Math.min(90, Math.max(0, parseNum(minimumMarginStr))),
-        batchDiscounts: batchDiscounts
-          .map((tier) => ({
-            minQuantity: Math.max(1, Math.floor(tier.minQuantity)),
-            discountPercent: Math.min(100, Math.max(0, tier.discountPercent)),
-          }))
-          .sort((a, b) => a.minQuantity - b.minQuantity),
+        batchDiscounts: normalizedDiscounts,
       });
       if (!saved) {
         toast.error("Não foi possível salvar as configurações no Supabase.");
