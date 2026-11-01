@@ -41,7 +41,7 @@ export const Route = createFileRoute("/_authenticated/orcamento")({
       {
         name: "description",
         content:
-          "Precificação comercial avançada: custo unitário, margem desejada, desconto progressivo por lote e lucro líquido real.",
+          "Precificação comercial avançada: custo unitário, margem desejada, desconto de lote e margem estimada sobre os custos informados.",
       },
       { property: "og:title", content: "Calculadora Comercial 3D — VisionFlow ERP" },
       {
@@ -86,15 +86,21 @@ function fmtHours(h: number): string {
 
 const fmtWeight = (g: number) => (g >= 1000 ? `${(g / 1000).toFixed(2)} kg` : `${Math.round(g)} g`);
 
-const TIERS = [
-  { min: 20, pct: 30 },
-  { min: 10, pct: 23.3 },
-  { min: 5, pct: 16.7 },
-  { min: 3, pct: 10 },
-  { min: 1, pct: 0 },
+const DEFAULT_BATCH_DISCOUNTS = [
+  { minQuantity: 1, discountPercent: 0 },
+  { minQuantity: 3, discountPercent: 10 },
+  { minQuantity: 5, discountPercent: 16.7 },
+  { minQuantity: 10, discountPercent: 23.3 },
+  { minQuantity: 20, discountPercent: 30 },
 ];
 
-const discountFor = (qty: number) => TIERS.find((t) => qty >= t.min)?.pct ?? 0;
+const discountFor = (
+  qty: number,
+  tiers: { minQuantity: number; discountPercent: number }[],
+) =>
+  [...tiers]
+    .filter((tier) => qty >= tier.minQuantity)
+    .sort((a, b) => b.minQuantity - a.minQuantity)[0]?.discountPercent ?? 0;
 
 function Row({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
@@ -167,6 +173,12 @@ function Orcamento() {
   const finish = num(finishing);
   const unitCost = material + energy + wear + finish;
   const suggestedBase = unitCost * (1 + num(margin) / 100);
+  const batchDiscounts = settings.batchDiscounts?.length
+    ? settings.batchDiscounts
+    : DEFAULT_BATCH_DISCOUNTS;
+  const minimumMargin = Math.min(90, Math.max(0, Number(settings.minimumMargin) || 0));
+  const rawMinimumUnitPrice = unitCost / (1 - minimumMargin / 100);
+  const minimumUnitPrice = Math.ceil(rawMinimumUnitPrice * 100 - 1e-8) / 100;
 
   // Preenche o preço base automaticamente enquanto o usuário não editar à mão
   useEffect(() => {
@@ -174,9 +186,15 @@ function Orcamento() {
   }, [suggestedBase, manualBase]);
 
   const c = useMemo(() => {
-    const base = Number(String(basePrice).replace(",", ".")) || 0;
-    const discount = discountFor(units);
-    const unitPrice = base * (1 - discount / 100);
+    const baseInput = Number(String(basePrice).replace(",", ".")) || 0;
+    const base = Number(baseInput.toFixed(2));
+    const requestedDiscount = discountFor(units, batchDiscounts);
+    const maxDiscount =
+      base > 0 ? Math.max(0, Math.min(100, (1 - minimumUnitPrice / base) * 100)) : 0;
+    const plannedDiscount = Math.min(requestedDiscount, maxDiscount);
+    const unitPrice = Number((base * (1 - plannedDiscount / 100)).toFixed(2));
+    const discount =
+      base > 0 ? Number(((1 - unitPrice / base) * 100).toFixed(4)) : 0;
     const revenue = unitPrice * units;
     const totalCost = unitCost * units;
     const profit = revenue - totalCost;
@@ -184,6 +202,14 @@ function Orcamento() {
     return {
       base,
       discount,
+      requestedDiscount,
+      maxDiscount,
+      minimumUnitPrice,
+      marginFloorMet:
+        base > 0 &&
+        revenue > 0 &&
+        marginReal + 0.000001 >= minimumMargin &&
+        unitPrice + 0.000001 >= minimumUnitPrice,
       unitPrice,
       revenue,
       totalCost,
@@ -193,7 +219,7 @@ function Orcamento() {
       totalH: unitH * units,
       totalG: unitG * units,
     };
-  }, [basePrice, units, unitCost, unitH, unitG]);
+  }, [basePrice, units, unitCost, unitH, unitG, batchDiscounts, minimumMargin, minimumUnitPrice]);
 
   const loadOrder = (id: string) => {
     const o = orders.find((x) => x.id === id);
@@ -231,6 +257,10 @@ function Orcamento() {
   });
 
   const saveOrder = (goToSales: boolean) => {
+    if (!c.marginFloorMet) {
+      toast.error(`Preço inviável: margem abaixo do piso de ${minimumMargin}%.`);
+      return;
+    }
     const payload = orderPayload();
     if (editingId) {
       updateOrder(editingId, payload);
@@ -252,6 +282,10 @@ function Orcamento() {
   };
 
   const exportPdf = () => {
+    if (!c.marginFloorMet) {
+      toast.error(`Ajuste o preço para atingir a margem mínima de ${minimumMargin}% antes de exportar.`);
+      return;
+    }
     const doc = buildQuotePdf({
       company: settings.company,
       cnpj: settings.cnpj,
@@ -301,7 +335,7 @@ Na entrega (50%): ${brl(c.entry)}`;
     <div>
       <PageHeader
         title="Calculadora Comercial"
-        subtitle="Custo real, margem desejada, desconto progressivo por lote e lucro líquido do pedido"
+        subtitle="Custos informados, descontos por lote protegidos e margem estimada do pedido"
       />
 
       <div className="mb-4 flex flex-col gap-3 rounded-xl border border-border bg-card/70 p-3 backdrop-blur sm:flex-row sm:items-end">
@@ -417,7 +451,7 @@ Na entrega (50%): ${brl(c.entry)}`;
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label>Margem de lucro desejada (%)</Label>
+                <Label>Markup sobre custo (%)</Label>
                 <Input
                   data-testid="calc-margin"
                   inputMode="decimal"
@@ -448,7 +482,7 @@ Na entrega (50%): ${brl(c.entry)}`;
                   }}
                 />
                 <p className="text-[11px] text-muted-foreground">
-                  Sugerido: custo {brl(unitCost)} + {num(margin)}% = {brl(suggestedBase)}
+                  Markup: custo {brl(unitCost)} × (1 + {num(margin)}%) = {brl(suggestedBase)}
                 </p>
               </div>
             </div>
@@ -502,29 +536,23 @@ Na entrega (50%): ${brl(c.entry)}`;
               </AccordionItem>
             </Accordion>
 
-            <div className="mt-4 grid grid-cols-2 gap-2 text-[11px] sm:grid-cols-5">
-              {[
-                { r: "1–2 un", p: "0%", min: 1 },
-                { r: "3–4 un", p: "10%", min: 3 },
-                { r: "5–9 un", p: "16.7%", min: 5 },
-                { r: "10–19 un", p: "23.3%", min: 10 },
-                { r: "20+ un", p: "30%", min: 20 },
-              ].map((t) => {
-                const active = discountFor(units) === discountFor(t.min);
-                return (
-                  <div
-                    key={t.r}
-                    className={`rounded-lg border px-2 py-1.5 text-center ${
-                      active
-                        ? "border-primary/60 bg-primary/15 text-primary"
-                        : "border-border/60 text-muted-foreground"
-                    }`}
-                  >
-                    <p className="font-semibold">{t.r}</p>
-                    <p>{t.p}</p>
+            <div className="mt-4 rounded-lg border border-border/70 p-3">
+              <p className="mb-2 text-xs font-semibold">Descontos configurados por quantidade</p>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+                {batchDiscounts.map((tier) => (
+                  <div key={tier.minQuantity} className="rounded-lg border border-border/60 p-2 text-center">
+                    <p className="text-[11px] text-muted-foreground">
+                      A partir de {tier.minQuantity} un.
+                    </p>
+                    <p className="text-sm font-semibold">
+                      {tier.discountPercent}%{units >= tier.minQuantity ? " · ativo" : ""}
+                    </p>
                   </div>
-                );
-              })}
+                ))}
+              </div>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                Edite as faixas e o piso de margem em Configurações da Loja.
+              </p>
             </div>
           </div>
 
@@ -593,6 +621,17 @@ Na entrega (50%): ${brl(c.entry)}`;
             <p className="text-xs text-muted-foreground">
               {units} {units > 1 ? "peças" : "peça"} · base {brl(c.base)}
             </p>
+            {!c.marginFloorMet && (
+              <p role="alert" className="mt-2 rounded-lg border border-danger/40 bg-danger/10 p-2 text-xs text-danger">
+                Preço abaixo do piso: margem atual {c.marginReal.toFixed(1)}%, mínima {minimumMargin}%.
+                O menor preço unitário permitido é {brl(c.minimumUnitPrice)}.
+              </p>
+            )}
+            {c.requestedDiscount > c.discount && c.marginFloorMet && (
+              <p className="mt-2 rounded-lg border border-info/40 bg-info/10 p-2 text-xs text-info">
+                Desconto limitado de {c.requestedDiscount}% para {c.discount.toFixed(1)}% para manter a margem mínima.
+              </p>
+            )}
             <div className="mt-4 grid gap-2 sm:grid-cols-3">
               <div className="rounded-lg border border-border/60 bg-background/40 p-2">
                 <p className="text-[11px] text-muted-foreground">Faturamento</p>
@@ -601,7 +640,7 @@ Na entrega (50%): ${brl(c.entry)}`;
                 </p>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/40 p-2">
-                <p className="text-[11px] text-muted-foreground">Lucro líquido real</p>
+                <p className="text-[11px] text-muted-foreground">Lucro estimado</p>
                 <p
                   data-testid="calc-profit"
                   className={`text-sm font-bold ${c.profit >= 0 ? "text-profit" : "text-danger"}`}
@@ -610,7 +649,7 @@ Na entrega (50%): ${brl(c.entry)}`;
                 </p>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/40 p-2">
-                <p className="text-[11px] text-muted-foreground">Margem líquida real</p>
+                <p className="text-[11px] text-muted-foreground">Margem estimada</p>
                 <p
                   data-testid="calc-margin-real"
                   className={`text-sm font-bold ${c.marginReal >= 0 ? "text-profit" : "text-danger"}`}
@@ -636,18 +675,19 @@ Na entrega (50%): ${brl(c.entry)}`;
           </div>
 
           <div className="grid gap-2">
-            <Button data-testid="calc-generate-quote-btn" onClick={() => saveOrder(true)}>
+            <Button data-testid="calc-generate-quote-btn" disabled={!c.marginFloorMet} onClick={() => saveOrder(true)}>
               <FilePlus2 className="h-4 w-4" /> Gerar Orçamento deste Lote
             </Button>
             <Button
               data-testid="calc-save-quote-btn"
               variant="outline"
+              disabled={!c.marginFloorMet}
               onClick={() => saveOrder(false)}
             >
               {editingId ? <Save className="h-4 w-4" /> : <FilePlus2 className="h-4 w-4" />}
               {editingId ? "Salvar alterações" : "Salvar sem sair"}
             </Button>
-            <Button data-testid="calc-export-pdf-btn" variant="outline" onClick={exportPdf}>
+            <Button data-testid="calc-export-pdf-btn" variant="outline" disabled={!c.marginFloorMet} onClick={exportPdf}>
               <FileDown className="h-4 w-4" /> Exportar PDF
             </Button>
             <Button

@@ -27,6 +27,14 @@ const defaultSettings: Settings = {
   cnpj: "",
   energyRate: 0.92,
   defaultMargin: 120,
+  minimumMargin: 20,
+  batchDiscounts: [
+    { minQuantity: 1, discountPercent: 0 },
+    { minQuantity: 3, discountPercent: 10 },
+    { minQuantity: 5, discountPercent: 16.7 },
+    { minQuantity: 10, discountPercent: 23.3 },
+    { minQuantity: 20, discountPercent: 30 },
+  ],
   failureRate: 5,
   phone: "",
   pixKey: "",
@@ -71,7 +79,7 @@ interface Store {
   deleteFinance: (id: string) => void;
   consumeFilament: (id: string, grams: number) => void;
   addFailure: (f: Omit<Failure, "id" | "cost" | "date">) => void;
-  updateSettings: (s: Partial<Settings>) => void;
+  updateSettings: (s: Partial<Settings>) => Promise<boolean>;
   failureOpen: boolean;
   setFailureOpen: (v: boolean) => void;
 }
@@ -229,6 +237,10 @@ export function ErpProvider({ children }: { children: ReactNode }) {
         cnpj: st.data.cnpj ?? "",
         energyRate: Number(st.data.energy_rate ?? defaultSettings.energyRate),
         defaultMargin: Number(st.data.default_margin ?? defaultSettings.defaultMargin),
+        minimumMargin: Number(st.data.minimum_margin ?? defaultSettings.minimumMargin),
+        batchDiscounts: Array.isArray(st.data.batch_discounts)
+          ? (st.data.batch_discounts as unknown as Settings["batchDiscounts"])
+          : defaultSettings.batchDiscounts,
         failureRate: Number(st.data.failure_rate ?? defaultSettings.failureRate),
         phone: (st.data as { phone?: string }).phone ?? "",
         pixKey: (st.data as { pix_key?: string }).pix_key ?? "",
@@ -741,32 +753,42 @@ export function ErpProvider({ children }: { children: ReactNode }) {
     [filaments, printers]
   );
 
-  const updateSettings = useCallback<Store["updateSettings"]>((s) => {
-    const uid = WORKSPACE_ID;
-    setSettings((prev) => {
-      const next = { ...prev, ...s };
-      if (uid) {
-        void (async () => {
-          const { error } = await supabase.from("settings").upsert(
-            {
-              user_id: uid,
-              company: next.company,
-              cnpj: next.cnpj,
-              energy_rate: next.energyRate,
-              default_margin: next.defaultMargin,
-              failure_rate: next.failureRate,
-              phone: next.phone,
-              pix_key: next.pixKey,
-              logo_url: next.logoUrl,
-            },
-            { onConflict: "user_id" }
-          );
-          if (error) console.error("ERRO AO SALVAR SETTINGS:", error);
-        })();
+  const updateSettings = useCallback<Store["updateSettings"]>(
+    async (s) => {
+      const uid = WORKSPACE_ID;
+      const next = { ...settings, ...s };
+      setSettings(next);
+      if (!uid) return true;
+
+      try {
+        const { error } = await supabase.from("settings").upsert(
+          {
+            user_id: uid,
+            company: next.company,
+            cnpj: next.cnpj,
+            energy_rate: next.energyRate,
+            default_margin: next.defaultMargin,
+            minimum_margin: next.minimumMargin,
+            batch_discounts: next.batchDiscounts,
+            failure_rate: next.failureRate,
+            phone: next.phone,
+            pix_key: next.pixKey,
+            logo_url: next.logoUrl,
+          },
+          { onConflict: "user_id" },
+        );
+        if (error) {
+          console.error("ERRO AO SALVAR SETTINGS:", error);
+          return false;
+        }
+        return true;
+      } catch (error) {
+        console.error("ERRO AO SALVAR SETTINGS:", error);
+        return false;
       }
-      return next;
-    });
-  }, []);
+    },
+    [settings],
+  );
 
   const value = useMemo(
     () => ({

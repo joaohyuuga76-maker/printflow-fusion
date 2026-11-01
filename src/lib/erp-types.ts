@@ -82,11 +82,18 @@ export interface ExtraCost {
   unit: string;
 }
 
+export interface BatchDiscount {
+  minQuantity: number;
+  discountPercent: number;
+}
+
 export interface Settings {
   company: string;
   cnpj: string;
   energyRate: number;
   defaultMargin: number;
+  minimumMargin: number;
+  batchDiscounts: BatchDiscount[];
   failureRate: number;
   phone: string;
   pixKey: string;

@@ -642,6 +642,8 @@ export type Database = {
           cnpj: string
           company: string
           default_margin: number
+          minimum_margin: number
+          batch_discounts: Json
           energy_rate: number
           failure_rate: number
           logo_url: string | null
@@ -654,6 +656,8 @@ export type Database = {
           cnpj?: string
           company?: string
           default_margin?: number
+          minimum_margin?: number
+          batch_discounts?: Json
           energy_rate?: number
           failure_rate?: number
           logo_url?: string | null
@@ -666,6 +670,8 @@ export type Database = {
           cnpj?: string
           company?: string
           default_margin?: number
+          minimum_margin?: number
+          batch_discounts?: Json
           energy_rate?: number
           failure_rate?: number
           logo_url?: string | null
